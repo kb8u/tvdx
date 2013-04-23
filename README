@@ -1,0 +1,7 @@
+Copyright 2011 by Russell Dwarshuis.
+This application is free software. You can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+--- miscellaneous notes ---
+Created Model with:
+script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static components=TimeStamp dbi:SQLite:tvdx.db on_connect_do="PRAGMA foreign_keys = ON"

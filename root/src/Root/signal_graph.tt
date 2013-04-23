@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <title>Signal graphs for [% callsign %] at [% tuner.owner_id %] on [% tuner_number %]</title>
+    <script type="text/javascript">
+       function reFresh() { location.reload(true) }
+       window.setInterval("reFresh()",600000);
+    </script>
+  </head>
+  <body>
+    <h2>Signal graphs for [% callsign %] at [% tuner.owner_id %] on [% tuner_number %]</h2>
+    <h2>This page refreshes every 5 minutes.<h2><br>
+    <hr>
+    <h1>Hourly Graph</h1><br>
+      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number %]/[% callsign %]/-6hours/now"><p>
+    <h1>Daily Graph</h1><br>
+      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number %]/[% callsign %]/-32hours/now"><p>
+    <h1>Weekly Graph</h1><br>
+      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number %]/[% callsign %]/-10days/now"><p>
+    <h1>Monthly Graph</h1><br>
+      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number %]/[% callsign %]/-6weeks/now"><p>
+    <h1>Yearly Graph</h1><br>
+      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number %]/[% callsign %]/-64weeks/now"><p>
+  </body>
+</html>
+

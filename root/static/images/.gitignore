@@ -1,0 +1,5 @@
+# ignore program generated callsign.png files
+W*.png
+C*.png
+K*.png
+X*.png
