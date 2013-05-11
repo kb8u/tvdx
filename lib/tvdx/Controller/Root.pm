@@ -8,14 +8,14 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
-use lib '/home/rjd/tvdx/lib';
+use lib '/home/kb8u/tvdx/lib';
 use dist;
 use image_dir;
 use labeled_icon;
 
 BEGIN { extends 'Catalyst::Controller' }
 
-my $RRD_DIR = '/home/rjd/rrd';
+my $RRD_DIR = '/home/kb8u/tvdx/rrd';
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -300,7 +300,7 @@ sub many_tuner_map :Global {
     my $tuner_number = shift @tuner_info_copy; 
 
     my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    push @reception_locations, $tuner->owner_id . "<p><a href=\"http://kb8u.ham-radio-op.net/tvdx/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
+    push @reception_locations, $tuner->owner_id . "<p><a href=\"http://www.rabbitears.info/tvdx/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
   }
 
   $c->stash(tuner_info => \@tuner_info);
@@ -399,7 +399,7 @@ sub tuner_map_data :Global {
     $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
            . "DX: $miles miles<br>";
 
-    $station{graphs} =  '<a href="http://kb8u.ham-radio-op.net/signal_graph/'
+    $station{graphs} =  '<a href="http://www.rabbitears.info/tvdx/signal_graph/'
            . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet
@@ -601,7 +601,7 @@ sub all_stations_data :Global {
     $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
       . "DX: $miles miles<br>";
 
-    $station{graphs} =  '<a href="http://kb8u.ham-radio-op.net/signal_graph/'
+    $station{graphs} =  '<a href="http://www.rabbitears.info/tvdx/signal_graph/'
       . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet

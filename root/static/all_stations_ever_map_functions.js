@@ -51,7 +51,7 @@ function addPathBatch(paths,t_id,t_num,t_lat,t_lng) {
 
     // add icon if call isn't on map already
     if (typeof(iconBatch[callsign]) == 'undefined') {
-      var iconPath = '/static/images/' + callsign + '.png';
+      var iconPath = '/tvdx/static/images/' + callsign + '.png';
       iconBatch[callsign] =
         new google.maps.Marker({map: map,
                                 position: latlng,

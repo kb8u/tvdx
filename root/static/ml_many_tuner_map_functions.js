@@ -150,7 +150,7 @@ function remove_icon(callsign) {
 function updatePaths() {
   for(var i=0; i<tuner_id.length; i++) {
     new Ajax.Request(
-      "/tuner_map_data/" + tuner_id[i] + '/' + tuner_number[i],
+      "/tvdx/tuner_map_data/" + tuner_id[i] + '/' + tuner_number[i],
       {
         method:'get',
         onSuccess: function(responseJSON) { 
