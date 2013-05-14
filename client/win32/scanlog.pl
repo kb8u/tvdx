@@ -20,11 +20,8 @@ my $ua = LWP::UserAgent->new;
 # prevent child processes from opening a console window
 Win32::SetChildShowWindow(0);
 
-my $SPOT_URL = 'http://kb8u.ham-radio-op.net/tvdx/automated_spot';
+my $SPOT_URL = 'http://www.rabbitears.info/tvdx/automated_spot';
 my $TSID_URL = 'http://www.rabbitears.info/rawtsid.php';
-my $path = Cava::Pack::GetUserAppDataDir();
-my $TSID_FILE = $path . '\rawtsid.php';
-my $TSID_FILE_LONG = Cava::Pack::DisplayPath($TSID_FILE);
 
 # program used to interface with tuner
 my $CONFIG_PROGRAM = 'C:\Progra~1\Silicondust\HDHomeRun\hdhomerun_config.exe';
@@ -44,8 +41,8 @@ my $TUNER = '/tuner0/';
 # scanned stations found in this array will be ignored
 my @LOCAL_STATIONS = ('');
 
-our ($opt_d,$opt_h,$opt_f,$opt_i,$opt_l,$opt_p,$opt_t,$opt_u,$opt_U,$opt_x,$opt_D);
-getopts('Dd:f:hi:lp:t:u:U:x:');
+our ($opt_d,$opt_h,$opt_i,$opt_l,$opt_p,$opt_t,$opt_u,$opt_U,$opt_x,$opt_D);
+getopts('Dd:hi:lp:t:u:U:x:');
 
 my $DEBUG = $opt_D;
 
@@ -55,7 +52,6 @@ if ((! $opt_d) && (! -d $SCANS_DIR) && $opt_l) {
   mkdir $SCANS_DIR;
 }
 
-$TSID_FILE = $opt_f if $opt_f;
 
 $SCANS_DIR = $opt_d if $opt_d;
 if ($opt_l && (! -d $SCANS_DIR)) {
@@ -111,13 +107,14 @@ print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if
 my $user_id = "TunerID_$found_tuner_id" . "_$TUNER";
 $user_id =~ s/\///g; # get rid of slashes in /tunerX/ for XML names to be proper
 
+my %TSID; # transport stream identifiers from $TSID_URL or local
 
 SCAN: while(1) {
   my @dx; # DX station information
   my %scan; # information reportd to web site
-  my %TSID; # transport stream identifiers from $TSID_URL or local
 
   # get fresh TSID data if needed
+  print "checking TSID data age\n" if $DEBUG;
   load_tsid(\%TSID);
 
   # scan tuner
@@ -179,7 +176,7 @@ SCAN: while(1) {
       $number = $2;
       $name = $3;
     }
-    if ($channel && (! $callsign_seen) && $name=~/^([CWKX](\d\d)*[A-Z]{2,3})/) {
+    if ($channel && (! $callsign_seen) && $name =~ /^([CWKX][A-Z]{2,3})/) {
       $callsign_seen = uc $1;
       print "Found call $callsign_seen channel $channel strength $strength sig_noise $sig_noise\n" if $DEBUG;
       $scan{'user_id'} = $user_id;
@@ -247,11 +244,11 @@ SCAN: while(1) {
 sub help {
   print <<EOHELP;
 
-Scan channels on a SiliconDust HDHomeRun tuner and look for DX callsigns.
+Scan channels on a SiliconDust HDHomeRun tuner and log stations.
 The tuner must already be configured for over-the-air reception.
 Only looks for North America calls like WWJ,CKLW,WXYZ,XAAA, etc.
 
-Scan results will soon be available at http://kb8u.ham-radio-op.net/all_tuners
+Scan results will soon be available at http://www.rabbitears.info/all_tuners
 after you contact kb8u_vhf\@hotmail.com to let him know your location.
 
 This program sends all scan results there, so your anti-virus program
@@ -268,7 +265,6 @@ Program options:
 -d Directory to put scan results into.  You may need to create this directory.
    You'll also need to specify the -l option and may want -i (see below)
    Defaults to $SCANS_DIR_LONG
--f File to store TSID data in.  Defaults to $TSID_FILE_LONG
 -h print help (you're reading it)
 -i File with callsigns to ignore for local disk logging, useful for logging
    only DX. Callsigns can be separated by any non-letter character and can be
@@ -297,31 +293,32 @@ EOHELP
 sub load_tsid {
   my ($tsid_ref) = @_;
 
-  # if TSID file is older than 1 week or is non-existent, download a new
+  # if TSID data is older than 1 week or is non-existent, download a new
   # file and read from it
-  if (! -r $TSID_FILE || -M $TSID_FILE > 7) {
-    my $rc = getstore($TSID_URL,$TSID_FILE);
-    if (is_error($rc) && $DEBUG) {
-      print "Couldn't download $TSID_URL or save it to $TSID_FILE.  Got $rc\n";
+  if (! exists $tsid_ref->{age} || $tsid_ref->{age} < time - 604800) {
+    print "TSID data not up to date, downloading $TSID_URL\n" if $DEBUG;
+    undef %{$tsid_ref};  # clear out all old entries
+
+    my $raw_tsid = get($TSID_URL);
+    if (! defined $raw_tsid && $DEBUG) {
+      print "Couldn't download $TSID_URL\n";
     }
-  }
-  
-  open TSID, $TSID_FILE;
-  if (fileno(TSID)) {
-    while(<TSID>) {
-      my ($tsid,$call,$ch1,$ch2,$state,$city) = split /\s+/,$_;
+    else { print "$TSID_URL file has been downloaded\n" if $DEBUG; }
+
+    foreach my $line (split "\n", $raw_tsid) {
+      my ($tsid,$call,$ch1,$ch2,$state,$city) = split /\s+/,$line;
       # change WXPD-TV or similar to just WXPD
       ($call) = split /\-/,$call;
         $tsid_ref->{$tsid} = "$call $ch2";
     }
-  }
-  close TSID;
 
-  # if there isn't a lot of entries, there must be some error.  Use
-  # hard-coded values if all else fails
-  if (scalar keys %{$tsid_ref} < 2000) {
-     print "$TSID_FILE couldn't be read or has too few entries.  Using defaults\n" if $DEBUG;
-     load_default_tsid($tsid_ref);
+    # if there isn't a lot of entries, there must be some error.  Use
+    # hard-coded values if all else fails
+    if (scalar keys %{$tsid_ref} < 2000) {
+      print "$TSID_URL couldn't be read or has too few entries.  Using defaults\n" if $DEBUG;
+      load_default_tsid($tsid_ref);
+    }
+    $tsid_ref->{age} = time;
   }
 }
 
