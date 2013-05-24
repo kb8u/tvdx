@@ -128,7 +128,7 @@ function addMarkerBatch(markers,color) {
 
 function updateCallMarkers() {
   new Ajax.Request(
-    "/tvdx/tuner_map_data/" + tuner_id + '/' + tuner_number,
+    "/tuner_map_data/" + tuner_id + '/' + tuner_number,
     {
       method:'get',
       onSuccess: function(responseJSON) { 

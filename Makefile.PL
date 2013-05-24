@@ -13,12 +13,16 @@ requires 'Catalyst::Runtime' => '5.80025';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
+requires 'Catalyst::Plugin::StackTrace';
+requires 'Catalyst::View::RRDGraph';
 requires 'Moose';
 requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
 requires 'DateTime';
 requires 'DateTime::Format::SQLite';
+requires 'DateTime::Format::HTTP';
+requires 'DBIx::Class::TimeStamp';
 requires 'XML::Simple';
 requires 'LWP::Simple';
 requires 'GD';

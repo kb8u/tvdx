@@ -6,7 +6,7 @@ sub image_dir {
 #  my @path_parts = split '/',abs_path($0);
 #  $#path_parts -= 2;
 #  return(join '/',@path_parts , 'root/static/images');
-  return('/home/kb8u/tvdx/root/static/images');
+  return('/home/kb8u/dev/tvdx/root/static/images');
 }
 
 1;

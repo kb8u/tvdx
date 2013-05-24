@@ -1,5 +1,4 @@
 use GD;
-use lib '/home/kb8u/tvdx/lib';
 use image_dir;
 
 # create a rectangle filled with $background_color contaning $text
