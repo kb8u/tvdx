@@ -195,80 +195,71 @@ sub _spot_data_ok {
 }
 
 
-# Check or update (if > 1 week old) or create call sign in fcc table
+# Check or update (if > 1 day old) or create call sign in fcc table
 # Returns 1 on success, 0 on failure.
 sub _call_current {
   my ( $self,$c,$p_callsign,$channel,$virtual_channel ) = @_;
 
-  my $week_ago = DateTime->from_epoch( 'epoch' => (time() - 604800) );
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
   my ($fcc_call) = $c->model('DB::Fcc')->find({'callsign' => $p_callsign});
 
-  # query FCC site for call sign
-  if ((! $fcc_call) || (DateTime::Format::SQLite->parse_datetime($fcc_call->last_fcc_lookup) < $week_ago)) {
-    my @tvq = split /\n/, get("http://www.fcc.gov/fcc-bin/tvq?call=$p_callsign&list=4&size=9");
-    # loop through matches, parse output and look for exact call match
-    foreach (@tvq) {
-      next if $_ !~ /^\|/; # line must begin with |
-      # see http://www.fcc.gov/mb/audio/am_fm_tv_textlist_key.txt
-      my ($blank,$call,$not_used1,$service,$fcc_channel,$antenna,$offset,$tv_zone,$not_used2,$tv_status,$city,$state,$country,$file_number,$erp,$not_used3,$haat,$not_used4,$facility_id,$n_or_s,$lat_deg,$lat_min,$lat_sec,$w_or_e,$lon_deg,$lon_min,$lon_sec,$greedy_corporate_overlord,$dx_km,$dx_miles,$azimuth,$rcamsl,$polarization,$ant_id,$ant_rot,$ant_struct_number,$archagl) = split /\s*\|/,$_;
-      # only digital TV entries are relavent
-      next if $service !~ /(DT|DC|DD|LD|DS|DX)/;
-      # remove any suffix from end
-      $call =~ s/\-.*//;
-      # FCC channel match must be exact
-      next if $fcc_channel != $channel;
+  # Make sure FCC data is current
+  if ((! $fcc_call) || (DateTime::Format::SQLite->parse_datetime($fcc_call->last_fcc_lookup) < $yesterday)) {
+    my $tvq = get("http://www.rabbitears.info/rawlookup.php?call=$p_callsign");
+    # get returns undef if it can't get data
+    return 0 if ! defined $tvq;
 
-      # FCC returns longer matches for short calls, match must be exact
-      next if (uc $call ne uc $p_callsign);
+    my ($call,$fcc_channel,
+        $city,$state,
+        $rcamsl,$erp,
+        $n_or_s,$lat_deg,$lat_min,$lat_sec,
+        $w_or_e,$lon_deg,$lon_min,$lon_sec,
+        $digital_tsid,$analog_tsid,$observed_tsid) = split /\s*\|/,$tvq;
 
-      # remove white space from position data, erp, haat, facility id, state
-      map { $_ =~ s/\s+//g; } ($n_or_s,$lat_deg,$lat_min,$lat_sec,$w_or_e,$lon_deg,$lon_min,$lon_sec,$erp,$haat,$facility_id,$state);
-      # remove extra white space from rcamsl
-      $rcamsl =~ s/\s+/ /;
-      # clean up erp
-      $erp =~ s/kW/ kW/;
-      $erp =~ s/\. kW/.0 kW/;
-      # remove white space at end of owner
-      $greedy_corporate_overlord =~ s/\s+$//;
-      # remove white space at end of city
-      $city =~ s/\s+$//;
+    # FCC channel match must be exact
+    return 0 if $fcc_channel != $channel;
 
-      my $location = "$city, $state";
+    # remove any suffix from end
+    $call =~ s/\-.*//;
 
-      my $lat_decimal = $lat_deg + $lat_min/60 + $lat_sec/3600;
-      $lat_decimal = -1 * $lat_decimal if $n_or_s eq 'S';
+    # add units to height
+    $rcamsl = "$rcamsl m";
+    # add units to power
+    $erp = "$erp kW";
+    my $location = "$city, $state";
 
-      my $lon_decimal = $lon_deg + $lon_min/60 + $lon_sec/3600;
-      $lon_decimal = -1 * $lon_decimal if $w_or_e eq 'W';
+    my $lat_decimal = $lat_deg + $lat_min/60 + $lat_sec/3600;
+    $lat_decimal = -1 * $lat_decimal if $n_or_s eq 'S';
 
-      # the current time formatted to sqlite format (UTC time zone)
-      my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+    my $lon_decimal = $lon_deg + $lon_min/60 + $lon_sec/3600;
+    $lon_decimal = -1 * $lon_decimal if $w_or_e eq 'W';
 
-      # all-new call sign?
-      if (! $fcc_call) {
-        $c->model('DB::Fcc')->create({
-          'callsign'        => $p_callsign,
-          'rf_channel'      => $fcc_channel,
-          'latitude'        => $lat_decimal,
-          'longitude'       => $lon_decimal,
-          'start_date'      => $sqlite_now,
-          'virtual_channel' => $virtual_channel,
-          'city_state'      => $location,
-          'erp_kw'          => $erp,
-          'rcamsl'          => $rcamsl,
-          'last_fcc_lookup' => $sqlite_now, });
-        return 1;
-      }
+    # the current time formatted to sqlite format (UTC time zone)
+    my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+
+    # all-new call sign?
+    if (! $fcc_call) {
+      $c->model('DB::Fcc')->create({
+        'callsign'        => $p_callsign,
+        'rf_channel'      => $fcc_channel,
+        'latitude'        => $lat_decimal,
+        'longitude'       => $lon_decimal,
+        'start_date'      => $sqlite_now,
+        'virtual_channel' => $virtual_channel,
+        'city_state'      => $location,
+        'erp_kw'          => $erp,
+        'rcamsl'          => $rcamsl,
+        'last_fcc_lookup' => $sqlite_now, });
+      return 1;
+    }
 ### BUG: FCC could return new location, need to update end and create
 ### new record in that case.  DB needs to be changed to two primary keys???
-      # else just update
-      else {
-        $c->model('DB::Fcc')->update({'last_fcc_lookup' => $sqlite_now, });
-        return 1;
-      }
+    # else just update
+    else {
+      $c->model('DB::Fcc')->update({'last_fcc_lookup' => $sqlite_now, });
+      return 1;
     }
-    return 0; # couldn't find call in FCC site, or it didn't respond
   }
   return 1; # last_fcc_lookup is not very old, don't bother with FCC site.
 }
