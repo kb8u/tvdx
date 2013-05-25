@@ -1,18 +1,35 @@
+use utf8;
 package tvdx::Schema::Result::Fcc;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
+
+=head1 NAME
+
+tvdx::Schema::Result::Fcc
+
+=cut
 
 use strict;
 use warnings;
 
 use base 'DBIx::Class::Core';
 
+=head1 COMPONENTS LOADED
+
+=over 4
+
+=item * L<DBIx::Class::InflateColumn::DateTime>
+
+=item * L<DBIx::Class::TimeStamp>
+
+=back
+
+=cut
+
 __PACKAGE__->load_components("InflateColumn::DateTime", "TimeStamp");
 
-=head1 NAME
-
-tvdx::Schema::Result::Fcc
+=head1 TABLE: C<fcc>
 
 =cut
 
@@ -101,6 +118,17 @@ __PACKAGE__->add_columns(
   "last_fcc_lookup",
   { data_type => "timestamp", is_nullable => 0 },
 );
+
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</callsign>
+
+=back
+
+=cut
+
 __PACKAGE__->set_primary_key("callsign");
 
 =head1 RELATIONS
@@ -121,7 +149,7 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07000 @ 2011-01-13 21:09:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oP7zlBslh/rwLzbQEhnUSA
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-05-25 10:07:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7Vxe/OvsizytoIm/DnsVDw
 
 1;

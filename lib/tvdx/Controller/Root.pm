@@ -291,7 +291,12 @@ sub many_tuner_map :Global {
     my $tuner_number = shift @tuner_info_copy; 
 
     my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    push @reception_locations, $tuner->owner_id . "<p><a href=\"http://www.rabbitears.info:3000/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
+    my $tn =$c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
+                                                'tuner_number'=>$tuner_number});
+    push @reception_locations,   $tuner->owner_id
+                               . " "
+                               . $tn->description
+                               . "<p><a href=\"http://www.rabbitears.info:3000/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
   }
 
   $c->stash(tuner_info => \@tuner_info);
@@ -435,9 +440,11 @@ sub signal_graph  :Global {
   $self->_check_tuners($c,$tuner_id,$tuner_number);
 
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
+  my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
+                                               'tuner_number'=>$tuner_number});
  
   $c->stash(tuner        => $tuner);
-  $c->stash(tuner_number => $tuner_number);
+  $c->stash(tuner_number => $tn);
   $c->stash(callsign     => $callsign);
   $c->stash(template     => 'Root/signal_graph.tt');
   $c->stash(current_view => 'HTML');
@@ -506,9 +513,9 @@ sub all_stations_ever_map :Global {
     my $tuner_id =     shift @tuner_info_copy;
     my $tuner_number = shift @tuner_info_copy; 
     my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    if (none { $_ eq $tuner->owner_id } @reception_locations) {
-      push @reception_locations, $tuner->owner_id;
-    }
+    my $tn= $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
+                                                'tuner_number'=>$tuner_number});
+    push @reception_locations, $tuner->owner_id . " " . $tn->description;
   }
 
 
@@ -534,12 +541,7 @@ sub _check_tuners {
     }
     if (! $c->model('DB::TunerNumber')->find({'tuner_number'=>$tuner_number,
                                               'tuner_id'=>$tuner_id})) {
-      $c->response->body("FAIL: Tuner number $tuner_number is not registered with site");
-      $c->response->status(403);
-      $c->detach();
-    }
-    if ($tuner_number ne 'tuner0' && $tuner_number ne 'tuner1') {
-      $c->response->body("FAIL: Tuner number must be tuner0 or tuner1");
+      $c->response->body("FAIL: Tuner $tuner_id tuner number $tuner_number is not registered with site");
       $c->response->status(403);
       $c->detach();
     }
@@ -568,6 +570,7 @@ sub all_stations_data :Global {
   my $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
                                               'tuner_number' => $tuner_number});
   while(my $signal = $rs->next) {
+$c->log->debug($signal->callsign->callsign.": ".$signal->callsign->latitude.','.$signal->callsign->longitude);
     my ($miles,$azimuth) =
       dist($signal->callsign->latitude.','.$signal->callsign->longitude,
                       $tuner->latitude.','.           $tuner->longitude);
