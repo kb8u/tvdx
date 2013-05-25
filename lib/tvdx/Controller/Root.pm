@@ -8,6 +8,7 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
+use lib '/home/kb8u/dev/tvdx/lib';
 use dist;
 use image_dir;
 use labeled_icon;
@@ -321,9 +322,11 @@ sub one_tuner_map :Global {
   $self->_check_tuners($c,$tuner_id, $tuner_number);
 
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
+  my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
+                                               'tuner_number'=>$tuner_number});
 
   $c->stash(tuner        => $tuner);
-  $c->stash(tuner_number => $tuner_number);
+  $c->stash(tuner_number => $tn);
   $c->stash(template     => 'Root/one_tuner_map.tt');
   $c->stash(current_view => 'HTML');
 
@@ -524,9 +527,14 @@ sub _check_tuners {
     my $tuner_id =     shift @check_tuner_info;
     my $tuner_number = shift @check_tuner_info; 
 
-    my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    if (! $tuner) {
+    if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
       $c->response->body("FAIL: Tuner $tuner_id is not registered with site");
+      $c->response->status(403);
+      $c->detach();
+    }
+    if (! $c->model('DB::TunerNumber')->find({'tuner_number'=>$tuner_number,
+                                              'tuner_id'=>$tuner_id})) {
+      $c->response->body("FAIL: Tuner number $tuner_number is not registered with site");
       $c->response->status(403);
       $c->detach();
     }
