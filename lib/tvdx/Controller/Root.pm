@@ -299,10 +299,11 @@ sub many_tuner_map :Global {
                                . "<p><a href=\"http://www.rabbitears.info:3000/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
   }
 
-  $c->stash(tuner_info => \@tuner_info);
+  $c->stash(tuner_info          => \@tuner_info);
   $c->stash(reception_locations => \@reception_locations);
-  $c->stash(template => 'Root/many_tuner_map.tt');
-  $c->stash(current_view => 'HTML');
+  $c->stash(static_path         => $c->config->{static_path});
+  $c->stash(template            => 'Root/many_tuner_map.tt');
+  $c->stash(current_view        => 'HTML');
 
   return;
 }
@@ -332,6 +333,7 @@ sub one_tuner_map :Global {
 
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);
+  $c->stash(static_path  => $c->config->{static_path});
   $c->stash(template     => 'Root/one_tuner_map.tt');
   $c->stash(current_view => 'HTML');
 
@@ -446,6 +448,7 @@ sub signal_graph  :Global {
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);
   $c->stash(callsign     => $callsign);
+  $c->stash(static_path  => $c->config->{static_path});
   $c->stash(template     => 'Root/signal_graph.tt');
   $c->stash(current_view => 'HTML');
 }
@@ -519,10 +522,11 @@ sub all_stations_ever_map :Global {
   }
 
 
-  $c->stash(tuner_info => \@tuner_info);
+  $c->stash(tuner_info          => \@tuner_info);
   $c->stash(reception_locations => \@reception_locations);
-  $c->stash(template => 'Root/all_signals_ever_map.tt');
-  $c->stash(current_view => 'HTML');
+  $c->stash(static_path         => $c->config->{static_path});
+  $c->stash(template            => 'Root/all_signals_ever_map.tt');
+  $c->stash(current_view        => 'HTML');
 }
 
 
@@ -570,7 +574,6 @@ sub all_stations_data :Global {
   my $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
                                               'tuner_number' => $tuner_number});
   while(my $signal = $rs->next) {
-$c->log->debug($signal->callsign->callsign.": ".$signal->callsign->latitude.','.$signal->callsign->longitude);
     my ($miles,$azimuth) =
       dist($signal->callsign->latitude.','.$signal->callsign->longitude,
                       $tuner->latitude.','.           $tuner->longitude);
