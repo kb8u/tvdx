@@ -40,7 +40,7 @@ __PACKAGE__->config(
     'View::JSON' => {
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
                            reception_locations black_markers red_markers
-                           yellow_markers green_markers rows cols) ] }
+                           yellow_markers green_markers) ] }
 
 );
 
