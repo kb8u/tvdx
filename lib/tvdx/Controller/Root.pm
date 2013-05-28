@@ -10,12 +10,9 @@ use RRDs;
 use List::MoreUtils 'none';
 use lib '/home/kb8u/dev/tvdx/lib';
 use dist;
-use image_dir;
 use labeled_icon;
 
 BEGIN { extends 'Catalyst::Controller' }
-
-my $RRD_DIR = '/home/kb8u/dev/tvdx/rrd';
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -125,7 +122,7 @@ sub automated_spot :Global {
                     'sig_noise'  => $tv_signal->{'sig_noise'}});
 
     my $rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
-    $rrd_file = "$RRD_DIR/$rrd_file.rrd";
+    $rrd_file = $c->config->{rrd_dir} . "/$rrd_file.rrd";
 
     if (! -r $rrd_file) {
       RRDs::create( $rrd_file, '--start', '-6hours', '--step', '60',
@@ -399,11 +396,11 @@ sub tuner_map_data :Global {
     $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
            . "DX: $miles miles<br>";
 
-    $station{graphs} =  '<a href="http://www.rabbitears.info:3000/signal_graph/'
+    $station{graphs} =  '<a href="' . $c->config->{signal_graph_url}
            . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet
-    if (! -r image_dir() . "/$call.png") {
+    if (! -r $c->config->{image_dir} . "/$call.png") {
       if (! icon_png($call,'white')) {
         $c->response->body("FAIL: Can't create $call.png");
         $c->response->status(403);
@@ -463,6 +460,10 @@ callsign and date range
 
 sub render_graph :Global {
   my ($self,$c,$tuner_id,$tuner_number,$callsign,$start_time,$end_time) = @_;
+
+  my $rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
+  $rrd_file = $c->config->{rrd_dir} . "/$rrd_file.rrd";
+
   $c->stash->{'graph'} = [
     '--lower-limit', '0', '--upper-limit', '100', '--rigid',
     '--start', $start_time,
@@ -470,8 +471,8 @@ sub render_graph :Global {
     '--vertical-label', 'Relative Quality',
     '--height', 300,
     '--width', 600,
-    "DEF:raw_strength=$RRD_DIR/$tuner_id"."_$tuner_number"."_$callsign.rrd:strength:MAX",
-    "DEF:raw_sig_noise=$RRD_DIR/$tuner_id"."_$tuner_number"."_$callsign.rrd:sig_noise:MAX",
+    "DEF:raw_strength=$rrd_file:strength:MAX",
+    "DEF:raw_sig_noise=$rrd_file:sig_noise:MAX",
     # change undefined values to zero
     'CDEF:strength=raw_strength,UN,0,raw_strength,IF',
     'CDEF:sig_noise=raw_sig_noise,UN,0,raw_sig_noise,IF',
@@ -605,11 +606,11 @@ sub all_stations_data :Global {
     $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
       . "DX: $miles miles<br>";
 
-    $station{graphs} =  '<a href="http://www.rabbitears.info:3000/signal_graph/'
+    $station{graphs} =  '<a href="' . $c->config->{signal_graph_url} 
       . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet
-    if (! -r image_dir() . "/$call.png") {
+    if (! -r $c->config->{image_dir} . "/$call.png") {
       if (! icon_png($call,'white')) {
         $c->response->body("FAIL: Can't create $call.png");
         $c->response->status(403);
