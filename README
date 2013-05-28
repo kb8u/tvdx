@@ -5,3 +5,71 @@ it under the same terms as Perl itself.
 --- miscellaneous notes ---
 Created Model with:
 script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static components=TimeStamp dbi:SQLite:tvdx.db on_connect_do="PRAGMA foreign_keys = ON"
+
+--- database notes ---
+
+-- commands to add tuners are:
+-- insert into tuner (tuner_id,latitude,longitude,owner_id,start_date) values ('DEADBEEF',45,-90,'Climax, MI',datetime());
+-- insert into tuner_number(tuner_id,tuner_number,description,start_date) values ('DEADBEEF','tuner0','25 foot dish aimed at Kalamazoo',datetime());
+-- insert into tuner_number(tuner_id,tuner_number,description,start_date) values ('DEADBEEF','tuner1','Rabbit Ears in basement',datetime());
+
+--- commands to create database.  Run sqlite3 tvdx.db and paste in the below:
+
+PRAGMA foreign_keys = ON;
+--
+-- Information for the HDHomeRun unit sending signal reports
+--
+CREATE TABLE tuner (
+  tuner_id TEXT NOT NULL PRIMARY KEY,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  owner_id TEXT NOT NULL,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP
+);
+--
+-- Information on the individual tuners used.
+--
+CREATE TABLE tuner_number (
+tuner_number_key INTEGER NOT NULL PRIMARY KEY,
+tuner_id TEXT NOT NULL,
+tuner_number TEXT NOT NULL,
+description TEXT NOT NULL,
+start_date TIMESTAMP NOT NULL,
+end_date TIMESTAMP,
+FOREIGN KEY(tuner_id) REFERENCES tuner(tuner_id)
+);
+--
+-- Information from the fcc website
+--
+CREATE TABLE fcc (
+  callsign TEXT NOT NULL PRIMARY KEY,
+  rf_channel INTEGER NOT NULL,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP,
+  virtual_channel REAL NOT NULL,
+  city_state TEXT NOT NULL,
+  erp_kw REAL NOT NULL,
+  rcamsl REAL NOT NULL,
+  last_fcc_lookup TIMESTAMP NOT NULL
+);
+--
+-- Most recent Reports from tuners when a signal is detected
+--
+CREATE TABLE signal (
+  signal_key INTEGER NOT NULL PRIMARY KEY,
+  rx_date TIMESTAMP NOT NULL,
+  first_rx_date TIMESTAMP NOT NULL,
+  rf_channel INTEGER NOT NULL,
+  strength REAL NOT NULL,
+  sig_noise REAL NOT NULL,
+  tuner_id TEXT NOT NULL,
+  tuner_number TEXT NOT NULL,
+  callsign TEXT NOT NULL,
+  virtual_channel REAL NOT NULL,
+  FOREIGN KEY(tuner_id) REFERENCES tuner(tuner_id),
+  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
+);
+

@@ -8,8 +8,8 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
+use Geo::Calc::XS;
 use lib '/home/kb8u/dev/tvdx/lib';
-use dist;
 use labeled_icon;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -367,9 +367,14 @@ sub tuner_map_data :Global {
   my (@black_markers,@red_markers,@yellow_markers,@green_markers);
 
   while(my $signal = $rs->next) {
-    my ($miles,$azimuth) =
-      dist($signal->callsign->latitude.','.$signal->callsign->longitude,
-                      $tuner->latitude.','.           $tuner->longitude);
+    my $gc_call = Geo::Calc::XS->new( lat => $signal->callsign->latitude,
+                                      lon => $signal->callsign->longitude,
+                                      units => 'mi');
+    my $gc_tuner = Geo::Calc::XS->new( lat => $tuner->latitude,
+                                       lon => $tuner->longitude,
+                                       units => 'mi');
+    my $miles = $gc_tuner->distance_to($gc_call,-1);
+    my $azimuth = int($gc_tuner->bearing_to($gc_call));
 
     my %station;
 
@@ -575,9 +580,15 @@ sub all_stations_data :Global {
   my $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
                                               'tuner_number' => $tuner_number});
   while(my $signal = $rs->next) {
-    my ($miles,$azimuth) =
-      dist($signal->callsign->latitude.','.$signal->callsign->longitude,
-                      $tuner->latitude.','.           $tuner->longitude);
+    my $gc_call = Geo::Calc::XS->new( lat => $signal->callsign->latitude,
+                                      lon => $signal->callsign->longitude,
+                                      units => 'mi');
+    my $gc_tuner = Geo::Calc::XS->new( lat => $tuner->latitude,
+                                       lon => $tuner->longitude,
+                                       units => 'mi');
+    my $miles = $gc_tuner->distance_to($gc_call,-1);
+    my $azimuth = int($gc_tuner->bearing_to($gc_call));
+
     my %station;
 
     $station{tuner_id} = $tuner_id;
