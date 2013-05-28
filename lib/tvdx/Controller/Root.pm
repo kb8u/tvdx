@@ -9,8 +9,7 @@ use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
 use Geo::Calc::XS;
-use lib '/home/kb8u/dev/tvdx/lib';
-use labeled_icon;
+use GD;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -405,8 +404,9 @@ sub tuner_map_data :Global {
            . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet
-    if (! -r $c->config->{image_dir} . "/$call.png") {
-      if (! icon_png($call,'white')) {
+    my $png = $c->config->{image_dir} . "/$call.png";
+    if (! -r $png) {
+      if (! _icon_png($call,'white',$png)) {
         $c->response->body("FAIL: Can't create $call.png");
         $c->response->status(403);
         return 0;
@@ -559,6 +559,42 @@ sub _check_tuners {
 }
 
 
+# create a rectangle filled with $background_color contaning $text
+sub _icon_png {
+  my ($text,$background_color,$out_file) = @_;
+
+  # create a new image
+  my $width = 2 + length($text) * 5;
+  my $im = new GD::Image($width,9);
+
+  # allocate some colors
+  my $white = $im->colorAllocate(255,255,255);
+  my $black = $im->colorAllocate(0,0,0);
+  my $red = $im->colorAllocate(255,0,0);
+  my $yellow = $im->colorAllocate(255,255,0);
+  my $green = $im->colorAllocate(0,0,255);
+
+  my %color_for = ( 'white' => $white,
+                    'black' => $black,
+                    'red'   => $red,
+                    'yellow'=> $yellow,
+                    'green' => $green, );
+
+  # fill with background color
+  $im->fillToBorder(5,5,$color_for{$background_color},$white);
+
+  # write text
+  $im->string(gdTinyFont,1,1,$text,$black);
+
+  open ICON, "> $out_file" or return 0;
+  print ICON $im->png;
+  close ICON;
+
+  return 1;
+}
+
+
+
 =head2 all_stations_data
 
 Retreive all stations ever received by tuners
@@ -621,8 +657,9 @@ sub all_stations_data :Global {
       . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
 
     # create Callsign icon if it doesn't exist yet
-    if (! -r $c->config->{image_dir} . "/$call.png") {
-      if (! icon_png($call,'white')) {
+    my $png = $c->config->{image_dir} . "/$call.png";
+    if (! -r $png) {
+      if (! _icon_png($call,'white',$png)) {
         $c->response->body("FAIL: Can't create $call.png");
         $c->response->status(403);
         return 0;
