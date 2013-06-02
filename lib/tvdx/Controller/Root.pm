@@ -292,12 +292,16 @@ sub many_tuner_map :Global {
     push @reception_locations,   $tuner->owner_id
                                . " "
                                . $tn->description
-                               . "<p><a href=\"http://www.rabbitears.info:3000/one_tuner_map/$tuner_id/$tuner_number\">map for just this location</a>";
+                               . '<p><a href="' 
+                               . $c->config->{root_url}
+                               . "/one_tuner_map/$tuner_id/$tuner_number"
+                               . '">map for just this location</a>';
   }
 
   $c->stash(tuner_info          => \@tuner_info);
   $c->stash(reception_locations => \@reception_locations);
-  $c->stash(static_path         => $c->config->{static_path});
+  $c->stash(static_url          => $c->config->{static_url});
+  $c->stash(root_url            => $c->config->{root_url});
   $c->stash(template            => 'Root/many_tuner_map.tt');
   $c->stash(current_view        => 'HTML');
 
@@ -329,7 +333,8 @@ sub one_tuner_map :Global {
 
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);
-  $c->stash(static_path  => $c->config->{static_path});
+  $c->stash(root_url     => $c->config->{root_url});
+  $c->stash(static_url   => $c->config->{static_url});
   $c->stash(template     => 'Root/one_tuner_map.tt');
   $c->stash(current_view => 'HTML');
 
@@ -400,8 +405,9 @@ sub tuner_map_data :Global {
     $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
            . "DX: $miles miles<br>";
 
-    $station{graphs} =  '<a href="' . $c->config->{signal_graph_url}
-           . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
+    $station{graphs} =  '<a href="' . $c->config->{root_url}
+           . "/signal_graph/$tuner_id/$tuner_number/$call"
+           . '">Signal strength graphs</a><br>';
 
     # create Callsign icon if it doesn't exist yet
     my $png = $c->config->{image_dir} . "/$call.png";
@@ -450,7 +456,8 @@ sub signal_graph  :Global {
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);
   $c->stash(callsign     => $callsign);
-  $c->stash(static_path  => $c->config->{static_path});
+  $c->stash(static_url   => $c->config->{static_url});
+  $c->stash(root_url     => $c->config->{root_url});
   $c->stash(template     => 'Root/signal_graph.tt');
   $c->stash(current_view => 'HTML');
 }
@@ -530,7 +537,8 @@ sub all_stations_ever_map :Global {
 
   $c->stash(tuner_info          => \@tuner_info);
   $c->stash(reception_locations => \@reception_locations);
-  $c->stash(static_path         => $c->config->{static_path});
+  $c->stash(root_url            => $c->config->{root_url});
+  $c->stash(static_url          => $c->config->{static_url});
   $c->stash(template            => 'Root/all_signals_ever_map.tt');
   $c->stash(current_view        => 'HTML');
 }

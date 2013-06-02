@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <link rel="shortcut icon" href="[% static_path %]/favicon.ico">
+    <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
     <title>Signal graphs for [% callsign %] at [% tuner.owner_id %] on [% tuner_number.description %]</title>
     <script type="text/javascript">
        function reFresh() { location.reload(true) }
@@ -13,15 +13,15 @@
     <h2>This page refreshes every 5 minutes.<h2><br>
     <hr>
     <h1>Hourly Graph</h1><br>
-      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-6hours/now"><p>
+      <img src="[% root_url %]/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-6hours/now"><p>
     <h1>Daily Graph</h1><br>
-      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-32hours/now"><p>
+      <img src="[% root_url %]/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-32hours/now"><p>
     <h1>Weekly Graph</h1><br>
-      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-10days/now"><p>
+      <img src="[% root_url %]/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-10days/now"><p>
     <h1>Monthly Graph</h1><br>
-      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-6weeks/now"><p>
+      <img src="[% root_url %]/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-6weeks/now"><p>
     <h1>Yearly Graph</h1><br>
-      <img src="/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-64weeks/now"><p>
+      <img src="[% root_url %]/render_graph/[% tuner.tuner_id %]/[% tuner_number.tuner_number %]/[% callsign %]/-64weeks/now"><p>
   </body>
 </html>
 

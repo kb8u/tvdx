@@ -86,7 +86,7 @@ function addPathBatch(paths,color,t_id,t_num,t_lat,t_lng) {
 
     // loop through pathBatch and see if callsign already exists
     if (! inPathBatch(callsign)) {
-      var iconPath = '/static/images/' + callsign + '.png';
+      var iconPath = static_url + '/images/' + callsign + '.png';
       iconBatch[callsign] =
         new google.maps.Marker({map: map,
                                 position: latlng,
@@ -133,7 +133,7 @@ function remove_icon(callsign) {
 function updatePaths() {
   for(var i=0; i<tuner_id.length; i++) {
     new Ajax.Request(
-      "/tuner_map_data/" + tuner_id[i] + '/' + tuner_number[i],
+      root_url + "/tuner_map_data/" + tuner_id[i] + '/' + tuner_number[i],
       {
         method:'get',
         onSuccess: function(responseJSON) { 
