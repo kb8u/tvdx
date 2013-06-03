@@ -50,6 +50,7 @@ SCAN: while(1) {
     if ($_ =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)/) {
       # add all information for previous channel unless this is the first
       if ($freq) {
+        $scan->{rf_channel}->{$channel}->{modulation} = $modulation,
         $scan->{rf_channel}->{$channel}->{strength} = $strength,
         $scan->{rf_channel}->{$channel}->{sig_noise} = $sig_noise,
         $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
@@ -81,6 +82,7 @@ SCAN: while(1) {
   }
   # get last channel in scan
   if ($freq) {
+    $scan->{rf_channel}->{$channel}->{modulation} = $modulation,
     $scan->{rf_channel}->{$channel}->{strength} = $strength,
     $scan->{rf_channel}->{$channel}->{sig_noise} = $sig_noise,
     $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
