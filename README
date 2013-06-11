@@ -1,4 +1,4 @@
-Copyright 2011 by Russell Dwarshuis.
+Copyright 2013 by Russell Dwarshuis.
 This application is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
@@ -72,4 +72,24 @@ CREATE TABLE signal (
   FOREIGN KEY(tuner_id) REFERENCES tuner(tuner_id),
   FOREIGN KEY(callsign) REFERENCES fcc(callsign)
 );
-
+--
+-- TSID received from a station
+--
+CREATE TABLE tsid (
+  tsid_key INTEGER NOT NULL PRIMARY KEY,
+  rx_date TIMESTAMP NOT NULL,
+  tsid INTEGER NOT NULL,
+  callsign TEXT NOT NULL,
+  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
+);
+--
+-- Virtual channels received in PSIP
+--
+CREATE TABLE virtual (
+  virtual_key INTEGER NOT NULL PRIMARY KEY,
+  rx_date TIMESTAMP NOT NULL,
+  name TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  callsign TEXT NOT NULL,
+  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
+);

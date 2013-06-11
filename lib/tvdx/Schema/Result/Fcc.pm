@@ -148,8 +148,38 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 tsids
 
-# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-05-25 10:07:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7Vxe/OvsizytoIm/DnsVDw
+Type: has_many
+
+Related object: L<tvdx::Schema::Result::Tsid>
+
+=cut
+
+__PACKAGE__->has_many(
+  "tsids",
+  "tvdx::Schema::Result::Tsid",
+  { "foreign.callsign" => "self.callsign" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 virtuals
+
+Type: has_many
+
+Related object: L<tvdx::Schema::Result::Virtual>
+
+=cut
+
+__PACKAGE__->has_many(
+  "virtuals",
+  "tvdx::Schema::Result::Virtual",
+  { "foreign.callsign" => "self.callsign" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07025 @ 2013-06-10 21:26:25
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yiXeIQPys4veLvSpUNUlNA
 
 1;
