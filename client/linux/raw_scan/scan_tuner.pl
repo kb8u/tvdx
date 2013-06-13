@@ -56,6 +56,8 @@ SCAN: while(1) {
         $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
         $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
         $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
+        # place holder for when local reporter knows the real callsign
+        $scan->{rf_channel}->{$channel}->{reporter_callsign} = '';
       }
       $freq = $1;
       $channel = $2;
@@ -88,6 +90,8 @@ SCAN: while(1) {
     $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
     $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
     $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
+    # place holder for when local reporter knows the real callsign
+    $scan->{rf_channel}->{$channel}->{reporter_callsign} = '';
   }
   print "scan finished.\n" if $DEBUG;
 
