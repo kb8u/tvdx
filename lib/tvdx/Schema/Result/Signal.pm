@@ -166,7 +166,7 @@ __PACKAGE__->belongs_to(
 =head2 color
 
 Returns 'red' for signal strength < 75
-Returns 'yellow' for signal strentgh betwee 75 and 85
+Returns 'yellow' for signal strentgh between 75 and 85
 Returns 'green' for signal strength > 85
 
 =cut
