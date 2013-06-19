@@ -15,7 +15,7 @@ BEGIN { extends 'Catalyst::Controller' }
 
 #
 # Sets the actions in this controller to be registered with no prefix
-# so they function identically to actions created in MyApp.pm
+# so they function identically to actions created in tvdx.pm
 #
 __PACKAGE__->config(namespace => '');
 
@@ -38,7 +38,7 @@ The root page (/)
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
 
-    $c->response->body( "Under construction, come back soon!" );
+    $c->response->body( "A map showing all locations is at http://www.rabbitears.info/all_tuners" );
     $c->response->status(202);
 }
 
@@ -180,8 +180,8 @@ sub _spot_data_ok {
   }
 
   # unresolveable call in FCC database?  WWPX2 is an alias for
-  # WWPX repeater in DC (on same channel)
-  if (   ($spot->{'callsign'} ne 'WWPX2')
+  # WWPX repeater in DC on same channel, KRMA47 is repeater also
+  if (   ($spot->{'callsign'} ne 'WWPX2') && ($spot->{'callsign'} ne 'KRMA47')
       && ($spot->{'callsign'} !~ /^[CWKX](\d\d)*[A-Z]{2,3}$/)) {
     return 0;
   }
