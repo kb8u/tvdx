@@ -41,11 +41,59 @@ sub raw_spot :Global {
   my $now_epoch = time;
 
   # xml with information from (client) scanlog.pl
-This needs changing....
-  my $href = XMLin($c->request->params->{'xml'}, ForceArray => ['tv_signal'] );
+  my $href = XMLin($c->request->params->{'xml'}, ForceArray => ['rf_channel'] );
 
+  my ($junk,$tuner_id,$tuner_number) = split /_/, $href->{'user_id'};
 
-  $c->response->body('Woo-woo!');
+  # log if tuner isn't found
+  if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
+    open L, ">>/tmp/unknown_tuner" or return 0;
+    print L "$sqlite_now: tuner_id $tuner_id not found in tuner table\n";
+    close L;
+    $c->response->body("FAIL: Tuner $tuner_id is not registered with site");
+    $c->response->status(403);
+    return;
+  }
+
+  RAWSPOT: foreach my $raw_channel (@{$href->{'rf_channel'}}) {
+    my $channel           = $raw_channel->{name};
+    my $modulation        = $raw_channel->{modulation};
+    my $strength          = $raw_channel->{strength};
+    my $sig_noise         = $raw_channel->{sig_noise};
+    my $symbol_err        = $raw_channel->{symbol_err};
+    my $tsid              = $raw_channel->{tsid};
+    my %virtual           = $raw_channel->{virtual};
+    my $reporter_callsign = $raw_channel->{reporter_callsign};
+
+    # return callsign or undef if it can't be determined and a virtual
+    # channel for legacy column in fcc table
+    ($callsign,$fcc_virtual) = _find_call($raw_channel);
+    $c->log->debug("channel $channel:found callsign: $callsign\n");
+
+    # record signal strength and possibly sig_noise if no call was found
+    if (! defined $callsign) {
+      _rrd_update_nocall($raw_channel);
+      next RAWSPOT;
+    }
+
+    # add or update fcc table if needed
+    if (! $self->_call_current($c,$callsign,$channel,$virtual_channel)) {
+      next RAWSPOT;
+    }
+    # add or update virtual channel table
+    if (! $self->_virtual_current($c,$callsign,$raw_channel)) {
+      next RAWSPOT;
+    }
+    # add or update tsid table if needed
+    if (! $self->_tsid_current($c,$callsign,$raw_channel)) {
+      next RAWSPOT;
+    }
+    # update rrd file and Signal table
+    _signal_update($c,$tuner_id,$tuner_number,$callsign,$raw_channel);
+  }
+
+  $c->response->body('OK');
+  $c->response->status(202);
 }
 
 
