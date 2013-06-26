@@ -67,7 +67,7 @@ sub raw_spot :Global {
 
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table
-    ($callsign,$fcc_virtual) = _find_call($raw_channel);
+    my ($callsign,$fcc_virtual) = _find_call($raw_channel);
     $c->log->debug("channel $channel:found callsign: $callsign\n");
 
     # record signal strength and possibly sig_noise if no call was found
@@ -77,7 +77,7 @@ sub raw_spot :Global {
     }
 
     # add or update fcc table if needed
-    if (! $self->_call_current($c,$callsign,$channel,$virtual_channel)) {
+    if (! $self->_call_current($c,$callsign,$channel,$fcc_virtual)) {
       next RAWSPOT;
     }
     # add or update virtual channel table
@@ -95,6 +95,36 @@ sub raw_spot :Global {
   $c->response->body('OK');
   $c->response->status(202);
 }
+
+
+# Check or update (if > 1 day old) or create virtual table entry for callsign
+# Returns 1 on success, 0 on failure.
+sub _virtual_current {
+  my ($self,$c,$callsign,$raw_channel) = @_;
+
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
+
+  # process each virtual channel
+  for my $v_channel (keys %{$raw_channel->{virtual}}) {
+    my ($v_row) = $c->model('DB::Virtual')
+                    ->find({'callsign' => $callsign,
+                            'channel' =>$raw_channel->{virtual}->{$v_channel}});
+
+    # all new entry?
+    if (!$v_row) {
+      # create new row
+      return 1;
+    }
+
+    # check if last reception date is older than a day
+    if (DateTime::Format::SQLite->parse_datetime($v_row->rx_date)<$yesterday) {
+      # update existing row
+      return 1;
+    }
+  }
+}
+
+  
 
 
 =head1 AUTHOR
