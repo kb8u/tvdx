@@ -70,7 +70,7 @@ Russell Dwarshuis, KB8U
 
 =head1 LICENSE
 
-Copyright 2011 by Russell Dwarshuis.
+Copyright 2013 by Russell Dwarshuis.
 This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 
