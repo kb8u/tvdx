@@ -4,10 +4,11 @@ use namespace::autoclean;
 use DateTime;
 use DateTime::Format::SQLite;
 use DateTime::Format::HTTP;
-use XML::Simple;
+use JSON;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
+use Data::Dumper;
 
 
 BEGIN { extends 'Catalyst::Controller'; }
@@ -40,8 +41,9 @@ sub raw_spot :Global {
   my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
   my $now_epoch = time;
 
-  # xml with information from (client) scanlog.pl
-  my $href = XMLin($c->request->params->{'xml'}, ForceArray => ['rf_channel'] );
+  # json with information from (client) scanlog.pl
+BUG: doesn't work, try using Catalyst::Controller::Rest to deserialize json
+  my $href = decode_json($c->request->params->{'json'});
 
   my ($junk,$tuner_id,$tuner_number) = split /_/, $href->{'user_id'};
 
@@ -54,6 +56,7 @@ sub raw_spot :Global {
     $c->response->status(403);
     return;
   }
+print Dumper $href;
 
   RAWSPOT: foreach my $raw_channel (@{$href->{'rf_channel'}}) {
     my $channel           = $raw_channel->{name};
