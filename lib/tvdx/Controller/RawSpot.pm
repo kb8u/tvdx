@@ -4,14 +4,13 @@ use namespace::autoclean;
 use DateTime;
 use DateTime::Format::SQLite;
 use DateTime::Format::HTTP;
-use JSON;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
 use Data::Dumper;
 
 
-BEGIN { extends 'Catalyst::Controller'; }
+BEGIN { extends 'Catalyst::Controller::REST'; }
 
 =head1 NAME
 
@@ -34,7 +33,9 @@ Accept raw spots from client and convert into a data structure Perl can use.
 
 =cut
 
-sub raw_spot :Global {
+sub raw_spot :Global :ActionClass('REST') {}
+
+sub raw_spot_POST :Global {
   my ( $self, $c ) = @_;
 
   # the current time formatted to sqlite format (UTC time zone)
@@ -42,8 +43,7 @@ sub raw_spot :Global {
   my $now_epoch = time;
 
   # json with information from (client) scanlog.pl
-BUG: doesn't work, try using Catalyst::Controller::Rest to deserialize json
-  my $href = decode_json($c->request->params->{'json'});
+  my $href = $c->request->data->{'json'};
 
   my ($junk,$tuner_id,$tuner_number) = split /_/, $href->{'user_id'};
 
