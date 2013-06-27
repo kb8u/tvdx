@@ -10,7 +10,7 @@ use List::MoreUtils 'none';
 use Data::Dumper;
 
 
-BEGIN { extends 'Catalyst::Controller::REST'; }
+BEGIN { extends 'Catalyst::Controller::REST' }
 
 =head1 NAME
 
@@ -43,9 +43,9 @@ sub raw_spot_POST :Global {
   my $now_epoch = time;
 
   # json with information from (client) scanlog.pl
-  my $href = $c->request->data->{'json'};
+  my $json = $c->req->data;
 
-  my ($junk,$tuner_id,$tuner_number) = split /_/, $href->{'user_id'};
+  my ($junk,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
 
   # log if tuner isn't found
   if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
@@ -56,10 +56,9 @@ sub raw_spot_POST :Global {
     $c->response->status(403);
     return;
   }
-print Dumper $href;
 
-  RAWSPOT: foreach my $raw_channel (@{$href->{'rf_channel'}}) {
-    my $channel           = $raw_channel->{name};
+  RAWSPOT: foreach my $channel (keys %{$json->{'rf_channel'}}) {
+    my $raw_channel       = $json->{'rf_channel'}->{$channel};
     my $modulation        = $raw_channel->{modulation};
     my $strength          = $raw_channel->{strength};
     my $sig_noise         = $raw_channel->{sig_noise};
@@ -67,6 +66,9 @@ print Dumper $href;
     my $tsid              = $raw_channel->{tsid};
     my %virtual           = $raw_channel->{virtual};
     my $reporter_callsign = $raw_channel->{reporter_callsign};
+$c->log->debug("channel: $channel strength: $strength");
+next RAWSPOT;
+BUG: # subroutines to be written....
 
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table

@@ -6,7 +6,7 @@
 
 use strict 'vars';
 use LWP;
-use XML::Simple;
+use JSON;
 use LWP::Simple;
 use Data::Dumper;
 
@@ -102,16 +102,13 @@ SCAN: while(1) {
     next SCAN;
   }
 
-  my $xml = XMLout($scan);;
-print Dumper $scan;
-print "\n\n\n";
-print "$xml\n";
-exit;
+  my $j = JSON->new->allow_nonref;
+  my $json = $j->pretty->encode($scan);
 
   print "Sending results to $SPOT_URL\n" if $DEBUG;
   my $req = HTTP::Request->new(POST => $SPOT_URL);
-  $req->content_type('application/x-www-form-urlencoded');
-  $req->content("xml=$xml");
+  $req->content_type('application/json');
+  $req->content($json);
   my $res = $ua->request($req);
   
   if ($DEBUG) {
