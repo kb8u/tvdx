@@ -60,7 +60,7 @@ sub raw_spot_POST :Global {
   }
 
   RAWSPOT: foreach my $channel (keys %{$json->{'rf_channel'}}) {
-    my $channel_details       = $json->{'rf_channel'}->{$channel};
+    my $channel_details   = $json->{'rf_channel'}->{$channel};
     my $modulation        = $channel_details->{modulation};
     my $strength          = $channel_details->{strength};
     my $sig_noise         = $channel_details->{sig_noise};
@@ -72,7 +72,8 @@ $c->log->debug("#####channel: $channel strength: $strength");
 
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table
-    my ($callsign,$fcc_virtual) = _find_call($channel_details,$channel);
+    my ($callsign,$fcc_virtual)
+      = $self->_find_call($c,$channel_details,$channel);
 if (defined $callsign) {
     $c->log->debug("#####channel $channel:found callsign: $callsign\n");
 }
@@ -104,9 +105,11 @@ next RAWSPOT;
 }
 
 
-# determine callsign from raw channel information
+# determine callsign from raw channel information.  Updates (if > 1 day old)
+# rabbitears_call or rabbitears_tsid tables. 
 sub _find_call {
-  my ($channel_details,$tuner_channel) = @_;
+  my ($self,$c,$channel_details,$tuner_channel) = @_;
+
   my ($call,$fcc_channel,
       $city,$state,
       $rcamsl,$erp,
@@ -114,13 +117,40 @@ sub _find_call {
       $w_or_e,$lon_deg,$lon_min,$lon_sec,
       $digital_tsid,$analog_tsid,$observed_tsid);
 
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
+
   # try tsid (excepting 0, 1 and greater than 32766) and channel
   if (   $channel_details->{tsid} 
       && $channel_details->{tsid} > 1
       && $channel_details->{tsid} < 32767) {
-######## this works, but is very slow and hammers on rabbitears.
-######## try cacheing it, or use DBIx to query directly
-    my $rlu = get($RABBITEARS_TVQ . "tsid=$channel_details->{tsid}");
+
+    # update or create rabbitears_tsid if entry is old or missing
+    my ($re_tsid_find) = $c->model('DB::RabbitearsTsid')->find({'tsid'=>$channel_details->{tsid}});
+    my $rlu;
+    if (   (! $re_tsid_find)
+        || (DateTime::Format::SQLite->parse_datetime(
+              $re_tsid_find->last_re_lookup) < $yesterday)) {
+      $rlu = get($RABBITEARS_TVQ . "tsid=$channel_details->{tsid}");
+      if (defined $rlu) {
+        # the current time formatted to sqlite format (UTC time zone)
+        my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+        # create or update rabbitears_tsid table
+        if (! $re_tsid_find) {
+          $c->model('DB::RabbitearsTsid')->create({
+             'tsid' => $channel_details->{tsid},
+             're_rval' => $rlu,
+             'last_re_lookup' => $sqlite_now,});
+        }
+        else {
+          $c->model('DB::RabbitearsTsid')->update({
+             'last_re_lookup' => $sqlite_now, });
+        }
+      }
+    }
+    else {
+      $rlu = $re_tsid_find->re_rval;
+
+    }
     if (defined $rlu) {
       foreach my $s (split /\n/, $rlu) {
         my ($s_call,$s_fcc_channel,
@@ -128,7 +158,7 @@ sub _find_call {
             $s_rcamsl,$s_erp,
             $s_n_or_s,$s_lat_deg,$s_lat_min,$s_lat_sec,
             $s_w_or_e,$s_lon_deg,$s_lon_min,$s_lon_sec,
-            $s_digital_tsid,$s_analog_tsid,$s_observed_tsid) = split /\s*\|/,$s;
+            $s_digital_tsid,$s_analog_tsid,$s_observed_tsid)=split /\s*\|/,$s;
         if ($tuner_channel == $s_fcc_channel) {
           ($call,$fcc_channel,
            $city,$state,
@@ -148,7 +178,8 @@ sub _find_call {
       }
     }
   }
-  # else try callsign and channel
+
+  # else no tsid so try callsign and channel
   else {
   }
   if (defined $call && defined $fcc_channel) {
@@ -169,9 +200,10 @@ sub _virtual_current {
 
   # process each virtual channel
   for my $v_channel (keys %{$channel_details->{virtual}}) {
-    my ($v_row) = $c->model('DB::Virtual')
-                    ->find({'callsign' => $callsign,
-                            'channel' =>$channel_details->{virtual}->{$v_channel}});
+    my ($v_row) =
+      $c->model('DB::Virtual')->find(
+        {'callsign' => $callsign,
+         'channel'  => $channel_details->{virtual}->{$v_channel}});
 
     # all new entry?
     if (!$v_row) {
