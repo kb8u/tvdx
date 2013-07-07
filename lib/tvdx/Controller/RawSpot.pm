@@ -115,6 +115,11 @@ sub _find_call {
     return (undef,undef);
   }
 
+  # the current time formatted to sqlite format (UTC time zone)
+  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
+
   # determine virtual channel for fcc table
   my $fcc_virt = $tuner_channel;  # use channel number if there are no virtuals
   my ($some_key) = keys %{$channel_details->{virtual}}; # any subchannel will do
@@ -129,8 +134,6 @@ sub _find_call {
       n_or_s lat_deg lat_min lat_sec w_or_e lon_deg lon_min lon_sec
       digital_tsid analog_tsid observed_tsid);
 
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
-
   # try tsid (excepting 0, 1 and greater than 32766) and channel
   if (   $channel_details->{tsid} 
       && $channel_details->{tsid} > 1
@@ -144,8 +147,6 @@ sub _find_call {
               $re_tsid_find->last_re_lookup) < $yesterday)) {
       $rlu = get($RABBITEARS_TVQ . "tsid=$channel_details->{tsid}");
       if (defined $rlu) {
-        # the current time formatted to sqlite format (UTC time zone)
-        my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
         # create or update rabbitears_tsid table
         if (! $re_tsid_find) {
           $c->model('DB::RabbitearsTsid')->create({
@@ -154,14 +155,13 @@ sub _find_call {
              'last_re_lookup' => $sqlite_now,});
         }
         else {
-          $c->model('DB::RabbitearsTsid')->update({
-             'last_re_lookup' => $sqlite_now, });
+          $c->model('DB::RabbitearsTsid')
+            ->update({'last_re_lookup' => $sqlite_now});
         }
       }
     }
     else {
       $rlu = $re_tsid_find->re_rval;
-
     }
     if (defined $rlu) {
       foreach my $s (split /\n/, $rlu) {
@@ -178,7 +178,52 @@ sub _find_call {
 
   # else no tsid so try callsign and channel
   else {
+    # loop over virtual channels, look for something resembling a callsign
+    VIRT_CHAN: for my $program (keys %{$channel_details->{virtual}}) {
+      next if $channel_details->{virtual}{$program}{name} !~ /^([CWKX](\d\d)*[A-Z]{2,3})/;
+      my $possible_call = uc $1;
+
+      # update or create rabbitears_call if entry is old or missing
+      my ($re_call_find) = $c->model('DB::RabbitearCall')
+                             ->find({'callsign' => $possible_call});
+      my $rlu;
+      if (   (! $re_call_find)
+          || (DateTime::Format::SQLite->parse_datetime(
+                $re_call_find->last_re_lookup) < $yesterday)) {
+        $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
+        if (defined $rlu) {
+          # create or update rabbitears_call table
+          if (! $re_call_find) {
+            $c->model('DB::RabbitearCall')->create({
+               'callsign' => $possible_call,
+               're_rval' => $rlu,
+               'last_re_lookup' => $sqlite_now,});
+          }
+          else {
+            $c->model('DB::RabbitearCall')
+              ->update({'last_re_lookup' => $sqlite_now});
+          }
+        }
+      }
+      else {
+        $rlu = $re_call_find->re_rval;
+      }
+      if (defined $rlu) {
+        foreach my $s (split /\n/, $rlu) {
+          my %rlu_values;
+          @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+          if ($tuner_channel == $rlu_values{fcc_channel}) {
+            %transmitter = %rlu_values;
+            $transmitter{fcc_virt} = $fcc_virt;
+            last VIRT_CHAN;
+          }
+        }
+      }
+    }
   }
+
+  # update fcc table with %transmitter, if needed
+
   if (defined $transmitter{call} && defined $transmitter{fcc_channel}) {
     return ($transmitter{call},$transmitter{fcc_virt});
   }
