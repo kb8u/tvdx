@@ -75,7 +75,7 @@ $c->log->debug("#####channel: $channel strength: $strength");
     my ($callsign,$fcc_virtual)
       = $self->_find_call($c,$channel_details,$channel);
 if (defined $callsign) {
-    $c->log->debug("#####channel $channel:found callsign: $callsign\n");
+    $c->log->debug("#####channel $channel:found callsign: $callsign, virtual: $fcc_virtual\n");
 }
 next RAWSPOT;
     # record signal strength and possibly sig_noise if no call was found
@@ -109,6 +109,18 @@ next RAWSPOT;
 # rabbitears_call or rabbitears_tsid tables. 
 sub _find_call {
   my ($self,$c,$channel_details,$tuner_channel) = @_;
+
+  # nothing to look up if there's no modulation
+  if ($channel_details->{modulation} eq 'none') {
+    return (undef,undef);
+  }
+
+  # determine virtual channel for fcc table
+  my $fcc_virt = $tuner_channel;  # use channel number if there are no virtuals
+  my ($some_key) = keys %{$channel_details->{virtual}}; # any subchannel will do
+  if (exists $channel_details->{virtual}{$some_key}{channel}) {
+    ($fcc_virt) = split /\./,$channel_details->{virtual}{$some_key}{channel};
+  }
 
   my ($call,$fcc_channel,
       $city,$state,
@@ -183,10 +195,10 @@ sub _find_call {
   else {
   }
   if (defined $call && defined $fcc_channel) {
-    return ($call,$fcc_channel);
+    return ($call,$fcc_virt);
   }
   else {
-    return undef
+    return (undef,undef);
   }
 }
 
