@@ -122,12 +122,12 @@ sub _find_call {
     ($fcc_virt) = split /\./,$channel_details->{virtual}{$some_key}{channel};
   }
 
-  my ($call,$fcc_channel,
-      $city,$state,
-      $rcamsl,$erp,
-      $n_or_s,$lat_deg,$lat_min,$lat_sec,
-      $w_or_e,$lon_deg,$lon_min,$lon_sec,
-      $digital_tsid,$analog_tsid,$observed_tsid);
+  # transmitter power, location, etc.  Order is from rabbitears.info lookup
+  # fcc_virt key, value is also in %transimtter
+  my %transmitter;
+  my @rabbitears_keys = qw(call fcc_channel city state rcamsl erp
+      n_or_s lat_deg lat_min lat_sec w_or_e lon_deg lon_min lon_sec
+      digital_tsid analog_tsid observed_tsid);
 
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
@@ -165,26 +165,11 @@ sub _find_call {
     }
     if (defined $rlu) {
       foreach my $s (split /\n/, $rlu) {
-        my ($s_call,$s_fcc_channel,
-            $s_city,$s_state,
-            $s_rcamsl,$s_erp,
-            $s_n_or_s,$s_lat_deg,$s_lat_min,$s_lat_sec,
-            $s_w_or_e,$s_lon_deg,$s_lon_min,$s_lon_sec,
-            $s_digital_tsid,$s_analog_tsid,$s_observed_tsid)=split /\s*\|/,$s;
-        if ($tuner_channel == $s_fcc_channel) {
-          ($call,$fcc_channel,
-           $city,$state,
-           $rcamsl,$erp,
-           $n_or_s,$lat_deg,$lat_min,$lat_sec,
-           $w_or_e,$lon_deg,$lon_min,$lon_sec,
-           $digital_tsid,$analog_tsid,$observed_tsid)
-          =
-          ($s_call,$s_fcc_channel,
-           $s_city,$s_state,
-           $s_rcamsl,$s_erp,
-           $s_n_or_s,$s_lat_deg,$s_lat_min,$s_lat_sec,
-           $s_w_or_e,$s_lon_deg,$s_lon_min,$s_lon_sec,
-           $s_digital_tsid,$s_analog_tsid,$s_observed_tsid);
+        my %rlu_values;
+        @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+        if ($tuner_channel == $rlu_values{fcc_channel}) {
+          %transmitter = %rlu_values;
+          $transmitter{fcc_virt} = $fcc_virt;
           last;
         }
       }
@@ -194,8 +179,8 @@ sub _find_call {
   # else no tsid so try callsign and channel
   else {
   }
-  if (defined $call && defined $fcc_channel) {
-    return ($call,$fcc_virt);
+  if (defined $transmitter{call} && defined $transmitter{fcc_channel}) {
+    return ($transmitter{call},$transmitter{fcc_virt});
   }
   else {
     return (undef,undef);
