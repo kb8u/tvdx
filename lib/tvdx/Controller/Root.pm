@@ -254,7 +254,7 @@ sub _call_current {
 ### new record in that case.  DB needs to be changed to two primary keys???
     # else just update
     else {
-      $c->model('DB::Fcc')->update({'last_fcc_lookup' => $sqlite_now, });
+      $fcc_call->update({'last_fcc_lookup' => $sqlite_now, });
       return 1;
     }
   }
@@ -452,6 +452,16 @@ sub signal_graph  :Global {
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
   my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
                                                'tuner_number'=>$tuner_number});
+
+  my $entry = $c->model('DB::Signal')
+                ->find({'tuner_id' => $tuner_id,
+                        'tuner_number' => $tuner_number,
+                        'callsign' => $callsign,});
+  if (! $entry) {
+    $c->response->body( "No reception reports for $callsign from $tuner_id $tuner_number" );
+    $c->response->status(404);
+    return;
+  }
  
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);

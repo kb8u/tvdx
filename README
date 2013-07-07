@@ -56,6 +56,24 @@ CREATE TABLE fcc (
   last_fcc_lookup TIMESTAMP NOT NULL
 );
 --
+-- Copy of TSID query from rabbitears.info.  Avoids hammering the server
+--
+CREATE TABLE rabbitears_tsid (
+  re_tsid_key INTEGER NOT NULL PRIMARY KEY,
+  tsid INTEGER NOT NULL,
+  re_rval TEXT,
+  last_re_lookup TIMESTAMP NOT NULL
+);
+--
+-- Copy of CALL query from rabbitears.info.  Avoids hammering the server
+--
+CREATE TABLE rabbitears_call (
+  re_call_key INTEGER NOT NULL PRIMARY KEY,
+  callsign TEXT NOT NULL,
+  re_rval TEXT,
+  last_re_lookup TIMESTAMP NOT NULL
+);
+--
 -- Most recent Reports from tuners when a signal is detected
 --
 CREATE TABLE signal (
