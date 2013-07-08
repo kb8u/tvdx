@@ -81,14 +81,11 @@ sub raw_spot_POST :Global {
     }
 
     # add or update virtual channel table
-    if (! $self->_virtual_current($c,$callsign,$channel_details)) {
-      next RAWSPOT;
-    }
-next RAWSPOT;
+    $self->_virtual_current($c,$callsign,$channel_details);
+
     # add or update tsid table if needed
-    if (! $self->_tsid_current($c,$callsign,$channel_details)) {
-      next RAWSPOT;
-    }
+    $self->_tsid_current($c,$callsign,$channel_details);
+ next RAWSPOT; 
     # update rrd file and Signal table
     _signal_update($c,$tuner_id,$tuner_number,$callsign,$channel_details);
   }
@@ -133,7 +130,8 @@ sub _find_call {
       && $channel_details->{tsid} < 32767) {
 
     # update or create rabbitears_tsid if entry is old or missing
-    my ($re_tsid_find) = $c->model('DB::RabbitearsTsid')->find({'tsid'=>$channel_details->{tsid}});
+    my ($re_tsid_find) = $c->model('DB::RabbitearsTsid')
+                           ->find({'tsid'=>$channel_details->{tsid}});
     my $rlu;
     if (   (! $re_tsid_find)
         || (DateTime::Format::SQLite->parse_datetime(
@@ -261,6 +259,7 @@ sub _find_call {
 }
 
 
+# create or update rrd for channels with no modulation decoded
 sub _rrd_update_nocall {
   my ($self,$c,$channel,$json) = @_;
 
@@ -284,8 +283,7 @@ sub _rrd_update_nocall {
 }
 
 
-# Check or update (if > 1 day old) or create virtual table entry for callsign
-# Returns 1 on success, 0 on failure.
+# Update or create virtual table entry for callsign
 sub _virtual_current {
   my ($self,$c,$callsign,$channel_details) = @_;
 
@@ -307,7 +305,7 @@ sub _virtual_current {
         'name'     => $channel_details->{virtual}{$program}{name},
         'channel'  => $channel_details->{virtual}{$program}{channel},
         'callsign' => $callsign});
-      return 1;
+      next;
     }
     # else update existing row
     else {
@@ -317,6 +315,29 @@ sub _virtual_current {
 }
 
   
+# Update or create tsid table entry for callsign
+sub _tsid_current {
+  my ($self,$c,$callsign,$channel_details) = @_;
+
+  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
+  my ($tsid_row) = $c->model('DB::Tsid')->find(
+        {'callsign' => $callsign,
+         'tsid'     => $channel_details->{tsid}});
+  # all new entry?
+  if (! $tsid_row) {
+    $c->model('DB::Tsid')->create({
+      'rx_date'  => $sqlite_now,
+      'tsid'     => $channel_details->{tsid},
+      'callsign' => $callsign});
+  }
+  # else update existing row
+  else {
+    $tsid_row->update({'rx_date'  => $sqlite_now});
+  }
+}
+
+
 =head1 AUTHOR
 
 Russell J Dwarshuis
