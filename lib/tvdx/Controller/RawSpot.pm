@@ -85,11 +85,16 @@ sub raw_spot_POST :Global {
 
     # add or update tsid table if needed
     $self->_tsid_current($c,$callsign,$channel_details);
- next RAWSPOT; 
-    # update rrd file and Signal table
-    _signal_update($c,$tuner_id,$tuner_number,$callsign,$channel_details);
-  }
 
+    # update rrd file and Signal table
+    if ( $self->_signal_update(
+           $c,$tuner_id,$tuner_number,
+           $channel,$callsign,$fcc_virtual,$channel_details) == 0) {
+      $c->response->body('FAIL');
+      $c->response->status(400);
+      return;
+    }
+  }
   $c->response->body('OK');
   $c->response->status(202);
 }
@@ -335,6 +340,78 @@ sub _tsid_current {
   else {
     $tsid_row->update({'rx_date'  => $sqlite_now});
   }
+}
+
+
+# update signal table and RRD files for tuner_id/tuner_number/callsign
+sub _signal_update {
+  my ($self,$c,
+      $tuner_id,$tuner_number,
+      $channel,$callsign,$virtual_channel,$channel_details) = @_;
+
+  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+  my $now_epoch = time;
+
+  # create new record if needed.  Station moving to new channel qualifies
+  my $entry = $c->model('DB::Signal')
+               ->find({'tuner_id' => $tuner_id,
+                       'tuner_number' => $tuner_number,
+                       'callsign' => $callsign,});
+  if (! $entry) {
+    my $spot = {
+      'rx_date'         => $sqlite_now,
+      'first_rx_date'   => $sqlite_now,
+      'rf_channel'      => $channel,
+      'strength'        => $channel_details->{'strength'},
+      'sig_noise'       => $channel_details->{'sig_noise'},
+      'tuner_id'        => $tuner_id,
+      'tuner_number'    => $tuner_number,
+      'callsign'        => $callsign,
+      'virtual_channel' => $virtual_channel, };
+    $entry = $c->model('DB::Signal')->create($spot);
+    if (! $entry) {
+      return 0
+    }
+  }
+  $entry->update({'rx_date'    => $sqlite_now,
+                  'rf_channel' => $channel,
+                  'strength'   => $channel_details->{'strength'},
+                  'sig_noise'  => $channel_details->{'sig_noise'}});
+
+  my $rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
+  $rrd_file = $c->config->{rrd_dir} . "/$rrd_file.rrd";
+
+  if (! -r $rrd_file) {
+    RRDs::create( $rrd_file, '--start', '-6hours', '--step', '60',
+                  "DS:strength:GAUGE:300:0:100",
+                  "DS:sig_noise:GAUGE:300:0:100",
+                  "RRA:MAX:.99:1:288000",
+                  "RRA:MAX:.99:60:131040" );
+    # short duration DX won't have a graph point unless it's stretched out
+    for (my $i = 3; $i > 0; $i--) {
+      my $te = $now_epoch - 60*$i;
+      RRDs::update(
+        $rrd_file, '--template', 'strength:sig_noise',
+        "$te:$channel_details->{strength}:$channel_details->{sig_noise}"
+      );
+    }
+  }
+
+  if ($now_epoch-600 > RRDs::last($rrd_file)) {
+    for (my $i = 3; $i > 0; $i--) {
+      my $te = $now_epoch - 60*$i;
+      RRDs::update(
+        $rrd_file, '--template', 'strength:sig_noise',
+        "$te:$channel_details->{strength}:$channel_details->{sig_noise}"
+      );
+    }
+  }
+
+  RRDs::update(
+    $rrd_file, '--template', 'strength:sig_noise',
+    "$now_epoch:$channel_details->{strength}:$channel_details->{sig_noise}"
+  );
+  return 1;
 }
 
 
