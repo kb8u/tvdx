@@ -69,6 +69,12 @@ sub raw_spot_POST :Global {
     my %virtual           = %{$channel_details->{virtual}};
     my $reporter_callsign = $channel_details->{reporter_callsign};
 
+    # need at least a strength to log
+    next RAWSPOT unless $strength;
+    # ignore bogus channel numbers
+    next RAWSPOT if ($channel !~ /^\d+$/);
+    next RAWSPOT if ($channel < 2 || $channel > 69);
+
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table
     my ($callsign,$fcc_virtual)
@@ -117,9 +123,12 @@ sub _find_call {
 
   # determine virtual channel for fcc table
   my $fcc_virt = $tuner_channel;  # use channel number if there are no virtuals
-  my ($some_key) = keys %{$channel_details->{virtual}}; # any subchannel will do
-  if (exists $channel_details->{virtual}{$some_key}{channel}) {
-    ($fcc_virt) = split /\./,$channel_details->{virtual}{$some_key}{channel};
+  if (%{$channel_details->{virtual}}) {
+    # any subchannel will do, just choose a random one
+    my ($some_key) = keys %{$channel_details->{virtual}}; 
+    if (exists $channel_details->{virtual}{$some_key}{channel}) {
+      ($fcc_virt) = split /\./,$channel_details->{virtual}{$some_key}{channel};
+    }
   }
 
   # transmitter power, location, etc.  Order is from rabbitears.info lookup
@@ -215,6 +224,9 @@ sub _find_call {
       }
     }
   }
+
+  # transmitter could not be identified if hash was not populated
+  return(undef,undef) unless %transmitter;
 
   # add units to height
   my $rcamsl = "$transmitter{rcamsl} m";
@@ -323,6 +335,11 @@ sub _virtual_current {
 # Update or create tsid table entry for callsign
 sub _tsid_current {
   my ($self,$c,$callsign,$channel_details) = @_;
+
+  # nothing to do if tsid is missing or invalid
+  unless (   $channel_details->{tsid}
+           && $channel_details->{tsid} > 1
+           && $channel_details->{tsid} < 32767) { return }
 
   my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );

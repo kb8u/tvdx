@@ -8,7 +8,9 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
-use Geo::Calc::XS;
+# leaks memory, have to use Geo::Calc even though it's much slower
+#use Geo::Calc::XS;
+use Geo::Calc;
 use GD;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -371,15 +373,14 @@ sub tuner_map_data :Global {
   my (@black_markers,@red_markers,@yellow_markers,@green_markers);
 
   while(my $signal = $rs->next) {
-    my $gc_call = Geo::Calc::XS->new( lat => $signal->callsign->latitude,
-                                      lon => $signal->callsign->longitude,
-                                      units => 'mi');
-    my $gc_tuner = Geo::Calc::XS->new( lat => $tuner->latitude,
-                                       lon => $tuner->longitude,
-                                       units => 'mi');
-    my $miles = $gc_tuner->distance_to($gc_call,-1);
-    my $azimuth = int($gc_tuner->bearing_to($gc_call));
-
+    my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
+                                   lon => $tuner->longitude,
+                                   units => 'mi');
+    my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
+                                        lon => $signal->callsign->longitude},
+                                       -1);
+    my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
+                                       -1));
     my %station;
 
     my $sdt = DateTime::Format::SQLite->parse_datetime($signal->rx_date);
@@ -634,14 +635,15 @@ sub all_stations_data :Global {
   my $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
                                               'tuner_number' => $tuner_number});
   while(my $signal = $rs->next) {
-    my $gc_call = Geo::Calc::XS->new( lat => $signal->callsign->latitude,
-                                      lon => $signal->callsign->longitude,
-                                      units => 'mi');
-    my $gc_tuner = Geo::Calc::XS->new( lat => $tuner->latitude,
-                                       lon => $tuner->longitude,
-                                       units => 'mi');
-    my $miles = $gc_tuner->distance_to($gc_call,-1);
-    my $azimuth = int($gc_tuner->bearing_to($gc_call));
+    my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
+                                   lon => $tuner->longitude,
+                                   units => 'mi');
+    my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
+                                        lon => $signal->callsign->longitude},
+                                       -1);
+    my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,
+                                           lon => $signal->callsign->longitude},
+                                           -1));
 
     my %station;
 
