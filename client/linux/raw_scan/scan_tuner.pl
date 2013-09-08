@@ -1,36 +1,58 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # scan tuner on Silicon Dust HDHomeRun
 # Sends resluts to web site.
 #
 # This version sends the raw scan.  Written 5/24/2013 by Russell Dwarshuis
 
 use strict 'vars';
+use Getopt::Std;
 use LWP;
 use JSON;
 use LWP::Simple;
-use Data::Dumper;
 
 my $ua = LWP::UserAgent->new;
 
-my $SPOT_URL = 'http://127.0.0.1:3000/raw_spot';
+my $SPOT_URL = 'http://www.rabbitears.info/tvdx/raw_spot';
 
 # program used to interface with tuner
 my $CONFIG_PROGRAM = '/usr/bin/hdhomerun_config';
 
 # tuner ID; can use FFFFFFFF if it's the only one on network
-my $TUNER_ID = '1038E55C';
+my $TUNER_ID = 'FFFFFFFF';
 
 # which tuner to scan
 my $TUNER = '/tuner0/';
 
-my $DEBUG = 1;
+our ($opt_h,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
+getopts('hp:t:u:x:d');
+help() if ($opt_h);
+my $DEBUG = $opt_d;
 
+$CONFIG_PROGRAM = $opt_p if ($opt_p);
 if (! -x $CONFIG_PROGRAM) {
   print "$CONFIG_PROGRAM not found or can't be run.\n";
-  exit;
+  help();
 }
 
-my $found_tuner_id = $TUNER_ID;
+$TUNER = $opt_t if $opt_t;
+
+$SPOT_URL = $opt_u if $opt_u;
+
+my $found_tuner_id;
+if ($opt_x) {
+  $TUNER_ID = $opt_x;
+  $found_tuner_id = $opt_x;
+}
+else {
+  open DISCOVER, "\"$CONFIG_PROGRAM\" discover |" or die "Can't run $CONFIG_PROGRAM discover";
+  while(<DISCOVER>) {
+    if ($_ =~ /device\s+([0-9A-Fa-f]{8})\s+found/i) {
+      $found_tuner_id = uc $1;
+      print "Found hdhomerun device $found_tuner_id\n" if $DEBUG;
+    }
+  }
+}
+print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if $DEBUG;
 
 my $user_id = "TunerID_$found_tuner_id" . "_$TUNER";
 $user_id =~ s/\///g; # get rid of slashes in /tunerX/ for XML names to be proper
@@ -103,23 +125,60 @@ SCAN: while(1) {
   }
 
   my $j = JSON->new->allow_nonref;
-  my $json = $j->pretty->encode($scan);
+  my $json = $DEBUG ? $j->pretty->encode($scan) : $j->encode($scan);
 
-  print "Sending results to $SPOT_URL\n" if $DEBUG;
-  my $req = HTTP::Request->new(POST => $SPOT_URL);
-  $req->content_type('application/json');
-  $req->content($json);
-  my $res = $ua->request($req);
+  if (length($json) < 500) {
+    print "Scan not successful, length of JSON data is too short\n" if $DEBUG;
+	sleep 1;
+  }
+  else {
+    print "Sending results to $SPOT_URL\n" if $DEBUG;
+    my $req = HTTP::Request->new(POST => $SPOT_URL);
+    $req->content_type('application/json');
+    $req->content($json);
+    my $res = $ua->request($req);
   
-  if ($DEBUG) {
-    print "Checking if web page got results ok\n";
-    if ($res->is_success) {
-      print $res->content;
-      print "\n";
-    }
-    else {
-      print $res->status_line, "\n";
+    if ($DEBUG) {
+      print "Checking if web page got results ok\n";
+      if ($res->is_success) {
+        print $res->content;
+        print "\n";
+      }
+      else {
+        print $res->status_line, "\n";
+      }
     }
   }
+}
 
+
+sub help {
+  print <<EOHELP;
+
+Scan channels on a SiliconDust HDHomeRun tuner and logs results.
+The tuner must already be configured for over-the-air reception.
+Only looks for North America calls like WWJ,CKLW,WXYZ,XAAA, etc.
+
+Scan results will soon be available at http://www.rabbitears.info/all_tuners
+after you contact kb8u_vhf\@hotmail.com to let him know your location.
+
+This program sends all scan results there, so your anti-virus program
+may give you warnings about network activity.  It's normal, don't worry.
+
+Program options:
+-h print help (you're reading it)
+-p Path to hdhomerun_config.exe (used to scan the tuner).  It is normally
+   already installed from the CD that came with your tuner.
+   Defaults to $CONFIG_PROGRAM
+-t Which tuner to use (applicable only to dual-tuner models).
+   Defaults to $TUNER
+-u URL to send scan results to.  Only change this if you're working with
+   the author.  Defaults to $SPOT_URL
+-x Tuner ID.  Only needed if you have more than one HDHomeRun on your network.
+   Defaults to FFFFFFFF
+-d Prints debugging information while the script runs.  Try this if you're
+   having problems.  Send the output to kb8u_vhf\@hotmail.com if you can't
+   figure out what's wrong.
+EOHELP
+  exit;
 }
