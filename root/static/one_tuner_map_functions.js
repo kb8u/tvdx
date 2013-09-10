@@ -97,7 +97,8 @@ function addMarkerBatch(markers,color) {
                 strokeColor: "black",
                 scale: 16,
                 strokeWeight: 1 },
-        labelContent: callsign + '<br> ' + rf_channel,
+        // show only the call, not the -TV or whatever
+        labelContent: callsign.replace(/-.*$/,"") + '<br> ' + rf_channel,
         labelAnchor: new google.maps.Point(15,6),
         labelClass: labelStyle, // the CSS class for the label
         info: callsign +
