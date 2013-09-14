@@ -80,11 +80,11 @@ sub raw_spot_POST :Global {
     my ($callsign,$fcc_virtual)
       = $self->_find_call($c,$channel,$channel_details);
 
-    # record signal strength and possibly sig_noise if no call was found
-    if (! defined $callsign) {
-      $self->_rrd_update_nocall($c,$channel,$json);
-      next RAWSPOT;
-    }
+    # record signal strength and possibly sig_noise for rrd named channel number
+    $self->_rrd_update_nocall($c,$channel,$json);
+
+    # nothing further to log if no decode
+    next RAWSPOT unless defined $callsign;
 
     # add or update virtual channel table
     $self->_virtual_current($c,$callsign,$channel_details);
@@ -92,7 +92,7 @@ sub raw_spot_POST :Global {
     # add or update tsid table if needed
     $self->_tsid_current($c,$callsign,$channel_details);
 
-    # update rrd file and Signal table
+    # update tuner/callsign rrd file and Signal table
     if ( $self->_signal_update(
            $c,$tuner_id,$tuner_number,
            $channel,$callsign,$fcc_virtual,$channel_details) == 0) {
