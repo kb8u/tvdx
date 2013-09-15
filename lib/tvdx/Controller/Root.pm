@@ -477,24 +477,36 @@ sub signal_graph  :Global {
 =head2 render_graph
 
 Renders a graph of signal strength and signal/noise for the given tuner,
-callsign and date range
+callsign and/or channel and date range
 
 =cut
 
 sub render_graph :Global {
   my ($self,$c,$tuner_id,$tuner_number,$callsign,$start_time,$end_time) = @_;
 
-  # find RF channel number
-  my $res = $c->model('DB::Fcc')->find({'callsign' => $callsign});
-  return unless $res;
-  my $rf_channel = $res->rf_channel;
+  my $arg_is_callsign;
+  my $rf_channel;
+  # channel number instead of callsign as argument?
+  if ($callsign =~ /^\d+$/) {
+    $rf_channel = $callsign;
+    $arg_is_callsign = 0;
+  }
+  else {
+    # find RF channel number
+    my $res = $c->model('DB::Fcc')->find({'callsign' => $callsign});
+    return unless $res;
+    $rf_channel = $res->rf_channel;
+    $arg_is_callsign = 1;
+  }
 
   my $channel_rrd_file = join '_', ($tuner_id,$tuner_number,$rf_channel);
   $channel_rrd_file = $c->config->{rrd_dir} . "/$channel_rrd_file.rrd";
   my $call_rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
   $call_rrd_file = $c->config->{rrd_dir} . "/$call_rrd_file.rrd";
 
-  if (-e $channel_rrd_file) {
+  my $is_channel_rrd = -e $channel_rrd_file ?  1 : 0;
+
+  if ($arg_is_callsign && $is_channel_rrd) {
     # generate graph with both channel and call signal strength/quality
     $c->stash->{'graph'} = [
       '--lower-limit', '0', '--upper-limit', '100', '--rigid',
@@ -512,31 +524,33 @@ sub render_graph :Global {
       'CDEF:call_sig_noise=call_raw_sig_noise,UN,0,call_raw_sig_noise,IF',
       'CDEF:ch_strength=ch_raw_strength,UN,0,ch_raw_strength,IF',
       'CDEF:ch_sig_noise=ch_raw_sig_noise,UN,0,ch_raw_sig_noise,IF',
-      # plot the non-decodeable (RF channel) in a darker color
-      'LINE:ch_strength#7FFF00:Relative Strength (undecodeable signal)',
-      'LINE:ch_sig_noise#87CEFA:Relative Signal/Noise (undecodeable signal)',
-      'LINE:call_strength#006400:Relative Strength  (decodeable signal)',
+      # plot the non-decodeable (RF channel)
+      'AREA:ch_strength#7FFF00:Relative Strength (undecodeable signal)',
+      'AREA:ch_sig_noise#FA0000:Relative Signal/Noise (undecodeable signal)',
+      'AREA:call_strength#006400:Relative Strength  (decodeable signal)',
       'LINE:call_sig_noise#00008B:Relative Signal/Noise (decodeable signal)' ];
     $c->detach( $c->view('RRDGraph') );
     return;
   }
- 
-  # else there's no channel rrd (just the callsign rrd)
-  $c->stash->{'graph'} = [
-    '--lower-limit', '0', '--upper-limit', '100', '--rigid',
-    '--start', $start_time,
-    '--end', $end_time,
-    '--vertical-label', 'Relative Quality',
-    '--height', 300,
-    '--width', 600,
-    "DEF:raw_strength=$call_rrd_file:strength:MAX",
-    "DEF:raw_sig_noise=$call_rrd_file:sig_noise:MAX",
-    # change undefined values to zero
-    'CDEF:strength=raw_strength,UN,0,raw_strength,IF',
-    'CDEF:sig_noise=raw_sig_noise,UN,0,raw_sig_noise,IF',
-    'LINE:strength#00FF00:Relative Strength',
-    'LINE:sig_noise#0000FF:Relative Signal/Noise' ];
-  $c->detach( $c->view('RRDGraph') );
+  else {
+    # just a callsign or channel number, not both
+    $c->stash->{'graph'} = [
+      '--lower-limit', '0', '--upper-limit', '100', '--rigid',
+      '--start', $start_time,
+      '--end', $end_time,
+      '--vertical-label', 'Relative Quality',
+      '--height', 300,
+      '--width', 600,
+      "DEF:raw_strength=$call_rrd_file:strength:MAX",
+      "DEF:raw_sig_noise=$call_rrd_file:sig_noise:MAX",
+      # change undefined values to zero
+      'CDEF:strength=raw_strength,UN,0,raw_strength,IF',
+      'CDEF:sig_noise=raw_sig_noise,UN,0,raw_sig_noise,IF',
+      'LINE:strength#00FF00:Relative Strength',
+      'LINE:sig_noise#0000FF:Relative Signal/Noise' ];
+    $c->detach( $c->view('RRDGraph') );
+    return;
+  }
 }
 
 
