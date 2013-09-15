@@ -484,9 +484,44 @@ callsign and date range
 sub render_graph :Global {
   my ($self,$c,$tuner_id,$tuner_number,$callsign,$start_time,$end_time) = @_;
 
-  my $rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
-  $rrd_file = $c->config->{rrd_dir} . "/$rrd_file.rrd";
+  # find RF channel number
+  my $res = $c->model('DB::Fcc')->find({'callsign' => $callsign});
+  return unless $res;
+  my $rf_channel = $res->rf_channel;
 
+  my $channel_rrd_file = join '_', ($tuner_id,$tuner_number,$rf_channel);
+  $channel_rrd_file = $c->config->{rrd_dir} . "/$channel_rrd_file.rrd";
+  my $call_rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
+  $call_rrd_file = $c->config->{rrd_dir} . "/$call_rrd_file.rrd";
+
+  if (-e $channel_rrd_file) {
+    # generate graph with both channel and call signal strength/quality
+    $c->stash->{'graph'} = [
+      '--lower-limit', '0', '--upper-limit', '100', '--rigid',
+      '--start', $start_time,
+      '--end', $end_time,
+      '--vertical-label', 'Relative Quality',
+      '--height', 300,
+      '--width', 600,
+      "DEF:call_raw_strength=$call_rrd_file:strength:MAX",
+      "DEF:call_raw_sig_noise=$call_rrd_file:sig_noise:MAX",
+      "DEF:ch_raw_strength=$channel_rrd_file:strength:MAX",
+      "DEF:ch_raw_sig_noise=$channel_rrd_file:sig_noise:MAX",
+      # change undefined values to zero
+      'CDEF:call_strength=call_raw_strength,UN,0,call_raw_strength,IF',
+      'CDEF:call_sig_noise=call_raw_sig_noise,UN,0,call_raw_sig_noise,IF',
+      'CDEF:ch_strength=ch_raw_strength,UN,0,ch_raw_strength,IF',
+      'CDEF:ch_sig_noise=ch_raw_sig_noise,UN,0,ch_raw_sig_noise,IF',
+      # plot the non-decodeable (RF channel) in a darker color
+      'LINE:ch_strength#7FFF00:Relative Strength (undecodeable signal)',
+      'LINE:ch_sig_noise#87CEFA:Relative Signal/Noise (undecodeable signal)',
+      'LINE:call_strength#006400:Relative Strength  (decodeable signal)',
+      'LINE:call_sig_noise#00008B:Relative Signal/Noise (decodeable signal)' ];
+    $c->detach( $c->view('RRDGraph') );
+    return;
+  }
+ 
+  # else there's no channel rrd (just the callsign rrd)
   $c->stash->{'graph'} = [
     '--lower-limit', '0', '--upper-limit', '100', '--rigid',
     '--start', $start_time,
@@ -494,8 +529,8 @@ sub render_graph :Global {
     '--vertical-label', 'Relative Quality',
     '--height', 300,
     '--width', 600,
-    "DEF:raw_strength=$rrd_file:strength:MAX",
-    "DEF:raw_sig_noise=$rrd_file:sig_noise:MAX",
+    "DEF:raw_strength=$call_rrd_file:strength:MAX",
+    "DEF:raw_sig_noise=$call_rrd_file:sig_noise:MAX",
     # change undefined values to zero
     'CDEF:strength=raw_strength,UN,0,raw_strength,IF',
     'CDEF:sig_noise=raw_sig_noise,UN,0,raw_sig_noise,IF',
