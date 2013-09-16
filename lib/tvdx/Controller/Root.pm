@@ -523,7 +523,10 @@ sub render_graph :Global {
       'CDEF:call_strength=call_raw_strength,UN,0,call_raw_strength,IF',
       'CDEF:call_sig_noise=call_raw_sig_noise,UN,0,call_raw_sig_noise,IF',
       'CDEF:ch_strength=ch_raw_strength,UN,0,ch_raw_strength,IF',
-      'CDEF:ch_sig_noise=ch_raw_sig_noise,UN,0,ch_raw_sig_noise,IF',
+      # zero out ch_sig_noise if there's call data or if it's NaN
+      'CDEF:is_call_data=call_raw_sig_noise,UN,0,1,IF',
+      'CDEF:ch_sig_noise_nan=ch_raw_sig_noise,UN',
+      'CDEF:ch_sig_noise=is_call_data,ch_sig_noise_nan,+,0,ch_raw_sig_noise,IF',
       # plot the non-decodeable (RF channel)
       'AREA:ch_strength#7FFF00:Relative Strength (undecodeable signal)',
       'AREA:ch_sig_noise#FA0000:Relative Signal/Noise (undecodeable signal)',
