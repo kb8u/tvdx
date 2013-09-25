@@ -43,6 +43,8 @@ sub raw_spot_POST :Global {
   # the current time formatted to sqlite format (UTC time zone)
   my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
   my $now_epoch = time;
+  # 24 hours ago
+  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
   # json with information from (client) scanlog.pl
   my $json = $c->req->data;
@@ -75,10 +77,22 @@ sub raw_spot_POST :Global {
     next RAWSPOT if ($channel !~ /^\d+$/);
     next RAWSPOT if ($channel < 2 || $channel > 69);
 
+#    # arguments to subroutines
+#    my $args = { 'c' => $c,
+#                 'json' => $json,
+#                 'tuner_id' => \$tuner_id,
+#                 'tuner_number' => \$tuner_number,
+#                 'callsign' => \$callsign,
+#                 'channel' => \$channel,
+#                 'channel_details' => $channel_details,
+#                 'fcc_virtual' => $fcc_virtual,
+#                 'sqlite_now' => $sqlite_now,
+#                 'yesterday' => $yesterday };
+
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table
     my ($callsign,$fcc_virtual)
-      = $self->_find_call($c,$channel,$channel_details);
+      = $self->_find_call($c,$channel,$channel_details,$sqlite_now,$yesterday);
 
     # record signal strength and possibly sig_noise for rrd named channel number
     $self->_rrd_update_nocall($c,$channel,$json);
@@ -87,15 +101,15 @@ sub raw_spot_POST :Global {
     next RAWSPOT unless defined $callsign;
 
     # add or update virtual channel table
-    $self->_virtual_current($c,$callsign,$channel_details);
+    $self->_virtual_current($c,$callsign,$channel_details,$sqlite_now,$yesterday);
 
     # add or update tsid table if needed
-    $self->_tsid_current($c,$callsign,$channel_details);
+    $self->_tsid_current($c,$callsign,$channel_details,$sqlite_now,$yesterday);
 
     # update tuner/callsign rrd file and Signal table
-    if ( $self->_signal_update(
-           $c,$tuner_id,$tuner_number,
-           $channel,$callsign,$fcc_virtual,$channel_details) == 0) {
+    if ( $self->_signal_update($c,$tuner_id,$tuner_number,
+                               $channel,$callsign,$fcc_virtual,$channel_details,
+                               $sqlite_now) == 0) {
       $c->response->body('FAIL');
       $c->response->status(400);
       return;
@@ -109,17 +123,12 @@ sub raw_spot_POST :Global {
 # determine callsign from raw channel information.  Updates (if > 1 day old)
 # rabbitears_call, rabbitears_tsid and fcc tables. 
 sub _find_call {
-  my ($self,$c,$tuner_channel,$channel_details) = @_;
+  my ($self,$c,$tuner_channel,$channel_details,$sqlite_now,$yesterday) = @_;
 
   # nothing to look up if there's no modulation
   if ($channel_details->{modulation} eq 'none') {
     return (undef,undef);
   }
-
-  # the current time formatted to sqlite format (UTC time zone)
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
-
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
   # determine virtual channel for fcc table
   my $fcc_virt = $tuner_channel;  # use channel number if there are no virtuals
@@ -302,10 +311,7 @@ sub _rrd_update_nocall {
 
 # Update or create virtual table entry for callsign
 sub _virtual_current {
-  my ($self,$c,$callsign,$channel_details) = @_;
-
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
+  my ($self,$c,$callsign,$channel_details,$sqlite_now,$yesterday) = @_;
 
   # process each virtual channel
   for my $program (keys %{$channel_details->{virtual}}) {
@@ -334,15 +340,13 @@ sub _virtual_current {
   
 # Update or create tsid table entry for callsign
 sub _tsid_current {
-  my ($self,$c,$callsign,$channel_details) = @_;
+  my ($self,$c,$callsign,$channel_details,$sqlite_now,$yesterday) = @_;
 
   # nothing to do if tsid is missing or invalid
   unless (   $channel_details->{tsid}
            && $channel_details->{tsid} > 1
            && $channel_details->{tsid} < 32767) { return }
 
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
   my ($tsid_row) = $c->model('DB::Tsid')->find(
         {'callsign' => $callsign,
          'tsid'     => $channel_details->{tsid}});
@@ -364,9 +368,9 @@ sub _tsid_current {
 sub _signal_update {
   my ($self,$c,
       $tuner_id,$tuner_number,
-      $channel,$callsign,$virtual_channel,$channel_details) = @_;
+      $channel,$callsign,$virtual_channel,$channel_details,
+      $sqlite_now) = @_;
 
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
   my $now_epoch = time;
 
   # create new record if needed.  Station moving to new channel qualifies
