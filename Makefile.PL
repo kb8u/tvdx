@@ -27,7 +27,7 @@ requires 'XML::Simple';
 requires 'LWP::Simple';
 requires 'GD';
 requires 'RRDs';
-requiers 'Geo::Calc::XS';
+requiers 'Geo::Calc';
 test_requires 'Test::More' => '0.88';
 catalyst;
 
