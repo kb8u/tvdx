@@ -482,7 +482,15 @@ callsign and/or channel and date range
 =cut
 
 sub render_graph :Global {
-  my ($self,$c,$tuner_id,$tuner_number,$callsign,$start_time,$end_time) = @_;
+  my ($self,$c,
+      $tuner_id,$tuner_number,
+      $callsign,$start_time,$end_time,$height,$width) = @_;
+
+  # set defaults if args are missing
+  $start_time = $start_time ? $start_time : '-6hours';
+  $end_time = $end_time ? $end_time : 'now';
+  $height = $height ? $height : 300;
+  $width = $width ? $width : 600;
 
   my $arg_is_callsign;
   my $rf_channel;
@@ -513,8 +521,8 @@ sub render_graph :Global {
       '--start', $start_time,
       '--end', $end_time,
       '--vertical-label', 'Relative Quality',
-      '--height', 300,
-      '--width', 600,
+      '--height', $height,
+      '--width', $width,
       "DEF:call_raw_strength=$call_rrd_file:strength:MAX",
       "DEF:call_raw_sig_noise=$call_rrd_file:sig_noise:MAX",
       "DEF:ch_raw_strength=$channel_rrd_file:strength:MAX",
@@ -542,8 +550,8 @@ sub render_graph :Global {
       '--start', $start_time,
       '--end', $end_time,
       '--vertical-label', 'Relative Quality',
-      '--height', 300,
-      '--width', 600,
+      '--height', $height,
+      '--width', $width,
       "DEF:raw_strength=$call_rrd_file:strength:MAX",
       "DEF:raw_sig_noise=$call_rrd_file:sig_noise:MAX",
       # change undefined values to zero
