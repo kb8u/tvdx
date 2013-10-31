@@ -35,6 +35,10 @@ if (! -x $CONFIG_PROGRAM) {
 }
 
 $TUNER = $opt_t if $opt_t;
+unless ($TUNER eq '/tuner0/' || $TUNER eq '/tuner1/' || $TUNER eq '/tuner2/') {
+  print "Invalid tuner ID.  Must be /tuner0/ or /tuner1/ or /tuner2/\n";
+  exit 1;
+}
 
 $SPOT_URL = $opt_u if $opt_u;
 
@@ -42,6 +46,10 @@ my $found_tuner_id;
 if ($opt_x) {
   $TUNER_ID = $opt_x;
   $found_tuner_id = $opt_x;
+  if ($found_tuner_id !~ /^[0-9A-F]{8}$/) {
+    print "Invalid tuner ID.  Must be 8 characters of 0-9 and A-F\n";
+        exit 1;
+  }
 }
 else {
   open DISCOVER, "\"$CONFIG_PROGRAM\" discover |" or die "Can't run $CONFIG_PROGRAM discover";
