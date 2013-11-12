@@ -540,8 +540,6 @@ sub render_graph :Global {
       'AREA:ch_sig_noise#FA0000:Relative Signal/Noise (undecodeable signal)',
       'AREA:call_strength#006400:Relative Strength  (decodeable signal)',
       'LINE:call_sig_noise#00008B:Relative Signal/Noise (decodeable signal)' ];
-    $c->detach( $c->view('RRDGraph') );
-    return;
   }
   else {
     # just a callsign or channel number, not both
@@ -559,9 +557,11 @@ sub render_graph :Global {
       'CDEF:sig_noise=raw_sig_noise,UN,0,raw_sig_noise,IF',
       'LINE:strength#00FF00:Relative Strength',
       'LINE:sig_noise#0000FF:Relative Signal/Noise' ];
-    $c->detach( $c->view('RRDGraph') );
-    return;
   }
+  # remove legend and vertical label if the graph is small
+  splice @{$c->stash->{'graph'}}, 9, 2, '--no-legend' if ($width < 250);
+  $c->detach( $c->view('RRDGraph') );
+  return;
 }
 
 
