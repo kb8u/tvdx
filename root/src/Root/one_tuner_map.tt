@@ -21,18 +21,22 @@ static_url = '[% static_url %]'
   </script>
   <link href="[% static_url %]/one_tuner.css" rel="stylesheet" type="text/css" />
 </head>
-<body class="one_tuner_body">
-  <div id="one_tuner_stations"></div>
-  <div id="map"></div>
-  <div id="one_tuner_legend">
-    <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />
-    Strong
-    <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />
-    Medium
-    <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />
-    Weak
-    <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />
-    Signal in last 24 hours, but not currently
+<body id="one-tuner-body" class="container">
+  <div class="row">
+    <div id="one-tuner-stations" class="col-med-2"></div>
+    <div id="one-tuner-map" class="col-med-10"></div>
+  </div>
+  <div id="one-tuner-legend">
+    <div class="container">
+      <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />
+      Strong
+      <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />
+      Medium
+      <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />
+      Weak
+      <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />
+      Signal in last 24 hours, but not currently
+    </div>
   </div>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
