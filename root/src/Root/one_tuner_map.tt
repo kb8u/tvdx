@@ -1,9 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<!-- This page is based on http://uwmike.com/maps/manhattan2/ -->
+<!DOCTYPE html>
+<html>
 <head>
-        <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
+        <link rel="icon" href="[% static_url %]/favicon.ico">
 	<title>TV stations received at [% tuner.owner_id %] [% tuner_number.description %]</title>
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
 	<script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
 	<script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
