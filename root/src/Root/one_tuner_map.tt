@@ -25,6 +25,8 @@ static_url = '[% static_url %]'
   <div class="row">
     <div id="one-tuner-stations" class="col-med-2"></div>
     <div id="one-tuner-map" class="col-med-10"></div>
+<!-- remove after one-tuner-map is complete -->
+<div id="map" class="col-med-10"></div>
   </div>
   <div id="one-tuner-legend">
     <div class="container">
@@ -45,5 +47,9 @@ static_url = '[% static_url %]'
   <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
   <script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
   <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
+
+<!-- original, remove after rewrite -->
+	<script src="[% static_url %]/common_map_functions.js" type="text/javascript"></script>
+	<script src="[% static_url %]/one_tuner_map_functions.js" type="text/javascript"></script>
 </body>
 </html>
