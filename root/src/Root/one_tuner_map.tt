@@ -21,25 +21,75 @@ static_url = '[% static_url %]'
   </script>
   <link href="[% static_url %]/one_tuner.css" rel="stylesheet" type="text/css" />
 </head>
-<body id="one-tuner-body" class="container">
+<body>
+<div class="container">
   <div class="row">
-    <div id="one-tuner-stations" class="col-med-2"></div>
-    <div id="one-tuner-map" class="col-med-10"></div>
-<!-- remove after one-tuner-map is complete -->
-<div id="map" class="col-med-10"></div>
-  </div>
-  <div id="one-tuner-legend">
-    <div class="container">
-      <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />
-      Strong
-      <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />
-      Medium
-      <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />
-      Weak
-      <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />
-      Signal in last 24 hours, but not currently
+    <div class="span3">
+      <div class="tabbable" id="map-select-tabs">
+        <ul class="nav nav-tabs">
+          <li class="active">
+            <a data-toggle="tab" href="#tabs-stations-rx"> Stations Received</a>
+          </li>
+          <li class="">
+            <a data-toggle="tab" href="#tabs-rf-channel">RF Channel</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="tabs-stations-rx">
+            <p>Time Frame</p>
+            <div class="btn-group btn-group-xs" data-toggle="buttons">
+              <label class="btn btn-primary">
+                <input name="time-frame" id="last-24-hours" type="radio"> Last 24 hours
+              </label>
+              <label class="btn btn-primary">
+                <input name="time-frame" id="ever" type="radio"> Ever Received
+              </label>
+            </div>
+            <p>Sort by</p>
+            <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
+              <label class="btn btn-primary">
+                <input name="sort-by" id="distance" type="radio"> Distance
+              </label>
+              <label class="btn btn-primary">
+                <input name="sort-by" id="rf-channel" type="radio"> RF Channel
+              </label>
+              <label class="btn btn-primary">
+                <input name="sort-by" id="virtual-channel" type="radio"> Virtual Channel
+              </label>
+              <label class="btn btn-primary">
+                <input name="sort-by" id="time-received" type="radio"> Time Received
+              </label>
+              <label class="btn btn-primary">
+                <input name="sort-by" id="azimuth" type="radio"> Azimuth
+              </label>
+              <label class="btn btn-primary">
+                <input name="sort-by" id="callsign" type="radio"> Callsign
+              </label>
+            </div>
+            <p>Distance Units</p>
+            <div class="btn-group btn-group-xs" data-toggle="buttons">
+              <label class="btn btn-primary">
+                <input name="units" id="miles" type="radio"> Miles
+              </label>
+              <label class="btn btn-primary">
+                <input name="units" id="ever" type="radio"> Kilometers
+              </label>
+            </div>
+          </div>
+          <div class="tab-pane" id="tabs-rf-channel">
+            RF channel selection and graphs go here
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="span9">
     </div>
   </div>
+</div>
+
+
+
+
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
@@ -47,9 +97,5 @@ static_url = '[% static_url %]'
   <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
   <script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
   <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
-
-<!-- original, remove after rewrite -->
-	<script src="[% static_url %]/common_map_functions.js" type="text/javascript"></script>
-	<script src="[% static_url %]/one_tuner_map_functions.js" type="text/javascript"></script>
 </body>
 </html>
