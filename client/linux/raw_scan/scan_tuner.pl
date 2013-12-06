@@ -107,7 +107,7 @@ SCAN: while(1) {
     if ($_ =~ /^TSID: (0x[0-9A-Fa-f]{4})$/) {
       $tsid = hex($1);
     }
-    if ($_ =~ /^PROGRAM\s+(\d+):\s+(\S+)\s+(.+)/) {
+    if ($_ =~ /^PROGRAM\s+(\d+):\s+(\S+)\s(.+)/) {
       $virtual->{$1}->{channel} = $2;
       $virtual->{$1}->{name} = $3;
     }
