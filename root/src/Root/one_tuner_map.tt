@@ -25,6 +25,7 @@ static_url = '[% static_url %]'
 <div class="container">
   <div class="row">
     <div class="span3">
+      <!-- allows tabs on left, content is below in tab-content -->
       <div class="tabbable" id="map-select-tabs">
         <ul class="nav nav-tabs">
           <li class="active">
@@ -44,7 +45,7 @@ static_url = '[% static_url %]'
               <label class="btn btn-primary">
                 <input name="time-frame" id="ever" type="radio"> Ever Received
               </label>
-            </div>
+            </div> <!-- end of Time frame btn-group btn-group-xs -->
             <p>Sort by</p>
             <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
               <label class="btn btn-primary">
@@ -65,7 +66,7 @@ static_url = '[% static_url %]'
               <label class="btn btn-primary">
                 <input name="sort-by" id="callsign" type="radio"> Callsign
               </label>
-            </div>
+            </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             <p>Distance Units</p>
             <div class="btn-group btn-group-xs" data-toggle="buttons">
               <label class="btn btn-primary">
@@ -74,18 +75,19 @@ static_url = '[% static_url %]'
               <label class="btn btn-primary">
                 <input name="units" id="ever" type="radio"> Kilometers
               </label>
-            </div>
-          </div>
+            </div> <!-- end of Distance Units btn-group btn-group-xs -->
+          </div> <!-- end of tabs-stations-rx -->
           <div class="tab-pane" id="tabs-rf-channel">
             RF channel selection and graphs go here
-          </div>
-        </div>
-      </div>
-    </div>
+          </div> <!-- end of RF channel selection and graphs tabs-rf-channel -->
+        </div> <!-- end of tab-content -->
+      </div> <!-- end of tabbable -->
+    </div> <!-- end of span3 -->
     <div class="span9">
+    Map goes here
     </div>
-  </div>
-</div>
+  </div> <!-- end of row -->
+</div> <!-- end of container -->
 
 
 
