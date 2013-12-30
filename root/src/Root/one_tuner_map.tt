@@ -37,7 +37,7 @@ static_url = '[% static_url %]'
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="tabs-stations-rx">
-            <div class="tabs-stations-rx-group">
+            <div class="tabs-stations-rx-group-top">
               <p>Time Frame</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
                 <label class="btn btn-primary">
@@ -82,6 +82,11 @@ static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Distance Units btn-group btn-group-xs -->
             </div> <!-- end of Distance Units group -->
+            <div class="tabs-stations-rx-group">
+              <p>Stations Received</p>
+              <ul id="stations-received-ul">
+              </ul>
+            </div> <!-- end of Staions Received group -->
           </div> <!-- end of tabs-stations-rx -->
           <div class="tab-pane" id="tabs-rf-channel">
             RF channel selection and graphs go here

@@ -1,7 +1,23 @@
+#map-select-tabs {
+  height:100%;
+}
+
+/* not sure why this alligns the buttons, too */
 .tab-pane {
   text-align:center;
 }
 
-.tabs-stations-rx-group {
+.btn-group-xs {
+  padding-bottom:5px;
+}
+
+/* only top gets four sides to avoid 2 pixel border between groups */
+.tabs-stations-rx-group-top {
   border:1px solid black;
+}
+.tabs-stations-rx-group {
+  border-left:1px solid black;
+  border-right:1px solid black;
+  border-bottom:1px solid black;
+  overflow:auto;
 }
