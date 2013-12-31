@@ -1,12 +1,9 @@
-#map-select-tabs {
-  height:100%;
-}
-
-/* not sure why this alligns the buttons, too */
+/* not sure why this aligns the buttons, too */
 .tab-pane {
   text-align:center;
 }
 
+/* padding under buttons */
 .btn-group-xs {
   padding-bottom:5px;
 }
@@ -20,4 +17,22 @@
   border-right:1px solid black;
   border-bottom:1px solid black;
   overflow:auto;
+}
+
+.boxit {
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  border:1px solid black;
+  height:100%;
+  min-height:100%;
+}
+
+.fullheight {
+  height:100%;
+  min-height:100%;
+}
+
+#stations-received-ul {
+  list-style-type: none;
 }
