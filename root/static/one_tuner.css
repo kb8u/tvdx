@@ -19,6 +19,7 @@
   overflow:auto;
 }
 
+/* make full height and place a border around element */
 .boxit {
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -35,4 +36,17 @@
 
 #stations-received-ul {
   list-style-type: none;
+}
+
+/* place legend at bottom of map */
+#map-legend {
+  position:absolute;
+  bottom:0px;
+  left:0px;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  border-top:1px solid black;
+  width:100%;
+  min-width:100%;
 }

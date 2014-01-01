@@ -85,73 +85,6 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group" id="stations-rx-list">
               <p>Stations Received</p>
               <ul id="stations-received-ul">
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
-<li>here's a list item</li>
               </ul>
             </div> <!-- end of Staions Received group -->
           </div> <!-- end of tabs-stations-rx -->
@@ -161,8 +94,14 @@ static_url = '[% static_url %]'
         </div> <!-- end of tab-content -->
       </div> <!-- end of tabbable -->
     </div> <!-- end of col-xs-3 -->
-    <div class="col-xs-9 boxit">
-    Map goes here
+    <div class="col-xs-9 boxit" id="map-container">
+      Map goes here
+      <div id="map-legend">
+        <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong
+        <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium
+        <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
+        <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Signal in last 24 hours, but not currently<br>
+      </div> <!-- end of map-legend -->
     </div> <!-- end of col-xs-9 -->
   </div> <!-- end of row -->
 </div> <!-- end of container -->
