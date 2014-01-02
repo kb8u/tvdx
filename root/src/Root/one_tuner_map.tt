@@ -29,10 +29,10 @@ static_url = '[% static_url %]'
       <div class="tabbable" id="map-select-tabs">
         <ul class="nav nav-tabs" id="tvdx-tabs">
           <li class="active">
-            <a data-toggle="tab" href="#tabs-stations-rx"> Stations Received</a>
+            <a href="#tabs-stations-rx"> Stations Received</a>
           </li>
           <li class="">
-            <a data-toggle="tab" href="#tabs-rf-channel"> Channels</a>
+            <a href="#tabs-channel"> Channels</a>
           </li>
         </ul>
         <div class="tab-content">
@@ -86,9 +86,9 @@ static_url = '[% static_url %]'
               <p>Stations Received</p>
               <ul id="stations-received-ul">
               </ul>
-            </div> <!-- end of Staions Received group -->
+            </div> <!-- end of Stations Received group -->
           </div> <!-- end of tabs-stations-rx -->
-          <div class="tab-pane fade" id="tabs-rf-channel">
+          <div class="tab-pane fade" id="tabs-channel">
             <div class="tabs-stations-rx-group-top" id="channel-bands">
               <p>Restrict to</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
@@ -167,7 +167,7 @@ static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of modulation buttons -->
             </div> <!-- end of modulation -->
-          </div> <!-- end of RF channel selection and graphs tabs-rf-channel -->
+          </div> <!-- end of RF channel selection and graphs tabs-channel -->
         </div> <!-- end of tab-content -->
       </div> <!-- end of tabbable -->
     </div> <!-- end of col-xs-3 -->

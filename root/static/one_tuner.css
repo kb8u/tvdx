@@ -1,3 +1,7 @@
+#map-select-tabs {
+  overflow:auto;
+}
+  
 /* not sure why this aligns the buttons, too */
 .tab-pane {
   text-align:center;
@@ -16,6 +20,9 @@
   border-left:1px solid black;
   border-right:1px solid black;
   border-bottom:1px solid black;
+}
+
+#stations-rx-list {
   overflow:auto;
 }
 
