@@ -32,11 +32,11 @@ static_url = '[% static_url %]'
             <a data-toggle="tab" href="#tabs-stations-rx"> Stations Received</a>
           </li>
           <li class="">
-            <a data-toggle="tab" href="#tabs-rf-channel">RF Channel</a>
+            <a data-toggle="tab" href="#tabs-rf-channel"> Channels</a>
           </li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="tabs-stations-rx">
+          <div class="tab-pane fade in active" id="tabs-stations-rx">
             <div class="tabs-stations-rx-group-top" id="time-frame">
               <p>Time Frame</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
@@ -88,8 +88,85 @@ static_url = '[% static_url %]'
               </ul>
             </div> <!-- end of Staions Received group -->
           </div> <!-- end of tabs-stations-rx -->
-          <div class="tab-pane" id="tabs-rf-channel">
-            RF channel selection and graphs go here
+          <div class="tab-pane fade" id="tabs-rf-channel">
+            <div class="tabs-stations-rx-group-top" id="channel-bands">
+              <p>Restrict to</p>
+              <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
+                <label class="btn btn-primary">
+                  <input name="channel-bands" type="checkbox" id="vhf-low">
+                  VHF Low 2-6
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-bands" type="checkbox" id="vhf-high">
+                  VHF High 7-13
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-bands" type="checkbox" id="uhf">
+                  UHF 14-51
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-bands" type="checkbox" id="uhf-oob">
+                  Non-broadcast 37,52-69
+                </label>
+              </div> <! -- end of channel band buttons -->
+            </div> <!-- end of id channel-bands -->
+            <div class="tabs-stations-rx-group" id="channel-sort-by">
+              <p>Sort by</p>
+              <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
+                <label class="btn btn-primary">
+                  <input name="channel-sort-by" id="ch-rf-channel" type="radio">
+                  RF Channel
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-sort-by" id="ch-virtual-channel" type="radio">
+                  Virtual Channel
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-sort-by" id="ch-quality" type="radio">
+                  Quality
+                </label>
+                <label class="btn btn-primary">
+                  <input name="channel-sort-by" id="ch-distance" type="radio">
+                  Distance
+                </label>
+              </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
+            </div> <!-- end of sort-by group -->
+            <div class="tabs-stations-rx-group" id="graph-time-range">
+              <p>Time Range</p>
+              <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
+                <label class="btn btn-primary">
+                  <input name="time-range" type="radio" id="hourly"> Hourly
+                </label>
+                <label class="btn btn-primary">
+                  <input name="time-range" type="radio" id="daily"> Daily
+                </label>
+                <label class="btn btn-primary">
+                  <input name="time-range" type="radio" id="weekly"> Weekly
+                </label>
+                <label class="btn btn-primary">
+                  <input name="time-range" type="radio" id="monthly"> Monthly
+                </label>
+                <label class="btn btn-primary">
+                  <input name="time-range" type="radio" id="all"> All
+                </label>
+              </div> <!-- end of time range buttons -->
+            </div> <!-- end of id time-range -->
+            <div class="tabs-stations-rx-group" id="modulation-buttons">
+              <p>Modulation</p>
+              <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
+                <label class="btn btn-primary">
+                  <input name="modulation" type="radio" id="decodeable">
+                  Decodeable only
+                </label>
+                <label class="btn btn-primary">
+                  <input name="modulation" type="radio" id="undecodeable">
+                  Undecodeable only
+                </label>
+                <label class="btn btn-primary">
+                  <input name="modulation" type="radio" id="all"> All
+                </label>
+              </div> <!-- end of modulation buttons -->
+            </div> <!-- end of modulation -->
           </div> <!-- end of RF channel selection and graphs tabs-rf-channel -->
         </div> <!-- end of tab-content -->
       </div> <!-- end of tabbable -->
