@@ -370,9 +370,10 @@ sub tuner_map_data :Global {
              ->most_recent;
 
   # build data structure that will be sent out at JSON
-  my (@black_markers,@red_markers,@yellow_markers,@green_markers);
+  my @markers;
 
   while(my $signal = $rs->next) {
+    my %station;
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
                                    units => 'mi');
@@ -381,34 +382,24 @@ sub tuner_map_data :Global {
                                        -1);
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
                                        -1));
-    my %station;
 
     my $sdt = DateTime::Format::SQLite->parse_datetime($signal->rx_date);
-    # spot up to 5 minutes old get color icons
-    my $color = ($sdt >= $last_5_min) ? $signal->color : 'black';
 
     my $call = $signal->callsign->callsign;
-    $station{callsign} = $call;  # can't use key of call, it trashes javascript
+    $station{callsign} = $call;  # can't use key 'call', it trashes javascript
     $station{latitude} = $signal->callsign->latitude;
     $station{longitude} = $signal->callsign->longitude;
-    $station{info} = 
-             '<br>RF channel ' . $signal->callsign->rf_channel . '<br>'
-           . 'Virtual channel ' . $signal->callsign->virtual_channel . '<br>'
-           . $signal->callsign->city_state . '<br>'
-           . 'ERP ' . $signal->callsign->erp_kw .'<br>'
-           . 'RCAMSL ' . $signal->callsign->rcamsl . '<br>';
-    if ($color eq 'black') {
-      my $dtf_http = 'DateTime::Format::HTTP';
-      $station{last_in} = 'last in '. $dtf_http->format_datetime($sdt) . '<br>';
-    }
-    else { $station{last_in} = ''; }
+    $station{rf_channel} = $signal->callsign->rf_channel;
+    $station{virtual_channel} =$signal->callsign->virtual_channel;
+    $station{city_state} = $signal->callsign->city_state;
+    $station{erp} = $signal->callsign->erp_kw;
+    $station{rcamsl} = $signal->callsign->rcamsl;
+    $station{last_in} = DateTime::Format::HTTP->format_datetime($sdt);
+    $station{azimuth} = $azimuth;
+    $station{miles} = $miles;
 
-    $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
-           . "DX: $miles miles<br>";
-
-    $station{graphs} =  '<a href="' . $c->config->{root_url}
-           . "/signal_graph/$tuner_id/$tuner_number/$call"
-           . '">Signal strength graphs</a><br>';
+    $station{graphs_url} =
+      $c->config->{root_url}."/signal_graph/$tuner_id/$tuner_number/$call";
 
     # create Callsign icon if it doesn't exist yet
     my $png = $c->config->{image_dir} . "/$call.png";
@@ -420,20 +411,14 @@ sub tuner_map_data :Global {
       }
     }
 
-    if ($color eq 'red')    { push @red_markers,    \%station }
-    if ($color eq 'yellow') { push @yellow_markers, \%station }
-    if ($color eq 'green')  { push @green_markers,  \%station }
-    if ($color eq 'black')  { push @black_markers,  \%station }
+    push @markers, \%station;
   }
 
   $c->stash('tuner_id' => $tuner_id);
   $c->stash('tuner_number' => $tuner_number);
   $c->stash('tuner_longitude' => $tuner->longitude);
   $c->stash('tuner_latitude' => $tuner->latitude);
-  $c->stash('red_markers' => \@red_markers);
-  $c->stash('yellow_markers' => \@yellow_markers);
-  $c->stash('green_markers' => \@green_markers);
-  $c->stash('black_markers' => \@black_markers);
+  $c->stash('markers' => \@markers);
   $c->detach( $c->view('JSON') );
 }
 
