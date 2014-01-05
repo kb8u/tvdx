@@ -3,12 +3,12 @@ adjust_height = function(){
   $('.fullheight').height($(window).height());
 
   other_srl_heights = $('#tvdx-tabs').height() + $('#time-frame').height()
-                    + $('#sort-by').height() + $('#distance-units').height()+6
+                    + $('#sort-by').height() + $('#distance-units').height()+11
   $('#stations-rx-list').height($('.fullheight').height() - other_srl_heights)
 
   other_cth_heights = $('#tvdx-tabs').height() + $('#channel-bands').height()
                     + $('#channel-sort-by').height()
-                    + $('#graph-time-range').height() + 6
+                    + $('#graph-time-range').height() + 11
   $('#modulation-buttons').height($('.fullheight').height()-other_cth_heights)
 }
 

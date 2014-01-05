@@ -29,7 +29,7 @@ static_url = '[% static_url %]'
       <div class="tabbable" id="map-select-tabs">
         <ul class="nav nav-tabs" id="tvdx-tabs">
           <li class="active">
-            <a href="#tabs-stations-rx"> Stations Received</a>
+            <a href="#tabs-stations-rx"> Stations</a>
           </li>
           <li class="">
             <a href="#tabs-channel"> Channels</a>

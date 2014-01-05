@@ -7,6 +7,10 @@
   text-align:center;
 }
 
+.tab-content {
+  padding-top:5px;
+}
+
 /* padding under buttons */
 .btn-group-xs {
   padding-bottom:5px;
