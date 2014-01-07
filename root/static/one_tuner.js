@@ -1,5 +1,55 @@
-$(document).ready(function() {
-  adjust_height();
-  $('#map-container').gmap3();
+// Fluid layout doesn't seem to support 100% height; manually set it
+function adjust_height() {
+  $('.fullheight').height($(window).height());
+
+  other_srl_heights = $('#tvdx-tabs').height() + $('#time-frame').height()
+                    + $('#sort-by').height() + $('#distance-units').height()+11
+  $('#stations-rx-list').height($('.fullheight').height() - other_srl_heights)
+
+  other_cth_heights = $('#tvdx-tabs').height() + $('#channel-bands').height()
+                    + $('#channel-sort-by').height()
+                    + $('#graph-time-range').height() + 11
+  $('#modulation-buttons').height($('.fullheight').height()-other_cth_heights)
+}
+
+
+function update_page(latest,status_code,xhr) {
+  if (status_code != "success") { return }
+  // remove all list itmes in stations received list, then update it
+  $("#stations-received-ul").empty();
+  $.each(latest['markers'],function(index,val){
+    $("#stations-received-ul").append("<li>"+val['callsign'])+"</li>"
+  })
+}
+
+
+// adjust height when channels tab is selected so modulation section is
+// correct size
+$('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+})
+$('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function (e) {
+  adjust_height()
+})
+$('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+})
+$('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function (e) {
+  adjust_height()
 })
 
+$(".btn").click(function() {
+  console.log("val ",$(this).attr('value'))
+})
+
+
+$(window).resize(adjust_height)
+$(document).ready(function() {
+  adjust_height();
+  $('.btn').button()
+  $('#map-container').gmap3();
+  $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
+            function(latest,result,xhr){ update_page(latest,result,xhr) })
+})

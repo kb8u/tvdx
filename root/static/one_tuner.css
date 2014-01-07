@@ -1,3 +1,8 @@
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
 #map-select-tabs {
   overflow:auto;
 }

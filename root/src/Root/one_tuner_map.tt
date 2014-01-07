@@ -40,45 +40,45 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group-top" id="time-frame">
               <p>Time Frame</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="time-frame" id="last-24-hours" type="radio"> Last 24 hours
+                <label class="btn btn-primary active" value="last-24-hours">
+                  <input type="radio" checked=""> Last 24 hours
                 </label>
-                <label class="btn btn-primary">
-                  <input name="time-frame" id="ever" type="radio"> Ever Received
+                <label class="btn btn-primary" value="ever">
+                  <input type="radio"> Ever Received
                 </label>
               </div> <!-- end of Time frame btn-group btn-group-xs -->
             </div> <!-- end of time frame group -->
             <div class="tabs-stations-rx-group" id="sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="distance" type="radio"> Distance
+                <label class="btn btn-primary active" value="distance">
+                  <input type="radio" checked=""> Distance
                 </label>
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="rf-channel" type="radio"> RF Channel
+                <label class="btn btn-primary" value="rf-channel">
+                  <input type="radio"> RF Channel
                 </label>
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="virtual-channel" type="radio"> Virtual Channel
+                <label class="btn btn-primary" value="virtual-channel">
+                  <input type="radio"> Virtual Channel
                 </label>
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="time-received" type="radio"> Time Received
+                <label class="btn btn-primary" value="time-received">
+                  <input type="radio"> Time Received
                 </label>
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="azimuth" type="radio"> Azimuth
+                <label class="btn btn-primary" value="azimuth">
+                  <input type="radio"> Azimuth
                 </label>
-                <label class="btn btn-primary">
-                  <input name="sort-by" id="callsign" type="radio"> Callsign
+                <label class="btn btn-primary" value="callsign">
+                  <input type="radio"> Callsign
                 </label>
               </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             </div> <!-- end of sort-by group -->
             <div class="tabs-stations-rx-group" id="distance-units">
               <p>Distance Units</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="units" id="miles" type="radio"> Miles
+                <label class="btn btn-primary active" value="miles">
+                  <input type="radio" checked=""> Miles
                 </label>
-                <label class="btn btn-primary">
-                  <input name="units" id="ever" type="radio"> Kilometers
+                <label class="btn btn-primary" value="km">
+                  <input type="radio"> Kilometers
                 </label>
               </div> <!-- end of Distance Units btn-group btn-group-xs -->
             </div> <!-- end of Distance Units group -->
@@ -90,80 +90,67 @@ static_url = '[% static_url %]'
           </div> <!-- end of tabs-stations-rx -->
           <div class="tab-pane fade" id="tabs-channel">
             <div class="tabs-stations-rx-group-top" id="channel-bands">
-              <p>Restrict to</p>
+              <p>Show bands</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="channel-bands" type="checkbox" id="vhf-low">
-                  VHF Low 2-6
+                <label class="btn btn-primary active" value="vhf-low">
+                  <input type="checkbox" checked=""> VHF Low 2-6
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-bands" type="checkbox" id="vhf-high">
-                  VHF High 7-13
+                <label class="btn btn-primary active" value="vhf-high">
+                  <input type="checkbox" checked=""> VHF High 7-13
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-bands" type="checkbox" id="uhf">
-                  UHF 14-51
+                <label class="btn btn-primary active" value="uhf">
+                  <input type="checkbox" checked=""> UHF 14-51
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-bands" type="checkbox" id="uhf-oob">
-                  Non-broadcast 37,52-69
+                <label class="btn btn-primary active" value="uhf-oob">
+                  <input type="checkbox" checked=""> Non-broadcast 37,52-69
                 </label>
               </div> <! -- end of channel band buttons -->
             </div> <!-- end of id channel-bands -->
             <div class="tabs-stations-rx-group" id="channel-sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="channel-sort-by" id="ch-rf-channel" type="radio">
-                  RF Channel
+                <label class="btn btn-primary active" value="rf-channel">
+                  <input type="radio" checked=""> RF Channel
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-sort-by" id="ch-virtual-channel" type="radio">
-                  Virtual Channel
+                <label class="btn btn-primary" value="virtual-channel">
+                  <input type="radio"> Virtual Channel
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-sort-by" id="ch-quality" type="radio">
-                  Quality
+                <label class="btn btn-primary" value="quality">
+                  <input type="radio"> Quality
                 </label>
-                <label class="btn btn-primary">
-                  <input name="channel-sort-by" id="ch-distance" type="radio">
-                  Distance
+                <label class="btn btn-primary" value="distance">
+                  <input type="radio"> Distance
                 </label>
               </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             </div> <!-- end of sort-by group -->
             <div class="tabs-stations-rx-group" id="graph-time-range">
               <p>Time Range</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="time-range" type="radio" id="hourly"> Hourly
+                <label class="btn btn-primary active" value="hourly">
+                  <input type="radio" checked=""> Hourly
                 </label>
-                <label class="btn btn-primary">
-                  <input name="time-range" type="radio" id="daily"> Daily
+                <label class="btn btn-primary" value="daily">
+                  <input type="radio"> Daily
                 </label>
-                <label class="btn btn-primary">
-                  <input name="time-range" type="radio" id="weekly"> Weekly
+                <label class="btn btn-primary" value="weekly">
+                  <input type="radio"> Weekly
                 </label>
-                <label class="btn btn-primary">
-                  <input name="time-range" type="radio" id="monthly"> Monthly
+                <label class="btn btn-primary" value="monthly">
+                  <input type="radio"> Monthly
                 </label>
-                <label class="btn btn-primary">
-                  <input name="time-range" type="radio" id="all"> All
+                <label class="btn btn-primary" value="all">
+                  <input type="radio"> All
                 </label>
               </div> <!-- end of time range buttons -->
             </div> <!-- end of id time-range -->
             <div class="tabs-stations-rx-group" id="modulation-buttons">
               <p>Modulation</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary">
-                  <input name="modulation" type="radio" id="decodeable">
-                  Decodeable only
+                <label class="btn btn-primary active" value="decodeable">
+                  <input type="checkbox" checked=""> Decodeable only
                 </label>
-                <label class="btn btn-primary">
-                  <input name="modulation" type="radio" id="undecodeable">
-                  Undecodeable only
-                </label>
-                <label class="btn btn-primary">
-                  <input name="modulation" type="radio" id="all"> All
+                <label class="btn btn-primary active" value="undecodeable">
+                  <input type="checkbox" checked=""> Undecodeable only
                 </label>
               </div> <!-- end of modulation buttons -->
             </div> <!-- end of modulation -->
@@ -191,6 +178,7 @@ static_url = '[% static_url %]'
 <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
 <script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
 <script src="[% static_url %]/gmap3.min.js" type="text/javascript"</script>
+<script src="[% static_url %]/jquery.cookie.js" type="text/javascript"</script>
 <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
 <script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
 <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
