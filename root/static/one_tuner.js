@@ -1,3 +1,5 @@
+$.cookie.defaults.path = '/'
+
 // Fluid layout doesn't seem to support 100% height; manually set it
 function adjust_height() {
   $('.fullheight').height($(window).height());
@@ -40,15 +42,45 @@ $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function (e) {
   adjust_height()
 })
 
-$(".btn").click(function() {
-  console.log("val ",$(this).attr('value'))
+
+// button click event handelers
+$("#time-frame .btn").click(function() {
+  console.log("time-frame value ",$(this).attr('value'))
+  $.cookie('time-frame', $(this).attr('value'))
+})
+
+$("#sort-by .btn").click(function() {
+  $.cookie('sort-by', $(this).attr('value'))
+})
+
+$("#distance-units .btn").click(function() {
+  $.cookie('distance-units', $(this).attr('value'))
+})
+
+$("#channel-bands .btn").click(function() {
+  // cookie for each band?  One cookie with an array to json??
+})
+
+$("#channel-sort-by .btn").click(function() {
+  $.cookie('channel-sort-by', $(this).attr('value'))
+})
+
+$("#graph-time-range .btn").click(function() {
+  $.cookie('graph-time-range', $(this).attr('value'))
+})
+
+$("#modulation-buttons .btn").click(function() {
+  // cookie for each modulation?  One cookie with an array to json??
 })
 
 
+// top-level functions
 $(window).resize(adjust_height)
 $(document).ready(function() {
   adjust_height();
   $('.btn').button()
+  // set buttons based on previously chosen selections saved to cookies
+  // cookie code goes here...
   $('#map-container').gmap3();
   $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
             function(latest,result,xhr){ update_page(latest,result,xhr) })
