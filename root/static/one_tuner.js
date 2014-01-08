@@ -57,8 +57,11 @@ $("#distance-units .btn").click(function() {
   $.cookie('distance-units', $(this).attr('value'))
 })
 
-$("#channel-bands .btn").click(function() {
-  // cookie for each band?  One cookie with an array to json??
+// cookie for each channel-band
+$('#channel-bands .btn').click(function() {
+  $.cookie($(this).attr('value'),! $('#channel-bands [value='
+                                  +  $(this).attr('value')
+                                  +  '] input').prop('checked'))
 })
 
 $("#channel-sort-by .btn").click(function() {
@@ -69,8 +72,11 @@ $("#graph-time-range .btn").click(function() {
   $.cookie('graph-time-range', $(this).attr('value'))
 })
 
+// cookie for each modulation
 $("#modulation-buttons .btn").click(function() {
-  // cookie for each modulation?  One cookie with an array to json??
+  $.cookie($(this).attr('value'),! $('#modulation-buttons [value='
+                                  +  $(this).attr('value')
+                                  +  '] input').prop('checked'))
 })
 
 
