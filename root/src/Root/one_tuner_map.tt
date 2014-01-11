@@ -104,7 +104,7 @@ static_url = '[% static_url %]'
                 <label class="btn btn-primary active" value="uhf-oob">
                   <input type="checkbox" checked=""> Non-broadcast 37,52-69
                 </label>
-              </div> <! -- end of channel band buttons -->
+              </div> <!-- end of channel band buttons -->
             </div> <!-- end of id channel-bands -->
             <div class="tabs-stations-rx-group" id="channel-sort-by">
               <p>Sort by</p>
