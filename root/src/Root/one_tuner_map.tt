@@ -40,8 +40,8 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group-top" id="time-frame">
               <p>Time Frame</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="last-24-hours">
-                  <input type="radio" checked=""> Last 24 hours
+                <label class="btn btn-primary" value="last-24-hours">
+                  <input type="radio"> Last 24 hours
                 </label>
                 <label class="btn btn-primary" value="ever">
                   <input type="radio"> Ever Received
@@ -51,8 +51,8 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group" id="sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="distance">
-                  <input type="radio" checked=""> Distance
+                <label class="btn btn-primary" value="distance">
+                  <input type="radio"> Distance
                 </label>
                 <label class="btn btn-primary" value="rf-channel">
                   <input type="radio"> RF Channel
@@ -74,8 +74,8 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group" id="distance-units">
               <p>Distance Units</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="miles">
-                  <input type="radio" checked=""> Miles
+                <label class="btn btn-primary" value="miles">
+                  <input type="radio"> Miles
                 </label>
                 <label class="btn btn-primary" value="km">
                   <input type="radio"> Kilometers
@@ -92,25 +92,25 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group-top" id="channel-bands">
               <p>Show bands</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="vhf-low">
-                  <input type="checkbox" checked=""> VHF Low 2-6
+                <label class="btn btn-primary" value="vhf-low">
+                  <input type="checkbox"> VHF Low 2-6
                 </label>
-                <label class="btn btn-primary active" value="vhf-high">
-                  <input type="checkbox" checked=""> VHF High 7-13
+                <label class="btn btn-primary" value="vhf-high">
+                  <input type="checkbox"> VHF High 7-13
                 </label>
-                <label class="btn btn-primary active" value="uhf">
-                  <input type="checkbox" checked=""> UHF 14-51
+                <label class="btn btn-primary" value="uhf">
+                  <input type="checkbox"> UHF 14-51
                 </label>
-                <label class="btn btn-primary active" value="uhf-oob">
-                  <input type="checkbox" checked=""> Non-broadcast 37,52-69
+                <label class="btn btn-primary" value="uhf-oob">
+                  <input type="checkbox"> Non-broadcast 37,52-69
                 </label>
               </div> <!-- end of channel band buttons -->
             </div> <!-- end of id channel-bands -->
             <div class="tabs-stations-rx-group" id="channel-sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="rf-channel">
-                  <input type="radio" checked=""> RF Channel
+                <label class="btn btn-primary" value="rf-channel">
+                  <input type="radio"> RF Channel
                 </label>
                 <label class="btn btn-primary" value="virtual-channel">
                   <input type="radio"> Virtual Channel
@@ -126,8 +126,8 @@ static_url = '[% static_url %]'
             <div class="tabs-stations-rx-group" id="graph-time-range">
               <p>Time Range</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="hourly">
-                  <input type="radio" checked=""> Hourly
+                <label class="btn btn-primary" value="hourly">
+                  <input type="radio"> Hourly
                 </label>
                 <label class="btn btn-primary" value="daily">
                   <input type="radio"> Daily
@@ -143,17 +143,20 @@ static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of time range buttons -->
             </div> <!-- end of id time-range -->
-            <div class="tabs-stations-rx-group" id="modulation-buttons">
-              <p>Modulation</p>
+            <div class="tabs-stations-rx-group" id="decodeable">
+              <p>Decodeable</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
-                <label class="btn btn-primary active" value="decodeable">
-                  <input type="checkbox" checked=""> Decodeable only
+                <label class="btn btn-primary" value="both">
+                  <input type="radio"> Both
                 </label>
-                <label class="btn btn-primary active" value="undecodeable">
-                  <input type="checkbox" checked=""> Undecodeable only
+                <label class="btn btn-primary" value="decodeable">
+                  <input type="radio"> Decodeable only
                 </label>
-              </div> <!-- end of modulation buttons -->
-            </div> <!-- end of modulation -->
+                <label class="btn btn-primary" value="undecodeable">
+                  <input type="radio"> Undecodeable only
+                </label>
+              </div> <!-- end of decodeable buttons -->
+            </div> <!-- end of decodeable -->
           </div> <!-- end of RF channel selection and graphs tabs-channel -->
         </div> <!-- end of tab-content -->
       </div> <!-- end of tabbable -->
