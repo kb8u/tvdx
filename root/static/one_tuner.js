@@ -53,11 +53,10 @@ function restore_saved() {
 }
 
 
-function update_page(latest,status_code,xhr) {
-  if (status_code != "success") { return }
+function update_page(xhr_result) {
   // remove all list itmes in stations received list, then update it
   $("#stations-received-ul").empty();
-  $.each(latest['markers'],function(index,val){
+  $.each(xhr_result[0]['markers'],function(index,val){
     $("#stations-received-ul").append("<li>"+val['callsign'])+"</li>"
   })
 }
@@ -115,6 +114,16 @@ adjust_height();
 $('.btn').button()
 // set buttons based on previously chosen selections saved to cookies
 restore_saved();
+
+first_data_xhr =
+  $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
+            function(tuner_map_data,result,xhr){return tuner_map_data})
+// I don't think this does exactly what I want, getScript satisifes
+// $.when after the javascript is loaded, but not(???) run by gmap3()
+gmap_xhr =
+  $.getScript(static_url+'/gmap3.min.js',
+              function(){$('#map-container').gmap3()})
+$.when(first_data_xhr,gmap_xhr).done(update_page)
 
 
 // top-level functions

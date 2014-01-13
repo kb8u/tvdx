@@ -181,7 +181,9 @@ static_url = '[% static_url %]'
 <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
 <script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
 <script src="[% static_url %]/gmap3.min.js" type="text/javascript"></script>
+<!--
 <script src="[% static_url %]/jquery.cookie.js" type="text/javascript"></script>
+-->
 <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
 <script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
 <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
