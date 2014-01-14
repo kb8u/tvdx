@@ -53,12 +53,49 @@ function restore_saved() {
 }
 
 
-function update_page(xhr_result) {
+function update_page() {
+  update_stations_received()
+  update_map()
+}
+
+
+// from http://jsfiddle.net/dFNva/1/
+function sort_by(field, reverse, primer) {
+  var key = function (x) {return primer ? primer(x[field]) : x[field]};
+
+  return function (a,b) {
+    var A = key(a), B = key(b);
+    return ( (A < B) ? -1 : ((A > B) ? 1 : 0) ) * [-1,1][+!!reverse];
+  }
+}
+
+
+function update_stations_received(sort_val) {
+  // sort data
+  field = 'miles'
+  asc = true
+  primer = parseInt
+  // passed sort_val for sort-by click handler since .active isn't set until
+  // after button is clicked
+  sort_val = sort_val ? sort_val : $('#sort-by .active').attr('value')
+  if (sort_val == 'distance') { field = 'miles';asc=true }
+  if (sort_val == 'rf-channel') { field = 'rf_channel';asc=true }
+  if (sort_val == 'virtual-channel') { field = 'virtual_channel';asc=true }
+  // add a primer function to convert date string to epoch
+  if (sort_val == 'time-received') { field = 'last_in';asc=true;primer=undefined }
+  if (sort_val == 'azimuth') { field = 'azimuth';asc=true }
+  if (sort_val == 'callsign') { field = 'callsign';asc=true;primer=undefined }
+  tuner_map_data['markers'].sort(sort_by(field,asc,primer))
+
   // remove all list itmes in stations received list, then update it
   $("#stations-received-ul").empty();
-  $.each(xhr_result[0]['markers'],function(index,val){
+  $.each(tuner_map_data['markers'],function(index,val){
     $("#stations-received-ul").append("<li>"+val['callsign'])+"</li>"
   })
+}
+
+
+function update_map() {
 }
 
 
@@ -89,6 +126,7 @@ $("#time-frame .btn").click(function() {
 })
 $("#sort-by .btn").click(function() {
   $.cookie('sort-by', $(this).attr('value'))
+  update_stations_received($(this).attr('value'))
 })
 $("#distance-units .btn").click(function() {
   $.cookie('distance-units', $(this).attr('value'))
@@ -117,9 +155,7 @@ restore_saved();
 
 first_data_xhr =
   $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
-            function(tuner_map_data,result,xhr){return tuner_map_data})
-// I don't think this does exactly what I want, getScript satisifes
-// $.when after the javascript is loaded, but not(???) run by gmap3()
+            function(tmd){ tuner_map_data = tmd})
 gmap_xhr =
   $.getScript(static_url+'/gmap3.min.js',
               function(){$('#map-container').gmap3()})
@@ -128,10 +164,3 @@ $.when(first_data_xhr,gmap_xhr).done(update_page)
 
 // top-level functions
 $(window).resize(adjust_height)
-/* probably don't need ready function.  
-$(document).ready(function() {
-  $('#map-container').gmap3();
-  $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
-            function(latest,result,xhr){ update_page(latest,result,xhr) })
-})
-*/
