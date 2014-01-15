@@ -91,10 +91,21 @@ function update_stations_received(sort_val) {
   if (sort_val == 'callsign') { field = 'callsign';asc=true;primer=undefined }
   tuner_map_data['markers'].sort(sort_by(field,asc,primer))
 
-  // remove all list itmes in stations received list, then update it
+  // remove all list times in stations received list, then update it
   $("#stations-received-ul").empty();
   $.each(tuner_map_data['markers'],function(index,val){
-    $("#stations-received-ul").append("<li>"+val['callsign'])+"</li>"
+    $("#stations-received-ul").append(
+         '<li class="sr-list">'
+       + val['callsign']
+       + '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + val['callsign'] + '> Graphs</a><br>'
+       + 'RF channel ' + val['rf_channel'] + '<br>'
+       + 'Virtual channel ' + val['virtual_channel'] + '<br>'
+       + val['city_state'] + '<br>'
+       + 'ERP ' + val['erp'] + '<br>'
+       + 'RCASML ' + val['rcamsl'] + '<br>'
+       + 'Azimuth ' + val['azimuth'] + '&deg;<br>' 
+       + 'Distance ' + val['miles'] + ' miles<br><hr>'
+       + "</li>")
   })
 }
 

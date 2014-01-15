@@ -39,7 +39,7 @@ static_url = '[% static_url %]'
           <div class="tab-pane fade in active" id="tabs-stations-rx">
             <div class="tabs-stations-rx-group-top" id="time-frame">
               <p>Time Frame</p>
-              <div class="btn-group btn-group-xs" data-toggle="buttons">
+              <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
                 <label class="btn btn-primary" value="last-24-hours">
                   <input type="radio"> Last 24 hours
                 </label>
