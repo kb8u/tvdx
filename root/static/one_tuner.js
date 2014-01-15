@@ -61,7 +61,12 @@ function update_page() {
 
 // from http://jsfiddle.net/dFNva/1/
 function sort_by(field, reverse, primer) {
-  var key = function (x) {return primer ? primer(x[field]) : x[field]};
+  if (primer == Date) {
+    var key = function(x) { return new Date(x[field])}
+  }
+  else {
+    var key = function(x) { return primer ? primer(x[field]) : x[field] };
+  }
 
   return function (a,b) {
     var A = key(a), B = key(b);
@@ -78,11 +83,10 @@ function update_stations_received(sort_val) {
   // passed sort_val for sort-by click handler since .active isn't set until
   // after button is clicked
   sort_val = sort_val ? sort_val : $('#sort-by .active').attr('value')
-  if (sort_val == 'distance') { field = 'miles';asc=true }
+  if (sort_val == 'distance') { field = 'miles';asc=false}
   if (sort_val == 'rf-channel') { field = 'rf_channel';asc=true }
   if (sort_val == 'virtual-channel') { field = 'virtual_channel';asc=true }
-  // add a primer function to convert date string to epoch
-  if (sort_val == 'time-received') { field = 'last_in';asc=true;primer=undefined }
+  if (sort_val == 'time-received') { field = 'last_in';asc=false;primer=Date}
   if (sort_val == 'azimuth') { field = 'azimuth';asc=true }
   if (sort_val == 'callsign') { field = 'callsign';asc=true;primer=undefined }
   tuner_map_data['markers'].sort(sort_by(field,asc,primer))
