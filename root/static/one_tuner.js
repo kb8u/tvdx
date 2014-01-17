@@ -77,21 +77,22 @@ function sort_by(field, reverse, primer) {
 }
 
 
-function update_stations_received(sort_val) {
+function update_stations_received(sort_val, distance_units) {
   "use strict";
   // sort data
-  var field = 'miles', asc = true, primer = parseInt;
+  var field = 'miles', asc = true, primer = parseInt, dx, height;
   // passed sort_val for sort-by click handler since .active isn't set until
   // after button is clicked
   sort_val = sort_val || $('#sort-by .active').attr('value');
+  distance_units = distance_units || $('#distance-units .active').attr('value');
   if (sort_val === 'distance') {
     field = 'miles'; asc = false;
   }
   if (sort_val === 'rf-channel') {
-     field = 'rf_channel'; asc = true;
+    field = 'rf_channel'; asc = true;
   }
   if (sort_val === 'virtual-channel') {
-     field = 'virtual_channel'; asc = true;
+    field = 'virtual_channel'; asc = true;
   }
   if (sort_val === 'time-received') {
     field = 'last_in'; asc = false; primer = Date;
@@ -107,6 +108,13 @@ function update_stations_received(sort_val) {
   // remove all list times in stations received list, then update it
   $("#stations-received-ul").empty();
   $.each(tuner_map_data.markers, function (index, val){
+    if (distance_units === 'miles') {
+      dx = val.miles + ' miles<br>';
+      height = parseInt(parseFloat(val.rcamsl.split(' ')[0]) * 3.2808) + ' ft.';
+    } else {
+      dx = parseInt( val.miles * 1.609344 * 10) / 10 + ' km<br>'
+      height = val.rcamsl;
+    }
     $("#stations-received-ul").append(
          '<li class="sr-list">'
        + val.callsign
@@ -115,9 +123,9 @@ function update_stations_received(sort_val) {
        + 'Virtual channel ' + val.virtual_channel + '<br>'
        + val.city_state + '<br>'
        + 'ERP ' + val.erp + '<br>'
-       + 'RCASML ' + val.rcamsl + '<br>'
+       + 'RCASML ' + height + '<br>'
        + 'Azimuth ' + val.azimuth + '&deg;<br>' 
-       + 'Distance ' + val.miles + ' miles<br><hr>'
+       + 'Distance ' + dx + '<hr>'
        + "</li>");
   });
 }
@@ -173,6 +181,8 @@ $("#sort-by .btn").click(function () {
 $("#distance-units .btn").click(function() {
   "use strict";
   $.cookie('distance-units', $(this).attr('value'));
+  update_stations_received($("#sort-by .active").attr('value'),
+                           $(this).attr('value'));
 });
 $('#channel-bands .btn').click(function() {
   "use strict";
