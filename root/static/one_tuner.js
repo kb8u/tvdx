@@ -80,7 +80,7 @@ function sort_by(field, reverse, primer) {
 function update_stations_received(sort_val, distance_units) {
   "use strict";
   // sort data
-  var field = 'miles', asc = true, primer = parseInt, dx, height;
+  var field = 'miles', asc = true, primer = parseInt, dx, height, t, time;
   // passed sort_val for sort-by click handler since .active isn't set until
   // after button is clicked
   sort_val = sort_val || $('#sort-by .active').attr('value');
@@ -109,12 +109,15 @@ function update_stations_received(sort_val, distance_units) {
   $("#stations-received-ul").empty();
   $.each(tuner_map_data.markers, function (index, val){
     if (distance_units === 'miles') {
-      dx = val.miles + ' miles<br>';
-      height = parseInt(parseFloat(val.rcamsl.split(' ')[0]) * 3.2808) + ' ft.';
+      dx = val.miles + ' miles';
+      height =
+         parseInt(parseFloat(val.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
     } else {
-      dx = parseInt( val.miles * 1.609344 * 10) / 10 + ' km<br>'
+      dx = parseInt( val.miles * 1.609344 * 10, 10) / 10 + ' km';
       height = val.rcamsl;
     }
+    t = new Date(val.last_in);
+    time = t.getMonth() + 1 + '/' + t.getDate() + ' ' + t.toLocaleTimeString();
     $("#stations-received-ul").append(
          '<li class="sr-list">'
        + val.callsign
@@ -125,8 +128,9 @@ function update_stations_received(sort_val, distance_units) {
        + 'ERP ' + val.erp + '<br>'
        + 'RCASML ' + height + '<br>'
        + 'Azimuth ' + val.azimuth + '&deg;<br>' 
-       + 'Distance ' + dx + '<hr>'
-       + "</li>");
+       + 'Distance ' + dx + '<br>'
+       + time + '<br>'
+       + "<hr></li>");
   });
 }
 
