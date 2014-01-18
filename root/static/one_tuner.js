@@ -225,3 +225,16 @@ $.when(first_data_xhr, gmap_xhr).done(update_page);
 
 // top-level functions
 $(window).resize(adjust_height);
+
+//TODO: don't get new data or update_page if time frame === ever received
+setInterval(
+  function () {
+    "use strict";
+    $.getJSON(root_url + "/tuner_map_data/" + tuner_id + "/" + tuner_number,
+              function (tmd) { "use strict";
+                               tuner_map_data = tmd;
+                               update_page();
+              });
+  },
+  300000
+);
