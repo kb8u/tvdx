@@ -72,7 +72,11 @@ function sort_by(field, reverse, primer) {
 
   return function (a, b) {
     var A = key(a), B = key(b);
-    return ((A < B) ? -1 : ((A > B) ? 1 : 0)) * [-1, 1][+!!reverse];
+    if (reverse) {
+      return ((A < B) ? -1 : ((A > B) ? 1 : 0));
+    } else {
+      return ((A < B) ? 1 : ((A > B) ? -1 : 0));
+    }
   };
 }
 
