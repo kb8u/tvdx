@@ -18,6 +18,9 @@ function adjust_height() {
               + $('#channel-sort-by').height()
               + $('#graph-time-range').height() + 11;
   $('#decodeable').height($('.fullheight').height() - cth_heights);
+
+  $('#map').height($('#right-side').height()-$('#map-legend').height())
+  $('#map').width($('#right-side').width())
 }
 
 
@@ -145,6 +148,9 @@ function update_stations_received(sort_val, distance_units) {
 
 function update_map() {
   "use strict";
+  $.each(tuner_map_data['markers'],function () {
+    $('#map').gmap3({ marker:{lanLng:[this.latitude,this.longitude]}})
+  });
 }
 
 
@@ -172,7 +178,14 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   $(this).tab('show');
   $.cookie('tab-shown','tabs-stations-rx');
   // TODO: select css for map pane
-  // Time Frame click handler loads map
+  $('#map').gmap3({
+    map:{
+      options:{
+        center:[42,-85],
+        zoom: 5
+      }
+    }
+  });
   $("#time-frame .active").trigger('click');
 });
 $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function () {
@@ -264,7 +277,7 @@ var first_data_xhr =
             function(tmd) { "use strict"; tuner_map_data = tmd; });
 var gmap_xhr =
   $.getScript(static_url+'/gmap3.min.js',
-              function () { "use strict"; $('#map-container').gmap3(); });
+              function () { "use strict"; $('#right-side').gmap3(); });
 $.when(first_data_xhr, gmap_xhr).done(update_page);
 */
 
