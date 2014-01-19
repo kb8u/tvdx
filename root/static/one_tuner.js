@@ -3,17 +3,6 @@ $.cookie.defaults.path = '/';
 $.cookie.defaults.expires = 1000;
 var tuner_map_data = [], tmd_interval;
 
-function json_and_update () {
-  "use strict";
-  $.getJSON(   root_url + "/tuner_map_data/"
-             + tuner_id + "/" + tuner_number + "/24hour",
-            function (tmd) { "use strict";
-                             tuner_map_data = tmd;
-                             update_page();
-            });
-}
-
-
 // Fluid layout doesn't seem to support 100% height; manually set it
 function adjust_height() {
   "use strict";
@@ -166,6 +155,16 @@ function update_page() {
 }
 
 
+function json_and_update () {
+  "use strict";
+  $.getJSON(   root_url + "/tuner_map_data/"
+             + tuner_id + "/" + tuner_number + "/24hour",
+            function (tmd) { tuner_map_data = tmd;
+                             update_page();
+            });
+}
+
+
 // click handler for Stations tab
 $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   "use strict";
@@ -181,6 +180,7 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function () {
   adjust_height();
 });
 
+// click handler for Channels tab
 $('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
   "use strict";
   e.preventDefault();
@@ -209,8 +209,7 @@ $("#time-frame .btn").click(function () {
     clearInterval(tmd_interval);
     $.getJSON(   root_url
                + "/tuner_map_data/" + tuner_id + "/" + tuner_number + "/ever",
-              function (tmd) { "use strict";
-                               tuner_map_data = tmd;
+              function (tmd) { tuner_map_data = tmd;
                                update_page();
               });
   }
