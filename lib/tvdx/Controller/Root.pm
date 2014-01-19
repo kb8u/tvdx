@@ -346,28 +346,35 @@ sub one_tuner_map :Global {
 
 =head2 tuner_map_data
 
-Argument is tuner_id that sent the reception reports to automated_spot.
+Arguments are tuner_id and tuner_number that sent the reception reports
+to automated_spot and a string for time period; 'ever' gets all data
+ever, otherwise just the last 24 hours.
 Returns JSON data for display by page created by sub one_tuner_map
 
 =cut
 
 sub tuner_map_data :Global {
-  my ($self, $c, $tuner_id, $tuner_number) = @_;
+  my ($self, $c, $tuner_id, $tuner_number, $period) = @_;
 
   # check if tuner is known
   $self->_check_tuners($c,$tuner_id,$tuner_number);
 
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
 
-  my $now = DateTime->now;
+  my $rs;
+  if ($period eq 'ever') {
+    $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
+                                           'tuner_number' => $tuner_number});
+  }
+  else {
+    my $now = DateTime->now;
+    my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
 
-  my $last_5_min = DateTime->from_epoch( epoch => time-300 );
-  my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
-
-  # get a ResultSet of signals
-  my $rs = $c->model('DB::Signal')
+    # get a ResultSet of signals
+    $rs = $c->model('DB::Signal')
              ->tuner_date_range($tuner_id,$tuner_number,$last_24_hr,$now)
              ->most_recent;
+  }
 
   # build data structure that will be sent out at JSON
   my @markers;
@@ -655,91 +662,6 @@ sub _icon_png {
   close ICON;
 
   return 1;
-}
-
-
-
-=head2 all_stations_data
-
-Retreive all stations ever received by tuners
-
-=cut
-
-sub all_stations_data :Global {
-  my ($self, $c, @tuner_info) = @_;
-
-  my @black_markers;
-
-  $self->_check_tuners($c,@tuner_info);
-
-  my $tuner_id =     shift @tuner_info;
-  my $tuner_number = shift @tuner_info; 
-
-  my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-
-  my $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
-                                              'tuner_number' => $tuner_number});
-  while(my $signal = $rs->next) {
-    my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
-                                   lon => $tuner->longitude,
-                                   units => 'mi');
-    my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
-                                        lon => $signal->callsign->longitude},
-                                       -1);
-    my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,
-                                           lon => $signal->callsign->longitude},
-                                           -1));
-
-    my %station;
-
-    $station{tuner_id} = $tuner_id;
-    $station{tuner_number} = $tuner_number;
-    $station{distance} = $miles;
-    $station{azimuth} = $azimuth;
-
-    my $call = $signal->callsign->callsign;
-    $station{callsign} = $call;  # can't use key of call, it trashes javascript
-    $station{latitude} = $signal->callsign->latitude;
-    $station{longitude} = $signal->callsign->longitude;
-    $station{info} = 
-           '<br>RF channel ' . $signal->callsign->rf_channel . '<br>'
-         . 'Virtual channel ' . $signal->callsign->virtual_channel . '<br>'
-         . $signal->callsign->city_state . '<br>'
-         . 'ERP ' . $signal->callsign->erp_kw .'<br>'
-         . 'RCAMSL ' . $signal->callsign->rcamsl . '<br>';
-    $station{first_in} = 'first in '
-      . DateTime::Format::HTTP->format_datetime(
-          DateTime::Format::SQLite->parse_datetime($signal->first_rx_date))
-      . '<br>';
-    $station{last_in} = 'last in '
-      . DateTime::Format::HTTP->format_datetime(
-          DateTime::Format::SQLite->parse_datetime($signal->rx_date))
-      . '<br>';
-    $station{azimuth_dx} = "Azimuth: $azimuth \&deg<br>"
-      . "DX: $miles miles<br>";
-
-    $station{graphs} =  '<a href="' . $c->config->{signal_graph_url} 
-      . "$tuner_id/$tuner_number/$call\">Signal strength graphs</a><br>";
-
-    # create Callsign icon if it doesn't exist yet
-    my $png = $c->config->{image_dir} . "/$call.png";
-    if (! -r $png) {
-      if (! _icon_png($call,'white',$png)) {
-        $c->response->body("FAIL: Can't create $call.png");
-        $c->response->status(403);
-        return 0;
-      }
-    }
-  push @black_markers,  \%station;
-  }
-  # sort @black_markers by distance,callsign,tuner_id,tuner_number
-  $c->stash('tuner_id' => $tuner_id);
-  $c->stash('tuner_number' => $tuner_number);
-  $c->stash('tuner_longitude' => $tuner->longitude);
-  $c->stash('tuner_latitude' => $tuner->latitude);
-### sort goes here....
-  $c->stash('black_markers' => \@black_markers);
-  $c->detach( $c->view('JSON') );
 }
 
 
