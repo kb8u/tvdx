@@ -150,25 +150,27 @@ function update_map() {
   "use strict";
   var z = 0;
   $('#map').gmap3({clear: { name: 'marker' }});
+
   $.each(tuner_map_data['markers'],function () {
+    var zBase = 10000000;
+
     var fill_color = "#000000";
     var labelStyle = 'blackLabels';
-    var zBase = 10000000;
-    // TODO: compute fill_color; old black, colors from quality
-/*
-    if (color == 'red') {
-      labelStyle = 'colorLabels'; // black letters against color background
-      fill_color = '#FF0000';
+    if (new Date().getTime() < new Date(this.last_in).getTime() + 38400000) {
+      if (this.color == 'red') {
+        labelStyle = 'colorLabels'; // black letters against color background
+        fill_color = '#FF0000';
+      }
+      if (this.color == 'yellow') {
+        labelStyle = 'colorLabels'
+        fill_color = '#FFFF00';
+      }
+      if (this.color == 'green') {
+        labelStyle = 'colorLabels';
+        fill_color = '#00FF00';
+      }
     }
-    if (color == 'yellow') {
-      labelStyle = 'colorLabels'
-      fill_color = '#FFFF00';
-    }
-    if (color == 'green') {
-      labelStyle = 'colorLabels';
-      fill_color = '#00FF00';
-    }
-*/
+  
     $('#map').gmap3({
       defaults:{ classes:{ Marker:MarkerWithLabel } },
       marker: {
