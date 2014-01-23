@@ -150,12 +150,24 @@ function update_map() {
   "use strict";
   var z = 0;
   $('#map').gmap3({clear: { name: 'marker' }});
+  var distance_units = $('#distance-units .active').attr('value');
 
   $.each(tuner_map_data['markers'],function () {
+    var height = 0, dx = 0;
+    if (distance_units === 'miles') {
+      dx = this.miles + ' miles';
+      height =
+         parseInt(parseFloat(this.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
+    } else {
+      dx = parseInt(this.miles * 1.609344 * 10, 10) / 10 + ' km';
+      height = this.rcamsl;
+    }
+
     var zBase = 10000000;
 
     var fill_color = "#000000";
     var labelStyle = 'blackLabels';
+
     if (new Date().getTime() < new Date(this.last_in).getTime() + 38400000) {
       if (this.color == 'red') {
         labelStyle = 'colorLabels'; // black letters against color background
@@ -174,7 +186,16 @@ function update_map() {
     $('#map').gmap3({
       defaults:{ classes:{ Marker:MarkerWithLabel } },
       marker: {
-        latLng: [this.latitude,this.longitude],
+        values:[{
+          latLng: [this.latitude,this.longitude],
+          data: this.callsign + '<br>' +
+            'RF Channel ' + this.rf_channel + '<br>' +
+            'Virtual Channel ' + this.virtual_channel + '<br>' +
+            this.city_state + '<br>' +
+            'RCAMSL ' + height + '<br>' +
+            'Azimuth ' + this.azimuth + '&deg;<br>' +
+            'DX ' + dx + '<br>' +
+            '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + this.callsign + '> Graphs</a><br>'}],
         options: {
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
@@ -182,20 +203,38 @@ function update_map() {
             fillOpacity: 1,
             strokeColor: "black",
             scale: 16,
-            strokeWeight: 1 },
-            // show only the call, not the -TV or whatever
-            labelContent:   this.callsign.replace(/-.*$/,"")
-                          + '<br> ' + this.rf_channel,
-            labelAnchor: new google.maps.Point(15,8),
-            labelClass: labelStyle, // the CSS class for the label
-            zIndex: zBase + z
+            strokeWeight: 1
+          },
+          // show only the call, not the -TV or whatever
+          labelContent:   this.callsign.replace(/-.*$/,"")
+                        + '<br> ' + this.rf_channel,
+          labelAnchor: new google.maps.Point(15,8),
+          labelClass: labelStyle, // the CSS class for the label
+          zIndex: zBase + z
+        },
+        events:{
+          click: function(marker, event, context) {
+            "use strict";
+            var map = $(this).gmap3("get"),
+              infowindow = $(this).gmap3({get:{name:"infowindow"}});
+            if (infowindow){
+              infowindow.open(map, marker);
+              infowindow.setContent(context.data);
+            } else {
+              $(this).gmap3({
+                infowindow:{
+                  anchor:marker,
+                  options:{content: context.data}
+                }
+              });
+            }
+          }
         }
       },
+// are id and tag needed for anything?
       id: this.callsign,
-      data: this.callsign,
       tag: this.callsign
-    }, "autofit"
-  );
+    }, "autofit");
     z += 2; // markersOnMap uses +1 for text 
   });
 }
