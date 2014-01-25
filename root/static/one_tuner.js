@@ -68,7 +68,7 @@ function restore_saved() {
 }
 
 
-// from http://jsfiddle.net/dFNva/1/
+// based on http://jsfiddle.net/dFNva/1/
 function sort_by(field, reverse, primer) {
   "use strict";
   var key;
@@ -131,7 +131,7 @@ function update_stations_received(sort_val, distance_units) {
     time = t.getMonth() + 1 + '/' + t.getDate() + ' ' + t.toLocaleTimeString();
     $("#stations-received-ul").append(
          '<li class="sr-list">'
-       + val.callsign
+       + '<div class="callsign">' + val.callsign + '</div>'
        + '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + val.callsign + '> Graphs</a><br>'
        + 'RF channel ' + val.rf_channel + '<br>'
        + 'Virtual channel ' + val.virtual_channel + '<br>'
@@ -143,6 +143,17 @@ function update_stations_received(sort_val, distance_units) {
        + time + '<br>'
        + "<hr></li>");
   });
+  // zoom in on callsign icon when call in list is clicked
+  // BUG: this is ugly, use panTo... somehow...
+  $.each($('.callsign'),
+         function (index,val) {
+           $(this).click(function () {
+             $('#map').gmap3({map:{options:{
+               zoom: 10,
+               center: $('#map').gmap3({get:{id:this.innerHTML}}).getPosition()}}});
+           });
+         }
+  );
 }
 
 
