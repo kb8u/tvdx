@@ -148,10 +148,13 @@ function update_stations_received(sort_val, distance_units) {
 
 function update_map() {
   "use strict";
+  var zBase = 10000000;
   var z = 0;
   $('#map').gmap3({clear: { name: 'marker' }});
   var distance_units = $('#distance-units .active').attr('value');
 
+  // iterate over tuner_map_data and build data structure for gmap3 placement
+  var values = [], options = [];
   $.each(tuner_map_data['markers'],function () {
     var height = 0, dx = 0;
     if (distance_units === 'miles') {
@@ -163,8 +166,7 @@ function update_map() {
       height = this.rcamsl;
     }
 
-    var zBase = 10000000;
-
+    // black markers for old stations
     var fill_color = "#000000";
     var labelStyle = 'blackLabels';
 
@@ -182,61 +184,62 @@ function update_map() {
         fill_color = '#00FF00';
       }
     }
-  
-    $('#map').gmap3({
-      defaults:{ classes:{ Marker:MarkerWithLabel } },
-      marker: {
-        values:[{
-          latLng: [this.latitude,this.longitude],
-          data: this.callsign + '<br>' +
-            'RF Channel ' + this.rf_channel + '<br>' +
-            'Virtual Channel ' + this.virtual_channel + '<br>' +
-            this.city_state + '<br>' +
-            'RCAMSL ' + height + '<br>' +
-            'Azimuth ' + this.azimuth + '&deg;<br>' +
-            'DX ' + dx + '<br>' +
-            '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + this.callsign + '> Graphs</a><br>'}],
-        options: {
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: fill_color,
-            fillOpacity: 1,
-            strokeColor: "black",
-            scale: 16,
-            strokeWeight: 1
-          },
-          // show only the call, not the -TV or whatever
-          labelContent:   this.callsign.replace(/-.*$/,"")
-                        + '<br> ' + this.rf_channel,
-          labelAnchor: new google.maps.Point(15,8),
-          labelClass: labelStyle, // the CSS class for the label
-          zIndex: zBase + z
-        },
-        events:{
-          click: function(marker, event, context) {
-            "use strict";
-            var map = $(this).gmap3("get"),
-              infowindow = $(this).gmap3({get:{name:"infowindow"}});
-            if (infowindow){
-              infowindow.open(map, marker);
-              infowindow.setContent(context.data);
-            } else {
-              $(this).gmap3({
-                infowindow:{
-                  anchor:marker,
-                  options:{content: context.data}
-                }
-              });
-            }
-          }
-        }
-      },
-// are id and tag needed for anything?
+
+    values.push({
       id: this.callsign,
-      tag: this.callsign
-    }, "autofit");
+      latLng: [this.latitude,this.longitude],
+      data: this.callsign + '<br>' +
+        'RF Channel ' + this.rf_channel + '<br>' +
+        'Virtual Channel ' + this.virtual_channel + '<br>' +
+        this.city_state + '<br>' +
+        'RCAMSL ' + height + '<br>' +
+        'Azimuth ' + this.azimuth + '&deg;<br>' +
+        'DX ' + dx + '<br>' +
+        '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + this.callsign + '> Graphs</a><br>',
+      options: {
+        icon: { path: google.maps.SymbolPath.CIRCLE,
+                fillColor: fill_color,
+                fillOpacity: 1,
+                strokeColor: "black",
+                scale: 16,
+                strokeWeight: 1
+        },
+        // show only the call, not the -TV or whatever
+        labelContent: this.callsign.replace(/-.*$/,"")+'<br> '+ this.rf_channel,
+        labelAnchor: new google.maps.Point(15,8),
+        labelClass: labelStyle, // the CSS class for the label
+        zIndex: zBase + z
+      }
+    });
+
     z += 2; // markersOnMap uses +1 for text 
   });
+
+  $('#map').gmap3({
+    defaults:{ classes:{ Marker:MarkerWithLabel } },
+    marker: {
+      values: values,
+      options: options,
+      events:{
+        click: function(marker, event, context) {
+          "use strict";
+          var map = $(this).gmap3("get"),
+            infowindow = $(this).gmap3({get:{name:"infowindow"}});
+          if (infowindow){
+            infowindow.open(map, marker);
+            infowindow.setContent(context.data);
+          } else {
+            $(this).gmap3({
+              infowindow:{
+                anchor:marker,
+                options:{content: context.data}
+              }
+            });
+          }
+        }
+      }
+    },
+  }, "autofit");
 }
 
 
