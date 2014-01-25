@@ -1,7 +1,8 @@
-/*global $, root_url, static_url, tuner_id, tuner_number, tmd_interval */
+/*global $, google, MarkerWithLabel, root_url, static_url, tuner_id, tuner_number, tmd_interval */
 $.cookie.defaults.path = '/';
 $.cookie.defaults.expires = 1000;
 var tuner_map_data = [], tmd_interval;
+var z_top = 11000000; // a zIndex that is always on top (for zoom to station)
 
 // Fluid layout doesn't seem to support 100% height; manually set it
 function adjust_height() {
@@ -19,8 +20,8 @@ function adjust_height() {
               + $('#graph-time-range').height() + 11;
   $('#decodeable').height($('.fullheight').height() - cth_heights);
 
-  $('#map').height($('#right-side').height()-$('#map-legend').height())
-  $('#map').width($('#right-side').width())
+  $('#map').height($('#right-side').height()-$('#map-legend').height());
+  $('#map').width($('#right-side').width());
 }
 
 
@@ -146,11 +147,14 @@ function update_stations_received(sort_val, distance_units) {
   // zoom in on callsign icon when call in list is clicked
   // BUG: this is ugly, use panTo... somehow...
   $.each($('.callsign'),
-         function (index,val) {
+         function () {
            $(this).click(function () {
              $('#map').gmap3({map:{options:{
                zoom: 10,
                center: $('#map').gmap3({get:{id:this.innerHTML}}).getPosition()}}});
+             // move marker to top in case it's below other markers
+             $('#map').gmap3({get: {id:this.innerHTML}}).setZIndex(z_top);
+             z_top += 2;
            });
          }
   );
@@ -159,15 +163,13 @@ function update_stations_received(sort_val, distance_units) {
 
 function update_map() {
   "use strict";
-  var zBase = 10000000;
-  var z = 0;
+  var zBase = 10000000, z = 0, distance_units, values = [], options = [];
   $('#map').gmap3({clear: { name: 'marker' }});
-  var distance_units = $('#distance-units .active').attr('value');
+  distance_units = $('#distance-units .active').attr('value');
 
   // iterate over tuner_map_data and build data structure for gmap3 placement
-  var values = [], options = [];
-  $.each(tuner_map_data['markers'],function () {
-    var height = 0, dx = 0;
+  $.each(tuner_map_data.markers,function () {
+    var height = 0, dx = 0, fill_color, labelStyle;
     if (distance_units === 'miles') {
       dx = this.miles + ' miles';
       height =
@@ -178,19 +180,19 @@ function update_map() {
     }
 
     // black markers for old stations
-    var fill_color = "#000000";
-    var labelStyle = 'blackLabels';
+    fill_color = "#000000";
+    labelStyle = 'blackLabels';
 
     if (new Date().getTime() < new Date(this.last_in).getTime() + 38400000) {
-      if (this.color == 'red') {
+      if (this.color === 'red') {
         labelStyle = 'colorLabels'; // black letters against color background
         fill_color = '#FF0000';
       }
-      if (this.color == 'yellow') {
-        labelStyle = 'colorLabels'
+      if (this.color === 'yellow') {
+        labelStyle = 'colorLabels';
         fill_color = '#FFFF00';
       }
-      if (this.color == 'green') {
+      if (this.color === 'green') {
         labelStyle = 'colorLabels';
         fill_color = '#00FF00';
       }
@@ -233,7 +235,6 @@ function update_map() {
       options: options,
       events:{
         click: function(marker, event, context) {
-          "use strict";
           var map = $(this).gmap3("get"),
             infowindow = $(this).gmap3({get:{name:"infowindow"}});
           if (infowindow){
@@ -249,7 +250,7 @@ function update_map() {
           }
         }
       }
-    },
+    }
   }, "autofit");
 }
 
