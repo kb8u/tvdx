@@ -48,7 +48,7 @@ function restore_checkbox(category, value) {
 
 
 // set buttons based on previously chosen selections saved to cookies
-// or set default if there are is no cookie
+// or set default if there are is no cookie.  Also restore map lat/lon & zoom.
 function restore_saved() {
   "use strict";
   restore_radio_button('time-frame', "last-24-hours");
@@ -252,6 +252,7 @@ function update_map() {
       }
     }
   }, "autofit");
+  // save lat/lon and zoom cookies
 }
 
 
