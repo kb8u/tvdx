@@ -3,8 +3,8 @@
 <head>
   <link rel="icon" href="[% static_url %]/favicon.ico">
   <title>TV stations received at [% tuner.owner_id %] [% tuner_number.description %]</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements -->
   <!-- and media queries -->
   <!--[if lt IE 9]>
@@ -22,7 +22,6 @@ static_url = '[% static_url %]'
   <link href="[% static_url %]/one_tuner.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-<div class="container">
   <div class="row fullheight">
     <div class="col-xs-3">
       <!-- allows tabs on left, content is below in tab-content -->
@@ -160,32 +159,34 @@ static_url = '[% static_url %]'
           </div> <!-- end of RF channel selection and graphs tabs-channel -->
         </div> <!-- end of tab-content -->
       </div> <!-- end of tabbable -->
-    </div> <!-- end of col-xs-3 -->
+    </div> <!-- end of controls -->
     <div class="col-xs-9 boxit" id="right-side">
-      <div id="map">
-      Map goes here
-      </div> <!-- end of map -->
+      <div id="map-recent">
+      map loading...
+      </div><!-- end of map-recent -->
+      <div id="map-ever">
+      map loading...
+      </div><!-- end of map-ever -->
       <div id="map-legend">
         <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong
         <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium
         <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
         <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Signal in last 24 hours, but not currently<br>
       </div> <!-- end of map-legend -->
-    </div> <!-- end of col-xs-9 -->
+    </div> <!-- end of righ-side -->
   </div> <!-- end of row -->
-</div> <!-- end of container -->
 
 
 
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
-<script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
-<script src="[% static_url %]/gmap3.min.js" type="text/javascript"></script>
-<script src="[% static_url %]/jquery.cookie.js" type="text/javascript"></script>
-<script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
-<script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
-<script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi?key=ABQIAAAA2N4H1X2kTmkGEjW247ahnxQdw6pJf8TD3LVL9vvuOZwKQe0-qxQ45rUXLLDH1quJWfw-C9I5qSbHZQ"></script>
+  <script src="http://maps.googleapis.com/maps/api/js?sensor=false" type="text/javascript"></script>
+  <script src="[% static_url %]/gmap3.min.js" type="text/javascript"></script>
+  <script src="[% static_url %]/jquery.cookie.js" type="text/javascript"></script>
+  <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
+  <script src="[% static_url %]/tvdx_common.js" type="text/javascript"></script>
+  <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
 </body>
 </html>
