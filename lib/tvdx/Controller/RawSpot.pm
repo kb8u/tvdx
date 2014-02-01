@@ -183,9 +183,8 @@ sub _find_call {
     }
   }
 
-  # else no tsid so try callsign and channel
-  else {
-    # loop over virtual channels, look for something resembling a callsign
+  # try callsign and channel unless TSID lookup worked
+  unless (%transmitter) {
     VIRT_CHAN: for my $program (keys %{$args->{channel_details}{virtual}}) {
       next if $args->{channel_details}{virtual}{$program}{name} !~ /^([CWKX](\d\d)*[A-Z]{2,3})/;
       my $possible_call = uc $1;
