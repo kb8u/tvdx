@@ -117,7 +117,7 @@ sub _find_call {
   my $ch = $args->{channel_details};
 
   # nothing to look up if there's no modulation
-  return (undef,undef) if ($ch->{modulation} eq 'none';
+  return (undef,undef) if $ch->{modulation} eq 'none';
 
   # determine virtual channel for fcc table
   # use channel number if there are no virtuals
