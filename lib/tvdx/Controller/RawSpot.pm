@@ -137,7 +137,7 @@ sub _find_call {
       n_or_s lat_deg lat_min lat_sec w_or_e lon_deg lon_min lon_sec
       digital_tsid analog_tsid observed_tsid);
 
-  # try tsid (excepting 0, 1 and greater than 65536) and channel
+  # try tsid (excepting 0, 1 and greater than 65535) and channel
   if ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) {
 
     # update or create rabbitears_tsid if entry is old or missing
@@ -191,12 +191,12 @@ sub _find_call {
     # loop over virtual channels, look for something resembling a callsign
     VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
       next unless ($ch->{reporter_callsign} || 
-        $ch->{virtual}{$program}{name} =~ /([CWKX](\d\d)*[A-Z]{2,3})/);
-      my $possible_call = uc $1 || $ch->{reporter_callsign};
+        $ch->{virtual}{$program}{name} =~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
+      my $possible_call = $ch->{reporter_callsign} || uc $1;
 
       # update or create rabbitears_call if entry is old or missing
       my ($re_call_find) = $args->{c}->model('DB::RabbitearCall')
-                             ->find({'callsign' => $possible_call});
+                                     ->find({'callsign' => $possible_call});
       my $rlu;
       if (   (! $re_call_find)
           || (DateTime::Format::SQLite->parse_datetime(
