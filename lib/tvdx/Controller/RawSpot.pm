@@ -64,9 +64,6 @@ sub raw_spot_POST :Global {
   RAWSPOT: for my $channel (keys %{$json->{'rf_channel'}}) {
     my $channel_details   = $json->{'rf_channel'}->{$channel};
 
-# TODO: log user-reported callsign
-    my $reporter_callsign = $channel_details->{reporter_callsign};
-
     # need at least a strength to log
     next RAWSPOT unless $channel_details->{strength};
     # ignore bogus channel numbers
@@ -117,20 +114,19 @@ sub raw_spot_POST :Global {
 sub _find_call {
   my ($self,$args) = @_;
 
+  my $ch = $args->{channel_details};
+
   # nothing to look up if there's no modulation
-  if ($args->{channel_details}{modulation} eq 'none') {
-    return (undef,undef);
-  }
+  return (undef,undef) if ($ch->{modulation} eq 'none';
 
   # determine virtual channel for fcc table
   # use channel number if there are no virtuals
   my $fcc_virt = $args->{channel};
-  if (%{$args->{channel_details}{virtual}}) {
+  if (%{$ch->{virtual}}) {
     # any subchannel will do, just choose a random one
-    my ($some_key) = keys %{$args->{channel_details}{virtual}}; 
-    if (exists $args->{channel_details}{virtual}{$some_key}{channel}) {
-      ($fcc_virt) =
-         split /\./,$args->{channel_details}{virtual}{$some_key}{channel};
+    my ($some_key) = keys %{$ch->{virtual}}; 
+    if (exists $ch->{virtual}{$some_key}{channel}) {
+      ($fcc_virt) = split /\./,$ch->{virtual}{$some_key}{channel};
     }
   }
 
@@ -141,24 +137,22 @@ sub _find_call {
       n_or_s lat_deg lat_min lat_sec w_or_e lon_deg lon_min lon_sec
       digital_tsid analog_tsid observed_tsid);
 
-  # try tsid (excepting 0, 1 and greater than 32766) and channel
-  if (   $args->{channel_details}{tsid} 
-      && $args->{channel_details}{tsid} > 1
-      && $args->{channel_details}{tsid} < 32767) {
+  # try tsid (excepting 0, 1 and greater than 65536) and channel
+  if ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) {
 
     # update or create rabbitears_tsid if entry is old or missing
     my ($re_tsid_find) = $args->{c}->model('DB::RabbitearsTsid')
-                           ->find({'tsid'=>$args->{channel_details}{tsid}});
+                                   ->find({'tsid'=>$ch->{tsid}});
     my $rlu;
     if (   (! $re_tsid_find)
         || (DateTime::Format::SQLite->parse_datetime(
               $re_tsid_find->last_re_lookup) < $args->{yesterday})) {
-      $rlu = get($RABBITEARS_TVQ . "tsid=$args->{channel_details}{tsid}");
+      $rlu = get($RABBITEARS_TVQ . "tsid=$ch->{tsid}");
       if (defined $rlu) {
         # create or update rabbitears_tsid table
         if (! $re_tsid_find) {
           $args->{c}->model('DB::RabbitearsTsid')->create({
-             'tsid' => $args->{channel_details}{tsid},
+             'tsid' => $ch->{tsid},
              're_rval' => $rlu,
              'last_re_lookup' => $args->{sqlite_now},});
         }
@@ -174,10 +168,19 @@ sub _find_call {
       foreach my $s (split /\n/, $rlu) {
         my %rlu_values;
         @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
-        if ($args->{channel} == $rlu_values{fcc_channel}) {
-          %transmitter = %rlu_values;
-          $transmitter{fcc_virt} = $fcc_virt;
-          last;
+        if ($ch->{reporter_callsign}) {
+          if ($ch->{reporter_callsign} eq $rlu_values{call}){
+            %transmitter = %rlu_values;
+            $transmitter{fcc_virt} = $fcc_virt;
+            last;
+          }
+        }
+        else {
+          if ($args->{channel} == $rlu_values{fcc_channel}) {
+            %transmitter = %rlu_values;
+            $transmitter{fcc_virt} = $fcc_virt;
+            last;
+          }
         }
       }
     }
@@ -186,9 +189,10 @@ sub _find_call {
   # try callsign and channel unless TSID lookup worked
   unless (%transmitter) {
     # loop over virtual channels, look for something resembling a callsign
-    VIRT_CHAN: for my $program (keys %{$args->{channel_details}{virtual}}) {
-      next if $args->{channel_details}{virtual}{$program}{name} !~ /^([CWKX](\d\d)*[A-Z]{2,3})/;
-      my $possible_call = uc $1;
+    VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
+      next unless ($ch->{reporter_callsign} || 
+        $ch->{virtual}{$program}{name} =~ /([CWKX](\d\d)*[A-Z]{2,3})/);
+      my $possible_call = uc $1 || $ch->{reporter_callsign};
 
       # update or create rabbitears_call if entry is old or missing
       my ($re_call_find) = $args->{c}->model('DB::RabbitearCall')
@@ -308,20 +312,22 @@ sub _rrd_update_nocall {
 sub _virtual_current {
   my ($self,$args) = @_;
 
+  my $ch = $args->{channel_details};
+
   # process each virtual channel
-  for my $program (keys %{$args->{channel_details}{virtual}}) {
+  for my $program (keys %{$ch->{virtual}}) {
     my ($v_row) =
       $args->{c}->model('DB::Virtual')->find(
         {'callsign' => $args->{callsign},
-         'name'     => $args->{channel_details}{virtual}{$program}{name},
-         'channel'  => $args->{channel_details}{virtual}{$program}{channel}});
+         'name'     => $ch->{virtual}{$program}{name},
+         'channel'  => $ch->{virtual}{$program}{channel}});
 
     # all new entry?
     if (!$v_row) {
       $args->{c}->model('DB::Virtual')->create({
         'rx_date'  => $args->{sqlite_now},
-        'name'     => $args->{channel_details}{virtual}{$program}{name},
-        'channel'  => $args->{channel_details}{virtual}{$program}{channel},
+        'name'     => $ch->{virtual}{$program}{name},
+        'channel'  => $ch->{virtual}{$program}{channel},
         'callsign' => $args->{callsign}});
       next;
     }
@@ -337,19 +343,19 @@ sub _virtual_current {
 sub _tsid_current {
   my ($self,$args) = @_;
 
+  my $ch = $args->{channel_details};
+
   # nothing to do if tsid is missing or invalid
-  unless (    $args->{channel_details}{tsid}
-           && $args->{channel_details}{tsid} > 1
-           && $args->{channel_details}{tsid} < 32767) { return }
+  unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) { return }
 
   my ($tsid_row) = $args->{c}->model('DB::Tsid')->find(
         {'callsign' => $args->{callsign},
-         'tsid'     => $args->{channel_details}{tsid}});
+         'tsid'     => $ch->{tsid}});
   # all new entry?
   if (! $tsid_row) {
     $args->{c}->model('DB::Tsid')->create({
       'rx_date'  => $args->{sqlite_now},
-      'tsid'     => $args->{channel_details}{tsid},
+      'tsid'     => $ch->{tsid},
       'callsign' => $args->{callsign}});
   }
   # else update existing row
@@ -363,6 +369,8 @@ sub _tsid_current {
 sub _signal_update {
   my ($self,$args) = @_;
 
+  my $ch = $args->{channel_details};
+
   # create new record if needed.  Station moving to new channel qualifies
   my $entry = $args->{c}->model('DB::Signal')
                ->find({'tuner_id' => $args->{tuner_id},
@@ -373,8 +381,8 @@ sub _signal_update {
       'rx_date'         => $args->{sqlite_now},
       'first_rx_date'   => $args->{sqlite_now},
       'rf_channel'      => $args->{channel},
-      'strength'        => $args->{channel_details}{'strength'},
-      'sig_noise'       => $args->{channel_details}{'sig_noise'},
+      'strength'        => $ch->{'strength'},
+      'sig_noise'       => $ch->{'sig_noise'},
       'tuner_id'        => $args->{tuner_id},
       'tuner_number'    => $args->{tuner_number},
       'callsign'        => $args->{callsign},
@@ -386,8 +394,8 @@ sub _signal_update {
   }
   $entry->update({'rx_date'    => $args->{sqlite_now},
                   'rf_channel' => $args->{channel},
-                  'strength'   => $args->{channel_details}{strength},
-                  'sig_noise'  => $args->{channel_details}{sig_noise}});
+                  'strength'   => $ch->{strength},
+                  'sig_noise'  => $ch->{sig_noise}});
 
   my $rrd_file = join '_', ($args->{tuner_id},
                             $args->{tuner_number},
@@ -405,7 +413,7 @@ sub _signal_update {
       my $te = $args->{now_epoch} - 60*$i;
       RRDs::update(
         $rrd_file, '--template', 'strength:sig_noise',
-        "$te:$args->{channel_details}{strength}:$args->{channel_details}{sig_noise}"
+        "$te:$ch->{strength}:$ch->{sig_noise}"
       );
     }
   }
@@ -415,14 +423,14 @@ sub _signal_update {
       my $te = $args->{now_epoch} - 60*$i;
       RRDs::update(
         $rrd_file, '--template', 'strength:sig_noise',
-        "$te:$args->{channel_details}{strength}:$args->{channel_details}{sig_noise}"
+        "$te:$ch->{strength}:$ch->{sig_noise}"
       );
     }
   }
 
   RRDs::update(
     $rrd_file, '--template', 'strength:sig_noise',
-    "$args->{now_epoch}:$args->{channel_details}{strength}:$args->{channel_details}{sig_noise}"
+    "$args->{now_epoch}:$ch->{strength}:$ch->{sig_noise}"
   );
   return 1;
 }
