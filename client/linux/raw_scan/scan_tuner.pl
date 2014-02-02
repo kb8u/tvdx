@@ -3,6 +3,7 @@
 # Sends resluts to web site.
 #
 # This version sends the raw scan.  Written 5/24/2013 by Russell Dwarshuis
+# Added -o option Feb. 1, 2014 -rd
 
 use strict 'vars';
 use Getopt::Std;
@@ -23,10 +24,24 @@ my $TUNER_ID = 'FFFFFFFF';
 # which tuner to scan
 my $TUNER = '/tuner0/';
 
-our ($opt_h,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
-getopts('hp:t:u:x:d');
+our ($opt_h,$opt_o,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
+getopts('ho:p:t:u:x:d');
 help() if ($opt_h);
 my $DEBUG = $opt_d;
+
+my %override;
+my @overrides = split /,/,$opt_o;
+while(@overrides) { $override{pop @overrides} = pop @overrides; }
+foreach my $ch (keys %override) {
+  unless ($ch =~ /\d+/ && $ch >1 && $ch < 70) {
+    print "Bad channel number in -o option.\n";
+        help();
+  }
+  unless ($override{$ch} =~ /^\S+/) {
+    print "Bad callsign in -o option.\n";
+        help();
+  }
+}
 
 $CONFIG_PROGRAM = $opt_p if ($opt_p);
 if (! -x $CONFIG_PROGRAM) {
@@ -86,8 +101,10 @@ SCAN: while(1) {
         $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
         $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
         $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
-        # place holder for when local reporter knows the real callsign
-        $scan->{rf_channel}->{$channel}->{reporter_callsign} = '';
+        if (exists $override{$channel}) {
+          $scan->{rf_channel}->{$channel}->{reporter_callsign}
+            = $override{$channel};
+        }
       }
       $freq = $1;
       $channel = $2;
@@ -107,7 +124,7 @@ SCAN: while(1) {
     if ($_ =~ /^TSID: (0x[0-9A-Fa-f]{4})$/) {
       $tsid = hex($1);
     }
-    if ($_ =~ /^PROGRAM\s+(\d+):\s+(\S+)\s+(.+)/) {
+    if ($_ =~ /^PROGRAM\s+(\d+):\s+(\S+)\s(.+)/) {
       $virtual->{$1}->{channel} = $2;
       $virtual->{$1}->{name} = $3;
     }
@@ -120,8 +137,10 @@ SCAN: while(1) {
     $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
     $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
     $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
-    # place holder for when local reporter knows the real callsign
-    $scan->{rf_channel}->{$channel}->{reporter_callsign} = '';
+    if (exists $override{$channel}) {
+      $scan->{rf_channel}->{$channel}->{reporter_callsign}
+        = $override{$channel};
+    }
   }
   print "scan finished.\n" if $DEBUG;
 
@@ -137,10 +156,11 @@ SCAN: while(1) {
 
   if (length($json) < 500) {
     print "Scan not successful, length of JSON data is too short\n" if $DEBUG;
-	sleep 1;
+    sleep 1;
   }
   else {
     print "Sending results to $SPOT_URL\n" if $DEBUG;
+    print "JSON:\n$json" if $DEBUG;
     my $req = HTTP::Request->new(POST => $SPOT_URL);
     $req->content_type('application/json');
     $req->content($json);
@@ -175,6 +195,8 @@ may give you warnings about network activity.  It's normal, don't worry.
 
 Program options:
 -h print help (you're reading it)
+-o over-ride a callsign onto a channel e.g. -o 32,WDUD,44,CRUD forces channel
+   32 to use a callsign WDUD and 44 to use CRUD
 -p Path to hdhomerun_config.exe (used to scan the tuner).  It is normally
    already installed from the CD that came with your tuner.
    Defaults to $CONFIG_PROGRAM

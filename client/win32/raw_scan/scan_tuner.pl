@@ -166,8 +166,7 @@ SCAN: while(1) {
   }
   else {
     print "Sending results to $SPOT_URL\n" if $DEBUG;
-	print "JSON:\n";
-	print $json if $DEBUG;
+	print "JSON:\n$json" if $DEBUG;
     my $req = HTTP::Request->new(POST => $SPOT_URL);
     $req->content_type('application/json');
     $req->content($json);
