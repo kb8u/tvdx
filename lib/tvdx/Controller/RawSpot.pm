@@ -109,6 +109,35 @@ sub raw_spot_POST :Global {
 }
 
 
+sub _lu_call {
+  my ($args,$possible_call) = @_;
+  # update or create rabbitears_call if entry is old or missing
+  my ($re_call_find) = $args->{c}->model('DB::RabbitearCall')
+                                 ->find({'callsign' => $possible_call});
+  my $rlu;
+  if (   (! $re_call_find)
+      || (DateTime::Format::SQLite->parse_datetime(
+            $re_call_find->last_re_lookup) < $args->{yesterday})) {
+    $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
+    if (defined $rlu) {
+      # create or update rabbitears_call table
+      if (! $re_call_find) {
+        $args->{c}->model('DB::RabbitearCall')->create({
+           'callsign' => $possible_call,
+           're_rval' => $rlu,
+           'last_re_lookup' => $args->{sqlite_now},});
+      }
+      else {
+        $re_call_find->update({'last_re_lookup' => $args->{sqlite_now}});
+      }
+    }
+  }
+  else {
+    $rlu = $re_call_find->re_rval;
+  }
+}
+
+
 # determine callsign from raw channel information.  Updates (if > 1 day old)
 # rabbitears_call, rabbitears_tsid and fcc tables. 
 sub _find_call {
@@ -165,18 +194,28 @@ sub _find_call {
       $rlu = $re_tsid_find->re_rval;
     }
     if (defined $rlu) {
+      # discard tsid's on other channels
+      my @rlu;
       foreach my $s (split /\n/, $rlu) {
         my %rlu_values;
         @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
-        if ($ch->{reporter_callsign}) {
-          if ($ch->{reporter_callsign} eq $rlu_values{call}){
-            %transmitter = %rlu_values;
-            $transmitter{fcc_virt} = $fcc_virt;
-            last;
-          }
+        if ($args->{channel} == $rlu_values{fcc_channel}) {
+          push @rlu,$s;
         }
-        else {
-          if ($args->{channel} == $rlu_values{fcc_channel}) {
+      }
+
+      # use match if it's the only one
+      if (scalar @rlu == 1) {
+        @transmitter{@rabbitears_keys} = split /\s*\|/,$rlu[0];
+        $transmitter{fcc_virt} = $fcc_virt;
+      }
+
+      # try reporter_callsign if there's more than one
+      if (scalar @rlu > 1 && $ch->{reporter_callsign}) {
+        foreach my $s (@rlu) {
+          my %rlu_values;
+          @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+          if ($ch->{reporter_callsign} eq $rlu_values{call}){
             %transmitter = %rlu_values;
             $transmitter{fcc_virt} = $fcc_virt;
             last;
@@ -190,34 +229,10 @@ sub _find_call {
   unless (%transmitter) {
     # loop over virtual channels, look for something resembling a callsign
     VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
-      next unless ($ch->{reporter_callsign} || 
-        $ch->{virtual}{$program}{name} =~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
-      my $possible_call = $ch->{reporter_callsign} || uc $1;
+      next if ($ch->{virtual}{$program}{name} !~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
+      my $possible_call = uc $1;
 
-      # update or create rabbitears_call if entry is old or missing
-      my ($re_call_find) = $args->{c}->model('DB::RabbitearCall')
-                                     ->find({'callsign' => $possible_call});
-      my $rlu;
-      if (   (! $re_call_find)
-          || (DateTime::Format::SQLite->parse_datetime(
-                $re_call_find->last_re_lookup) < $args->{yesterday})) {
-        $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
-        if (defined $rlu) {
-          # create or update rabbitears_call table
-          if (! $re_call_find) {
-            $args->{c}->model('DB::RabbitearCall')->create({
-               'callsign' => $possible_call,
-               're_rval' => $rlu,
-               'last_re_lookup' => $args->{sqlite_now},});
-          }
-          else {
-            $re_call_find->update({'last_re_lookup' => $args->{sqlite_now}});
-          }
-        }
-      }
-      else {
-        $rlu = $re_call_find->re_rval;
-      }
+      my $rlu = _lu_call($args,$possible_call);
       if (defined $rlu) {
         foreach my $s (split /\n/, $rlu) {
           my %rlu_values;
@@ -231,6 +246,20 @@ sub _find_call {
       }
     }
   }
+
+  if (!%transmitter && $ch->{reporter_callsign}) {
+    my $rlu = _lu_call($args,$ch->{reporter_callsign});
+    if (defined $rlu) {
+      foreach my $s (split /\n/, $rlu) {
+        my %rlu_values;
+        @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+        if ($args->{channel} == $rlu_values{fcc_channel}) {
+          %transmitter = %rlu_values;
+          $transmitter{fcc_virt} = $fcc_virt;
+        }
+      }
+    }
+  } 
 
   # transmitter could not be identified if hash was not populated
   return(undef,undef) unless %transmitter;
