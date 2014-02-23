@@ -84,7 +84,7 @@ static_url = '[% static_url %]'
             </div> <!-- end of Distance Units group -->
             <div class="tabs-stations-rx-group" id="stations-rx-list">
               <p>Stations Received</p>
-              <ul id="stations-received-ul">
+              <ul id="stations-received-ul" class="list-unstyled">
               </ul>
             </div> <!-- end of Stations Received group -->
           </div> <!-- end of tabs-stations-rx -->
