@@ -3,11 +3,12 @@ $.cookie.defaults.path = '/';
 $.cookie.defaults.expires = 1000;
 var tuner_map_data = [], tmd_interval;
 var z_top = 11000000; // a zIndex that is always on top (for zoom to station)
-var visible_map = '#map-recent';
+var map_or_graph = '#map-recent';
 
 // Fluid layout doesn't seem to support 100% height; manually set it
 function adjust_height() {
   "use strict";
+console.log('in adjust height');
   var srl_heights, cth_heights;
 
   $('.fullheight').height($(window).height());
@@ -21,13 +22,14 @@ function adjust_height() {
               + $('#graph-time-range').height() + 11;
   $('#decodeable').height($('.fullheight').height() - cth_heights);
 
-  $(visible_map).height($('#right-side').height()-$('#map-legend').height());
-  $(visible_map).width($('#right-side').width());
+  $(map_or_graph).height($('#right-side').height()-$('#map-legend').height());
+  $(map_or_graph).width($('#right-side').width());
 }
 
 
 function restore_radio_button(category, default_value) {
   "use strict";
+console.log('in restore_radio_button');
   if ($.cookie(category) === undefined) {
     $('#' + category + ' [value="' + default_value + '"]').button('toggle');
   } else {
@@ -42,6 +44,7 @@ function restore_radio_button(category, default_value) {
 
 function restore_checkbox(category, value) {
   "use strict";
+console.log('in retore_checkbox');
   if ($.cookie(value) === undefined || $.cookie(value) === 'true') {
     $('#' + category + ' [value="' + value + '"]').button('toggle');
   }
@@ -52,6 +55,7 @@ function restore_checkbox(category, value) {
 // or set default if there are is no cookie.  Also restore map lat/lon & zoom.
 function restore_saved() {
   "use strict";
+console.log('in restore_saved');
   restore_radio_button('time-frame', "last-24-hours");
   restore_radio_button('sort-by', "distance");
   restore_radio_button('distance-units', 'miles');
@@ -92,6 +96,7 @@ function sort_by(field, reverse, primer) {
 
 function update_stations_received(sort_val, distance_units) {
   "use strict";
+console.log('in update_stations_received');
   // sort data
   var field = 'miles', asc = true, primer = parseInt, dx, height, t, time;
   // passed sort_val for sort-by click handler since .active isn't set until
@@ -151,11 +156,11 @@ function update_stations_received(sort_val, distance_units) {
   $.each($('.callsign'),
          function () {
            $(this).click(function () {
-             $(visible_map).gmap3({map:{options:{
+             $('#stations-map').gmap3({map:{options:{
                zoom: 10,
-               center: $(visible_map).gmap3({get:{id:this.innerHTML}}).getPosition()}}});
+               center: $('#stations-map').gmap3({get:{id:this.innerHTML}}).getPosition()}}});
              // move marker to top in case it's below other markers
-             $(visible_map).gmap3({get: {id:this.innerHTML}}).setZIndex(z_top);
+             $('#stations-map').gmap3({get: {id:this.innerHTML}}).setZIndex(z_top);
              z_top += 2;
            });
          }
@@ -165,9 +170,10 @@ function update_stations_received(sort_val, distance_units) {
 
 function update_map() {
   "use strict";
+console.log('in update_map');
   var zBase = 10000000, z = 0, distance_units, values = [], options = [];
-  if (visible_map === '#map-recent') {
-    $(visible_map).gmap3({clear: { name: 'marker' }});
+  if ($('#time-frame .active').attr('value') === 'last-24-hours') {
+    $('#stations-map').gmap3({clear: { name: 'marker' }});
   }
   distance_units = $('#distance-units .active').attr('value');
 
@@ -232,7 +238,7 @@ function update_map() {
     z += 2; // markersOnMap uses +1 for text 
   });
 
-  $(visible_map).gmap3({
+  $('#stations-map').gmap3({
     defaults:{ classes:{ Marker:MarkerWithLabel } },
     marker: {
       values: values,
@@ -262,12 +268,14 @@ function update_map() {
 
 function update_page() {
   "use strict";
+console.log('in update_page');
   update_stations_received();
   update_map();
 }
 
 
 function json_and_update () {
+console.log('in json_and_update');
   "use strict";
   $.getJSON(   root_url + "/tuner_map_data/"
              + tuner_id + "/" + tuner_number + "/24hour",
@@ -277,73 +285,65 @@ function json_and_update () {
 }
 
 
-// click handler for Stations tab
-$('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
+// handler for Stations tab about to be shown
+$('#tvdx-tabs a[href="#tabs-stations-rx"]').on('show.bs.tab', function (e) {
   "use strict";
-  e.preventDefault();
-  $(this).tab('show');
-  $.cookie('tab-shown','tabs-stations-rx');
-  // TODO: select css for map pane
-/*
-  $(visible_map).gmap3({
-    map:{
-      options:{
-        center:[42,-85],
-        zoom: 5
-      }
-    }
-  });
-*/
-  $("#time-frame .active").trigger('click');
+console.log('in tabs-stations-rx show');
+  $('#channel-graphs').toggle(false); // hide channel graphs
+  $('#stations-map').toggle(true); // show map
+  map_or_graph = '#stations-map';
+  if ($('#time-frame .active').attr('value') === 'last-24-hours') {
+    json_and_update();
+    tmd_interval = setInterval(json_and_update, 300000);
+  } else {
+    $.getJSON(   root_url
+               + "/tuner_map_data/" +tuner_id+ "/" + tuner_number + "/ever",
+              function (tmd) { tuner_map_data = tmd;
+                               update_page();
+              });
+  }
 });
+// resize once shown
 $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function () {
   "use strict";
   adjust_height();
+  $.cookie('tab-shown','tabs-stations-rx');
 });
 
 // click handler for Channels tab
-$('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
+$('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
   "use strict";
-  e.preventDefault();
+  $('#stations-map').toggle(false); // show map
+  $('#channel-graphs').toggle(true); // hide channel graphs
+  map_or_graph = '#channel-graphs';
   // stop tuner_map_data update
   clearInterval(tmd_interval);
-  $(this).tab('show');
-  $.cookie('tab-shown','tabs-channel"');
   // TODO: select css for channel graphs
   // TODO: present graphs.  repeat every 5 min.
 });
 $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
   "use strict";
   adjust_height();
+  $.cookie('tab-shown','tabs-channel"');
 });
 
 
 // button click event handelers
 $("#time-frame .btn").click(function () {
   "use strict";
+console.log('in time-frame button click event handeler');
+  // destroy map
+  $('#stations-map').gmap3({ action: 'destroy' });
   $.cookie('time-frame', $(this).attr('value'));
   if ($(this).attr('value') === "last-24-hours") {
-    visible_map = '#map-recent';
-    $('#map-ever').toggle(false); // hide ever received map
-    $('#map-recent').toggle(true); // show last-24-hours map
-    adjust_height(); // adjust height for newly visible div
     json_and_update();
     tmd_interval = setInterval(json_and_update, 300000);
   } else {
-    // else show all stations ever
-    visible_map = '#map-ever';
-    $('#map-recent').toggle(false); // hide last-24-hours map
-    $('#map-ever').toggle(true); // show ever received map
-    adjust_height(); // adjust height for newly visible div
     clearInterval(tmd_interval);
-    // only load the map once
-    if ($(visible_map).text().trim() === 'map loading...') {
-      $.getJSON(   root_url
-                 + "/tuner_map_data/" + tuner_id + "/" + tuner_number + "/ever",
-                function (tmd) { tuner_map_data = tmd;
-                                 update_page();
-                });
-    }
+    $.getJSON(   root_url
+               + "/tuner_map_data/" + tuner_id + "/" + tuner_number + "/ever",
+              function (tmd) { tuner_map_data = tmd;
+                               update_page(); });
   }
 });
 
