@@ -3,12 +3,12 @@ $.cookie.defaults.path = '/';
 $.cookie.defaults.expires = 1000;
 var tuner_map_data = [], tmd_interval;
 var z_top = 11000000; // a zIndex that is always on top (for zoom to station)
-var map_or_graph = '#map-recent';
+var map_or_graph = '#stations-map';
+
 
 // Fluid layout doesn't seem to support 100% height; manually set it
 function adjust_height() {
   "use strict";
-console.log('in adjust height');
   var srl_heights, cth_heights;
 
   $('.fullheight').height($(window).height());
@@ -29,7 +29,6 @@ console.log('in adjust height');
 
 function restore_radio_button(category, default_value) {
   "use strict";
-console.log('in restore_radio_button');
   if ($.cookie(category) === undefined) {
     $('#' + category + ' [value="' + default_value + '"]').button('toggle');
   } else {
@@ -44,7 +43,6 @@ console.log('in restore_radio_button');
 
 function restore_checkbox(category, value) {
   "use strict";
-console.log('in retore_checkbox');
   if ($.cookie(value) === undefined || $.cookie(value) === 'true') {
     $('#' + category + ' [value="' + value + '"]').button('toggle');
   }
@@ -55,7 +53,6 @@ console.log('in retore_checkbox');
 // or set default if there are is no cookie.  Also restore map lat/lon & zoom.
 function restore_saved() {
   "use strict";
-console.log('in restore_saved');
   restore_radio_button('time-frame', "last-24-hours");
   restore_radio_button('sort-by', "distance");
   restore_radio_button('distance-units', 'miles');
@@ -96,7 +93,6 @@ function sort_by(field, reverse, primer) {
 
 function update_stations_received(sort_val, distance_units) {
   "use strict";
-console.log('in update_stations_received');
   // sort data
   var field = 'miles', asc = true, primer = parseInt, dx, height, t, time;
   // passed sort_val for sort-by click handler since .active isn't set until
@@ -170,7 +166,6 @@ console.log('in update_stations_received');
 
 function update_map() {
   "use strict";
-console.log('in update_map');
   var zBase = 10000000, z = 0, distance_units, values = [], options = [];
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
     $('#stations-map').gmap3({clear: { name: 'marker' }});
@@ -268,14 +263,12 @@ console.log('in update_map');
 
 function update_page() {
   "use strict";
-console.log('in update_page');
   update_stations_received();
   update_map();
 }
 
 
 function json_and_update () {
-console.log('in json_and_update');
   "use strict";
   $.getJSON(   root_url + "/tuner_map_data/"
              + tuner_id + "/" + tuner_number + "/24hour",
@@ -285,10 +278,16 @@ console.log('in json_and_update');
 }
 
 
+// click handler for Stations tab
+$('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
+  "use strict";
+  e.preventDefault();
+  $(this).tab('show');
+  $.cookie('tab-shown','tabs-stations-rx');
+});
 // handler for Stations tab about to be shown
 $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('show.bs.tab', function (e) {
   "use strict";
-console.log('in tabs-stations-rx show');
   $('#channel-graphs').toggle(false); // hide channel graphs
   $('#stations-map').toggle(true); // show map
   map_or_graph = '#stations-map';
@@ -310,7 +309,14 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function () {
   $.cookie('tab-shown','tabs-stations-rx');
 });
 
+
 // click handler for Channels tab
+$('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
+  "use strict";
+  e.preventDefault();
+  $(this).tab('show');
+  $.cookie('tab-shown','tabs-channel"');
+});
 $('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
   "use strict";
   $('#stations-map').toggle(false); // show map
@@ -328,10 +334,9 @@ $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
 });
 
 
-// button click event handelers
+// button click event handlers
 $("#time-frame .btn").click(function () {
   "use strict";
-console.log('in time-frame button click event handeler');
   // destroy map
   $('#stations-map').gmap3({ action: 'destroy' });
   $.cookie('time-frame', $(this).attr('value'));
@@ -385,6 +390,7 @@ $("#decodeable .btn").click(function () {
 
 
 adjust_height();
+
 $('.btn').button();
 // set buttons based on previously chosen selections saved to cookies
 // or on defaults, then trigger tab which starts the map or graph pages
@@ -399,7 +405,6 @@ var gmap_xhr =
               function () { "use strict"; $('#right-side').gmap3(); });
 $.when(first_data_xhr, gmap_xhr).done(update_page);
 */
-
 
 // top-level functions
 $(window).resize(adjust_height);
