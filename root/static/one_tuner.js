@@ -50,7 +50,7 @@ function restore_checkbox(category, value) {
 
 
 // set buttons based on previously chosen selections saved to cookies
-// or set default if there are is no cookie.  Also restore map lat/lon & zoom.
+// or set default if there is no cookie.  Also restore map lat/lon & zoom.
 function restore_saved() {
   "use strict";
   restore_radio_button('time-frame', "last-24-hours");
@@ -233,6 +233,7 @@ function update_map() {
     z += 2; // markersOnMap uses +1 for text 
   });
 
+  $('#map-progress-bar').toggle(false);
   $('#stations-map').gmap3({
     defaults:{ classes:{ Marker:MarkerWithLabel } },
     marker: {
@@ -283,13 +284,9 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   "use strict";
   e.preventDefault();
   $(this).tab('show');
-  $.cookie('tab-shown','tabs-stations-rx');
-});
-// handler for Stations tab about to be shown
-$('#tvdx-tabs a[href="#tabs-stations-rx"]').on('show.bs.tab', function (e) {
-  "use strict";
   $('#channel-graphs').toggle(false); // hide channel graphs
   $('#stations-map').toggle(true); // show map
+  $.cookie('tab-shown','tabs-stations-rx');
   map_or_graph = '#stations-map';
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
     json_and_update();
@@ -316,11 +313,11 @@ $('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
   e.preventDefault();
   $(this).tab('show');
   $.cookie('tab-shown','tabs-channel"');
+  $('#stations-map').toggle(false); // show map
+  $('#channel-graphs').toggle(true); // hide channel graphs
 });
 $('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
   "use strict";
-  $('#stations-map').toggle(false); // show map
-  $('#channel-graphs').toggle(true); // hide channel graphs
   map_or_graph = '#channel-graphs';
   // stop tuner_map_data update
   clearInterval(tmd_interval);
