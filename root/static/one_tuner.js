@@ -233,7 +233,9 @@ function update_map() {
     z += 2; // markersOnMap uses +1 for text 
   });
 
-  $('#map-progress-bar').toggle(false);
+  $('#map-progress-bar').toggle(false); //hide map progress bar
+  $('#stations-map').toggle(true); // show map
+  $('#map-legend').toggle(true); // show map legend
   $('#stations-map').gmap3({
     defaults:{ classes:{ Marker:MarkerWithLabel } },
     marker: {
@@ -285,7 +287,7 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   e.preventDefault();
   $(this).tab('show');
   $('#channel-graphs').toggle(false); // hide channel graphs
-  $('#stations-map').toggle(true); // show map
+  $('map-progress-bar').toggle(true); // start map progress bar
   $.cookie('tab-shown','tabs-stations-rx');
   map_or_graph = '#stations-map';
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
@@ -313,8 +315,9 @@ $('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
   e.preventDefault();
   $(this).tab('show');
   $.cookie('tab-shown','tabs-channel"');
-  $('#stations-map').toggle(false); // show map
-  $('#channel-graphs').toggle(true); // hide channel graphs
+  $('#stations-map').toggle(false); // hide map
+  $('#map-legend').toggle(false); // hide map legend
+  $('graphs-progress-bar').toggle(true); // start graph progress bar
 });
 $('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
   "use strict";
@@ -334,7 +337,10 @@ $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
 // button click event handlers
 $("#time-frame .btn").click(function () {
   "use strict";
-  // destroy map
+  // destroy map. Display progress bar so user knows something is happening 
+  $('#stations-map').toggle(false);
+  $('#map-legend').toggle(false);
+  $('#map-progress-bar').toggle(true);
   $('#stations-map').gmap3({ action: 'destroy' });
   $.cookie('time-frame', $(this).attr('value'));
   if ($(this).attr('value') === "last-24-hours") {

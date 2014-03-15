@@ -162,31 +162,31 @@ var static_url = '[% static_url %]'
       </div> <!-- end of tabbable -->
     </div> <!-- end of controls -->
     <div class="col-xs-9 boxit" id="right-side">
+      <div id="map-progress-bar" class="fullheight">
+        <div class="half-height"></div>
+        <div class="progress progress-striped active">
+          <div class="progress-bar"  role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%">
+            map loading...
+          </div><!-- end of map loading progress-bar -->
+       </div><!-- end of progress -->
+      </div><!-- end of map-progress-bar -->
       <div id="stations-map">
-        <div id="map-progress-bar" class="fullheight">
-          <div class="half-height"></div>
-          <div class="progress progress-striped active">
-            <div class="progress-bar"  role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%">
-              map loading...
-            </div><!-- end of map loading progress-bar -->
-          </div><!-- end of progress -->
-        </div><!-- end of map-progress-bar -->
       </div><!-- end of stations-map -->
+      <div id="graph-progress-bar" class="fullheight">
+        <div class="half-height"></div>
+        <div class="progress progress-striped active">
+          <div class="progress-bar"  role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%">
+            graphs loading...
+          </div><!-- end of graphs loading progress-bar -->
+        </div><!-- end of map-ever-loading -->
+      </div><!-- end of map-progress-bar -->
       <div id="channel-graphs">
-        <div id="graph-progress-bar" class="fullheight">
-          <div class="half-height"></div>
-          <div class="progress progress-striped active">
-            <div class="progress-bar"  role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" style="width: 30%">
-              graphs loading...
-            </div><!-- end of graphs loading progress-bar -->
-          </div><!-- end of map-ever-loading -->
-        </div><!-- end of map-progress-bar -->
       </div><!-- end of channel-graphs -->
       <div id="map-legend">
         <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong
         <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium
         <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
-        <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Signal in last 24 hours, but not currently<br>
+        <img id="legend-black-dot" src="[% static_url %]/images/black_dot.png" width='15' height='15' />Signal in last 24 hours, but not currently<br>
       </div> <!-- end of map-legend -->
     </div> <!-- end of righ-side -->
   </div> <!-- end of row -->
