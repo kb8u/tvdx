@@ -186,7 +186,7 @@ var static_url = '[% static_url %]'
         <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong
         <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium
         <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
-        <img id="legend-black-dot" src="[% static_url %]/images/black_dot.png" width='15' height='15' />Signal in last 24 hours, but not currently<br>
+        <img src="[% static_url %]/images/black_dot.png" width='15' height='15' /><span id="black-text">Signal in last 24 hours, but not currently</span>
       </div> <!-- end of map-legend -->
     </div> <!-- end of righ-side -->
   </div> <!-- end of row -->

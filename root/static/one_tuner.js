@@ -344,9 +344,11 @@ $("#time-frame .btn").click(function () {
   $('#stations-map').gmap3({ action: 'destroy' });
   $.cookie('time-frame', $(this).attr('value'));
   if ($(this).attr('value') === "last-24-hours") {
+    $('#black-text').text('Signal in last 24 hours, but not currently');
     json_and_update();
     tmd_interval = setInterval(json_and_update, 300000);
   } else {
+    $('#black-text').text('Signal received in the past');
     clearInterval(tmd_interval);
     $.getJSON(   root_url
                + "/tuner_map_data/" + tuner_id + "/" + tuner_number + "/ever",
