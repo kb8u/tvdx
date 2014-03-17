@@ -287,7 +287,8 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   e.preventDefault();
   $(this).tab('show');
   $('#channel-graphs').toggle(false); // hide channel graphs
-  $('map-progress-bar').toggle(true); // start map progress bar
+  $('#graph-progress-bar').toggle(false); // in case page is in odd state
+  $('#map-progress-bar').toggle(true); // start map progress bar
   $.cookie('tab-shown','tabs-stations-rx');
   map_or_graph = '#stations-map';
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
@@ -317,7 +318,8 @@ $('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
   $.cookie('tab-shown','tabs-channel"');
   $('#stations-map').toggle(false); // hide map
   $('#map-legend').toggle(false); // hide map legend
-  $('graphs-progress-bar').toggle(true); // start graph progress bar
+  $('#map-progress-bar').toggle(false); // in case page is in odd state
+  $('#graph-progress-bar').toggle(true); // start graph progress bar
 });
 $('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
   "use strict";

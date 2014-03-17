@@ -101,3 +101,6 @@
   width:100%;
   min-width:100%;
 }
+
+#map-progress-bar { display:none; }
+#graph-progress-bar { display:none; }

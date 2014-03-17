@@ -394,6 +394,8 @@ sub tuner_map_data :Global {
 
     my $call = $signal->callsign->callsign;
     $station{callsign} = $call;  # can't use key 'call', it trashes javascript
+    $station{strength} = $signal->strength;
+    $station{sig_noise} = $signal->sig_noise;
     $station{color} = $signal->color;
     $station{latitude} = $signal->callsign->latitude;
     $station{longitude} = $signal->callsign->longitude;
