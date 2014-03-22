@@ -339,17 +339,15 @@ $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
 // button click event handlers
 $("#time-frame .btn").click(function () {
   "use strict";
-  // destroy map. Display progress bar so user knows something is happening 
-  $('#stations-map').toggle(false);
-  $('#map-legend').toggle(false);
-  $('#map-progress-bar').toggle(true);
-  $('#stations-map').gmap3({ action: 'destroy' });
   $.cookie('time-frame', $(this).attr('value'));
   if ($(this).attr('value') === "last-24-hours") {
-    $('#black-text').text('Signal in last 24 hours, but not currently');
-    json_and_update();
-    tmd_interval = setInterval(json_and_update, 300000);
+    // trying to clear 'ever' markers is waaay too slow, reload is quicker.
+    document.location.reload()
   } else {
+    $('#stations-map').toggle(false);
+    $('#map-legend').toggle(false);
+    $('#map-progress-bar').toggle(true);
+    $('#stations-map').gmap3({ action: 'destroy' });
     $('#black-text').text('Signal received in the past');
     clearInterval(tmd_interval);
     $.getJSON(   root_url
