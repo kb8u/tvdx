@@ -285,11 +285,17 @@ function json_and_update () {
 $('#tvdx-tabs a[href="#tabs-stations-rx"]').click(function (e) {
   "use strict";
   e.preventDefault();
+  $.cookie('tab-shown','tabs-stations-rx');
+  if (map_or_graph === '#channel-graphs') {
+    // trying to clear 'ever' markers is waaay too slow, reload is quicker.
+    map_or_graph = '#stations-map';
+    document.location.reload()
+    return;
+  }
   $(this).tab('show');
   $('#channel-graphs').toggle(false); // hide channel graphs
   $('#graph-progress-bar').toggle(false); // in case page is in odd state
   $('#map-progress-bar').toggle(true); // start map progress bar
-  $.cookie('tab-shown','tabs-stations-rx');
   map_or_graph = '#stations-map';
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
     json_and_update();
@@ -313,6 +319,7 @@ $('#tvdx-tabs a[href="#tabs-stations-rx"]').on('shown.bs.tab', function () {
 // click handler for Channels tab
 $('#tvdx-tabs a[href="#tabs-channel"]').click(function (e) {
   "use strict";
+  map_or_graph = '#channel-graphs';
   e.preventDefault();
   $(this).tab('show');
   $.cookie('tab-shown','tabs-channel"');
@@ -342,7 +349,7 @@ $("#time-frame .btn").click(function () {
   $.cookie('time-frame', $(this).attr('value'));
   if ($(this).attr('value') === "last-24-hours") {
     // trying to clear 'ever' markers is waaay too slow, reload is quicker.
-    document.location.reload()
+    document.location.reload();
   } else {
     $('#stations-map').toggle(false);
     $('#map-legend').toggle(false);
