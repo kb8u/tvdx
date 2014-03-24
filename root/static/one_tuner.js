@@ -50,7 +50,7 @@ function restore_checkbox(category, value) {
 
 
 // set buttons based on previously chosen selections saved to cookies
-// or set default if there is no cookie.  Also restore map lat/lon & zoom.
+// or set default if there is no cookie.  Also restore map lat/lng & zoom.
 function restore_saved() {
   "use strict";
   restore_radio_button('time-frame', "last-24-hours");
@@ -134,9 +134,11 @@ function update_stations_received(sort_val, distance_units) {
     time = t.getMonth() + 1 + '/' + t.getDate() + ' ' + t.toLocaleTimeString();
     $("#stations-received-ul").append(
          '<li class="sr-list">'
+       + '<span class="glyphicon glyphicon-zoom-in"></span> '
        + '<a class="callsign">' + val.callsign + '</a><br>'
        + val.city_state + '<br>'
        + '<div class="hidden-xs hidden-sm">'
+         + '<span class="glyphicon glyphicon-signal"></span>'
          + '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + val.callsign + '> Graphs</a><br>'
          + 'RF channel ' + val.rf_channel + '<br>'
          + 'Virtual channel ' + val.virtual_channel + '<br>'
@@ -167,6 +169,7 @@ function update_stations_received(sort_val, distance_units) {
 function update_map() {
   "use strict";
   var zBase = 10000000, z = 0, distance_units, values = [], options = [];
+  var map_options = [];
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
     $('#stations-map').gmap3({clear: { name: 'marker' }});
   }
@@ -213,6 +216,7 @@ function update_map() {
         'RCAMSL ' + height + '<br>' +
         'Azimuth ' + this.azimuth + '&deg;<br>' +
         'DX ' + dx + '<br>' +
+        '<span class="glyphicon glyphicon-signal"></span>' +
         '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + this.callsign + '> Graphs</a><br>',
       options: {
         icon: { path: google.maps.SymbolPath.CIRCLE,
@@ -236,7 +240,15 @@ function update_map() {
   $('#map-progress-bar').toggle(false); //hide map progress bar
   $('#stations-map').toggle(true); // show map
   $('#map-legend').toggle(true); // show map legend
+  if (   $.cookie('lat-' + tuner_id + tuner_number)
+      && $.cookie('lng-' + tuner_id + tuner_number)
+      && $.cookie('zoom-' + tuner_id + tuner_number)) {
+    map_options = { center: [$.cookie('lat-' + tuner_id + tuner_number),
+                             $.cookie('lng-' + tuner_id + tuner_number)],
+                    zoom: $.cookie('zoom-' + tuner_id + tuner_number) };
+  }
   $('#stations-map').gmap3({
+    options: map_options,
     defaults:{ classes:{ Marker:MarkerWithLabel } },
     marker: {
       values: values,
@@ -260,7 +272,13 @@ function update_map() {
       }
     }
   }, "autofit");
-  // save lat/lon and zoom cookies
+  // save lat/lng and zoom cookies
+  $.cookie('lat-' + tuner_id + tuner_number,
+           $('#stations-map').gmap3({get:{name:'map'}}).getCenter().lat());
+  $.cookie('lng-' + tuner_id + tuner_number,
+           $('#stations-map').gmap3({get:{name:'map'}}).getCenter().lng());
+  $.cookie('zoom-' + tuner_id + tuner_number,
+           $('#stations-map').gmap3({get:{name:'map'}}).getZoom());
 }
 
 
