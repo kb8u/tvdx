@@ -1,0 +1,106 @@
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#map-select-tabs {
+  overflow:auto;
+}
+  
+/* not sure why this aligns the buttons, too */
+.tab-pane {
+  text-align:center;
+}
+
+.tab-content {
+  padding-top:5px;
+}
+
+/* padding under buttons */
+.btn-group-xs {
+  padding-bottom:5px;
+}
+
+/* only top gets four sides to avoid 2 pixel border between groups */
+.tabs-stations-rx-group-top {
+  border:1px solid black;
+}
+.tabs-stations-rx-group {
+  border-left:1px solid black;
+  border-right:1px solid black;
+  border-bottom:1px solid black;
+}
+
+#stations-rx-list {
+  overflow:auto;
+}
+
+/* make full height and place a border around element */
+.boxit {
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  border:1px solid black;
+  height:100%;
+  min-height:100%;
+}
+
+.half-height {
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  height:50%;
+  min-height:50%;
+}
+
+.fullheight {
+  height:100%;
+  min-height:100%;
+}
+
+#stations-received-ul {
+  list-style-type: none;
+}
+
+.colorLabels {
+  color: black;
+  background-color: transparent;
+  font-family: "Tahoma","Geneva";
+  font-size: 9px;
+  text-align: center;
+  width: 30px;
+}
+
+.blackLabels {
+  color: white;
+  background-color: transparent;
+  font-family: "Tahoma","Geneva";
+  font-size: 9px;
+  text-align: center;
+  width: 30px;
+}
+
+.tinyLabels {
+  color: black;
+  background-color: white;
+  font-family: "Tahoma","Geneva";
+  font-size: 9;
+  text-align: center;
+  width: 30px;
+}
+
+/* place legend at bottom of map */
+#map-legend {
+  position:absolute;
+  bottom:0px;
+  left:0px;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box;         /* Opera/IE 8+ */
+  border-top:1px solid black;
+  width:100%;
+  min-width:100%;
+}
+
+#map-progress-bar { display:none; }
+#graph-progress-bar { display:none; }
