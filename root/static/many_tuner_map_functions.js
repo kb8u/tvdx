@@ -144,10 +144,39 @@ function updatePaths() {
           var t_lat = json.tuner_latitude;
           var t_lng = json.tuner_longitude;
 
-          addPathBatch(json.black_markers,'black',t_id,t_num,t_lat,t_lng)
-          addPathBatch(json.red_markers,'red',t_id,t_num,t_lat,t_lng)
-          addPathBatch(json.yellow_markers,'yellow',t_id,t_num,t_lat,t_lng)
-          addPathBatch(json.green_markers,'green',t_id,t_num,t_lat,t_lng)
+          // convert to old style data structure
+          var black_markers,red_markers,yellow_markers,green_markers;
+          for (var i=0;i<json.markers.length;i++) {
+            var m = json.markers[i]
+            var pbm = {};
+            pbm.info = "<br>RF Channel " + m.rf_channel + "<br>"
+                     + "Virtual channel " + m.virtual_channel + "<br>"
+                     + m.city_state + "<br>ERP " + m.erp + "<br>"
+                     + "RCAMSL " + m.rcamsl + "<br>";
+            pbm.graphs = '<a href="' + m.graphs_url
+                       + '">Signal strength graphs</a><br>';
+            pbm.last_in = "last in " + m.last_in + "<br>";
+            pbm.latitude = m.latitude;
+            pbm.longitude = m.longitude;
+            pbm.callsign = m.callsign;
+            pbm.azimuth_dx = "Azimuth: " + m.azimuth + " &deg<br>DX: "
+                           + m.miles + " miles<br>";
+            // check if m.last_in is > 5 minutes old
+            if (new Date().getTime() < new Date(m.last_in).getTime() + 300000){
+              black_markers.append(pbm);
+              continue;
+            }
+            switch(m.color) {
+              case 'red':    red_markers.append(pbm);    break;
+              case 'yellow': yellow_markers.append(pbm); break;
+              case 'green':  green_markers.append(pbm);  break;
+              default:       black_markers.append(pbm);
+            }
+          }
+          addPathBatch(black_markers,'black',t_id,t_num,t_lat,t_lng)
+          addPathBatch(red_markers,'red',t_id,t_num,t_lat,t_lng)
+          addPathBatch(yellow_markers,'yellow',t_id,t_num,t_lat,t_lng)
+          addPathBatch(green_markers,'green',t_id,t_num,t_lat,t_lng)
 
 // BUG: bounds never contracts when distant stations disappear
 // should build bounds each time from iconBatch somehow

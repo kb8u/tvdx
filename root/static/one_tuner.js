@@ -191,7 +191,7 @@ function update_map() {
     fill_color = "#000000";
     labelStyle = 'blackLabels';
 
-    if (new Date().getTime() < new Date(this.last_in).getTime() + 38400000) {
+    if (new Date().getTime() < new Date(this.last_in).getTime() + 300000) {
       if (this.color === 'red') {
         labelStyle = 'colorLabels'; // black letters against color background
         fill_color = '#FF0000';
