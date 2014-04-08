@@ -145,9 +145,12 @@ function updatePaths() {
           var t_lng = json.tuner_longitude;
 
           // convert to old style data structure
-          var black_markers,red_markers,yellow_markers,green_markers;
-          for (var i=0;i<json.markers.length;i++) {
-            var m = json.markers[i]
+          var black_markers = [];
+          var red_markers = [];
+          var yellow_markers = [];
+          var green_markers = [];
+          for(var j=0; j<json.markers.length; j++) {
+            var m = json.markers[j];
             var pbm = {};
             pbm.info = "<br>RF Channel " + m.rf_channel + "<br>"
                      + "Virtual channel " + m.virtual_channel + "<br>"
@@ -162,15 +165,15 @@ function updatePaths() {
             pbm.azimuth_dx = "Azimuth: " + m.azimuth + " &deg<br>DX: "
                            + m.miles + " miles<br>";
             // check if m.last_in is > 5 minutes old
-            if (new Date().getTime() < new Date(m.last_in).getTime() + 300000){
-              black_markers.append(pbm);
+            if (new Date().getTime() > new Date(m.last_in).getTime() + 300000){
+              black_markers.push(pbm);
               continue;
             }
             switch(m.color) {
-              case 'red':    red_markers.append(pbm);    break;
-              case 'yellow': yellow_markers.append(pbm); break;
-              case 'green':  green_markers.append(pbm);  break;
-              default:       black_markers.append(pbm);
+              case 'red':    red_markers.push(pbm); break;
+              case 'yellow': yellow_markers.push(pbm); break;
+              case 'green':  green_markers.push(pbm); break;
+              default:       black_markers.push(pbm);
             }
           }
           addPathBatch(black_markers,'black',t_id,t_num,t_lat,t_lng)
