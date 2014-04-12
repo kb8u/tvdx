@@ -39,7 +39,7 @@ var static_url = '[% static_url %]'
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade in active" id="tabs-stations-rx">
-            <div class="tabs-stations-rx-group-top" id="time-frame">
+            <div class="tabs-stations-rx-group-top hidden-xs hidden-sm" id="time-frame">
               <p>Time Frame</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
                 <label class="btn btn-primary" value="last-24-hours">
@@ -50,7 +50,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Time frame btn-group btn-group-xs -->
             </div> <!-- end of time frame group -->
-            <div class="tabs-stations-rx-group" id="sort-by">
+            <div class="tabs-stations-rx-group hidden-xs hidden-sm" id="sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-xs" data-toggle="buttons">
                 <label class="btn btn-primary" value="distance">
@@ -73,7 +73,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             </div> <!-- end of sort-by group -->
-            <div class="tabs-stations-rx-group" id="distance-units">
+            <div class="tabs-stations-rx-group hidden-xs hidden-sm" id="distance-units">
               <p>Distance Units</p>
               <div class="btn-group btn-group-xs" data-toggle="buttons">
                 <label class="btn btn-primary" value="miles">
