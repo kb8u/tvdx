@@ -20,6 +20,15 @@
 .btn-group-xs {
   padding-bottom:5px;
 }
+.btn-group-sm {
+  padding-bottom:5px;
+}
+.btn-group-md {
+  padding-bottom:5px;
+}
+.btn-group-lg {
+  padding-bottom:5px;
+}
 
 /* only top gets four sides to avoid 2 pixel border between groups */
 .tabs-stations-rx-group-top {
