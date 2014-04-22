@@ -31,9 +31,11 @@ var static_url = '[% static_url %]'
           <li class="active">
             <a href="#tabs-stations-rx"> Stations</a>
           </li>
+<!-- Channel graphs to be added later...
           <li class="">
             <a href="#tabs-channel"> Channels</a>
           </li>
+-->
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade in active" id="tabs-stations-rx">
