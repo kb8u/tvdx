@@ -24,7 +24,7 @@ var static_url = '[% static_url %]'
 </head>
 <body>
   <div class="row fullheight">
-    <div class="col-xs-3">
+    <div class="col-xs-3 boxit">
       <!-- allows tabs on left, content is below in tab-content -->
       <div class="tabbable" id="map-select-tabs">
         <ul class="nav nav-tabs" id="tvdx-tabs">
@@ -37,7 +37,14 @@ var static_url = '[% static_url %]'
         </ul>
         <div class="tab-content">
           <div class="tab-pane fade in active" id="tabs-stations-rx">
-            <div class="tabs-stations-rx-group-top" id="time-frame">
+            <div class="hidden-lg hidden-md" id="stations-config">
+              <p>
+                <button type=button" class="btn-primary btn-md" id="btn-config">
+                  Hide Configure
+                </button>
+              </p>
+            </div> <!-- end of stations-config -->
+            <div class="btn-group-box-top" id="time-frame">
               <p>Time Frame</p>
               <div class="btn-group-vertical btn-group-md hidden-lg hidden-md" data-toggle="buttons">
                 <label class="btn btn-primary" value="last-24-hours">
@@ -56,7 +63,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Time frame btn-group btn-group-xs -->
             </div> <!-- end of time frame group -->
-            <div class="tabs-stations-rx-group" id="sort-by">
+            <div class="btn-group-box" id="sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-md hidden-md hidden-lg" data-toggle="buttons">
                 <label class="btn btn-primary" value="distance">
@@ -99,7 +106,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             </div> <!-- end of sort-by group -->
-            <div class="tabs-stations-rx-group" id="distance-units">
+            <div class="btn-group-box" id="distance-units">
               <p>Distance Units</p>
               <div class="btn-group-vertical btn-group-md hidden-lg hidden-md" data-toggle="buttons">
                 <label class="btn btn-primary" value="miles">
@@ -118,14 +125,14 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Distance Units btn-group btn-group-xs -->
             </div> <!-- end of Distance Units group -->
-            <div class="tabs-stations-rx-group" id="stations-rx-list">
+            <div class="btn-group-box" id="stations-rx-list">
               <p>Stations Received</p>
               <ul id="stations-received-ul" class="list-unstyled">
               </ul>
             </div> <!-- end of Stations Received group -->
           </div> <!-- end of tabs-stations-rx -->
           <div class="tab-pane fade" id="tabs-channel">
-            <div class="tabs-stations-rx-group-top" id="channel-bands">
+            <div class="btn-group-box-top" id="channel-bands">
               <p>Show bands</p>
               <div class="btn-group-vertical btn-group-md hidden-md hidden-lg" data-toggle="buttons">
                 <label class="btn btn-primary" value="vhf-low">
@@ -156,7 +163,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of channel band buttons xs-->
             </div> <!-- end of id channel-bands -->
-            <div class="tabs-stations-rx-group" id="channel-sort-by">
+            <div class="btn-group-box" id="channel-sort-by">
               <p>Sort by</p>
               <div class="btn-group-vertical btn-group-md hidden-lg hidden-md" data-toggle="buttons">
                 <label class="btn btn-primary" value="rf-channel">
@@ -187,7 +194,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of Sort by btn-group-vertical btn-group-xs -->
             </div> <!-- end of sort-by group -->
-            <div class="tabs-stations-rx-group" id="graph-time-range">
+            <div class="btn-group-box" id="graph-time-range">
               <p>Time Range</p>
               <div class="btn-group-vertical btn-group-md hidden-md hidden-lg" data-toggle="buttons">
                 <label class="btn btn-primary" value="hourly">
@@ -224,7 +231,7 @@ var static_url = '[% static_url %]'
                 </label>
               </div> <!-- end of time range buttons -->
             </div> <!-- end of id time-range -->
-            <div class="tabs-stations-rx-group" id="decodeable">
+            <div class="btn-group-box" id="decodeable">
               <p>Decodeable</p>
               <div class="btn-group-vertical btn-group-md hidden-md hidden-lg" data-toggle="buttons">
                 <label class="btn btn-primary" value="both">
@@ -282,8 +289,6 @@ var static_url = '[% static_url %]'
       </div> <!-- end of map-legend -->
     </div> <!-- end of righ-side -->
   </div> <!-- end of row -->
-
-
 
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>

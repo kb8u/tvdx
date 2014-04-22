@@ -13,8 +13,27 @@ function adjust_height() {
 
   $('.fullheight').height($(window).height());
 
-  srl_heights = $('#tvdx-tabs').height() + $('#time-frame').height()
-              + $('#sort-by').height() + $('#distance-units').height() + 11;
+  srl_heights = $('#tvdx-tabs').height();
+
+  if (! $('#stations-config').is(':visible')) {
+    srl_heights += $('#time-frame').height();
+    srl_heights += $('#sort-by').height();
+    srl_heights += $('#distance-units').height();
+    srl_heights += 12;
+  }
+  else {
+    srl_heights += $('#stations-config').height();
+    if ($('#time-frame').is(':visible')) {
+      srl_heights += $('#time-frame').height();
+      srl_heights += $('#sort-by').height();
+      srl_heights += $('#distance-units').height();
+      srl_heights += 23;
+    }
+    else {
+      srl_heights += 20;
+    }
+  }
+
   $('#stations-rx-list').height($('.fullheight').height() - srl_heights);
 
   cth_heights = $('#tvdx-tabs').height() + $('#channel-bands').height()
@@ -362,6 +381,25 @@ $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
 
 
 // button click event handlers
+$('#btn-config').click(function () {
+  "use strict";
+  if ($('#btn-config').text() === 'Show Configure') {
+    $('#time-frame').show();
+    $('#sort-by').show();
+    $('#distance-units').show();
+    $('#stations-rx-list').removeClass('btn-group-box-top');
+    $('#btn-config').text('Hide Configure');
+  }
+  else {
+    $('#time-frame').hide();
+    $('#sort-by').hide();
+    $('#distance-units').hide();
+    $('#stations-rx-list').addClass('btn-group-box-top');
+    $('#btn-config').text('Show Configure');
+  }
+  adjust_height();
+});
+
 $("#time-frame .btn").click(function () {
   "use strict";
   $.cookie('time-frame', $(this).attr('value'));
