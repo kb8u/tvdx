@@ -11,7 +11,7 @@ function adjust_height() {
   "use strict";
   var srl_heights, cth_heights;
 
-  // if resizing to large, make sure configuration options are reset
+  // reset configuration options if resizing to large
   if (   ! $('#stations-config').is(':visible')
       && $('#btn-config').text() === 'Show Configure') {
     $('#time-frame').show();
@@ -120,6 +120,16 @@ function sort_by(field, reverse, primer) {
 }
 
 
+function get_sort_summary(by,val,dx,time) {
+  if (by === 'distance') { return('Distance ' + dx + '<br>'); }
+  if (by === 'rf-channel') { return('RF channel ' + val.rf_channel + '<br>'); }
+  if (by === 'virtual-channel') { return('Virtual channel ' + val.virtual_channel + '<br>'); }
+  if (by === 'time-received') { return(time + '<br>'); }
+  if (by === 'azimuth') { return('Azimuth ' + val.azimuth + '&deg;<br>'); }
+  return('');
+}
+
+
 function update_stations_received(sort_val, distance_units) {
   "use strict";
   // sort data
@@ -160,12 +170,20 @@ function update_stations_received(sort_val, distance_units) {
       height = val.rcamsl;
     }
     t = new Date(val.last_in);
-    time = t.getMonth() + 1 + '/' + t.getDate() + ' ' + t.toLocaleTimeString();
+    if ($('#time-frame .active').attr('value') === 'ever') {
+      time = t.getMonth() + 1 + '/' + t.getDate() + '/' + t.getFullYear();
+    }
+    else {
+      time = t.getMonth() + 1 + '/' + t.getDate();
+    }
+    time = time + ' ' + t.toLocaleTimeString();
+    var sort_summary = get_sort_summary(sort_val,val,dx,time);
     $("#stations-received-ul").append(
          '<li class="sr-list">'
        + '<span class="glyphicon glyphicon-zoom-in"></span> '
        + '<a class="callsign">' + val.callsign + '</a><br>'
        + val.city_state + '<br>'
+       + '<div class="hidden-lg hidden-md">' + sort_summary + '</div>'
        + '<div class="hidden-xs hidden-sm">'
          + '<span class="glyphicon glyphicon-signal"></span>'
          + '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + val.callsign + '> Graphs</a><br>'
