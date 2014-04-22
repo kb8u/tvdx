@@ -404,7 +404,7 @@ $('#tvdx-tabs a[href="#tabs-chcannel"]').on('show.bs.tab', function (e) {
 $('#tvdx-tabs a[href="#tabs-channel"]').on('shown.bs.tab', function () {
   "use strict";
   adjust_height();
-  $.cookie('tab-shown','tabs-channel"');
+  $.cookie('tab-shown','tabs-channel');
 });
 
 
