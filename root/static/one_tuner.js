@@ -11,6 +11,16 @@ function adjust_height() {
   "use strict";
   var srl_heights, cth_heights;
 
+  // if resizing to large, make sure configuration options are reset
+  if (   ! $('#stations-config').is(':visible')
+      && $('#btn-config').text() === 'Show Configure') {
+    $('#time-frame').show();
+    $('#sort-by').show();
+    $('#distance-units').show();
+    $('#stations-rx-list').removeClass('btn-group-box-top');
+    $('#btn-config').text('Hide Configure');
+  }
+
   $('.fullheight').height($(window).height());
 
   srl_heights = $('#tvdx-tabs').height();
