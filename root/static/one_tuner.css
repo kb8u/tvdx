@@ -16,11 +16,19 @@
   padding-top:5px;
 }
 
-/* padding under buttons */
-.btn-group-xs { padding-bottom:5px; }
-.btn-group-sm { padding-bottom:5px; }
-.btn-group-md { padding-bottom:5px; }
-.btn-group-lg { padding-bottom:5px; }
+
+.btn-group-xs {
+  padding-bottom:5px;
+  width:50%;
+  margin-left:auto;
+  margin-right:auto;
+}
+.btn-group-md {
+  padding-bottom:5px;
+  width:70%;
+  margin-left:auto;
+  margin-right:auto;
+}
 
 /* only top gets four sides to avoid 2 pixel border between groups */
 .btn-group-box-top {
