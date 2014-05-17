@@ -161,13 +161,17 @@ function update_stations_received(sort_val, distance_units) {
   // remove all list times in stations received list, then update it
   $("#stations-received-ul").empty();
   $.each(tuner_map_data.markers, function (index, val){
-    if (distance_units === 'miles') {
-      dx = val.miles + ' miles';
-      height =
-         parseInt(parseFloat(val.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
+    if (typeof(val.rcamsl) === 'string') {
+      if (distance_units === 'miles') {
+        dx = val.miles + ' miles';
+        height =
+           parseInt(parseFloat(val.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
+      } else {
+        dx = parseInt( val.miles * 1.609344 * 10, 10) / 10 + ' km';
+        height = val.rcamsl;
+      }
     } else {
-      dx = parseInt( val.miles * 1.609344 * 10, 10) / 10 + ' km';
-      height = val.rcamsl;
+      height = 'unknown';
     }
     t = new Date(val.last_in);
     if ($('#time-frame .active').attr('value') === 'ever') {
@@ -225,13 +229,17 @@ function update_map() {
   // iterate over tuner_map_data and build data structure for gmap3 placement
   $.each(tuner_map_data.markers,function () {
     var height = 0, dx = 0, fill_color, labelStyle;
-    if (distance_units === 'miles') {
-      dx = this.miles + ' miles';
-      height =
-         parseInt(parseFloat(this.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
+    if (typeof(this.rcamsl) === 'string') {
+      if (distance_units === 'miles') {
+        dx = this.miles + ' miles';
+        height =
+          parseInt(parseFloat(this.rcamsl.split(' ')[0]) * 3.2808, 10) + ' ft.';
+      } else {
+        dx = parseInt(this.miles * 1.609344 * 10, 10) / 10 + ' km';
+        height = this.rcamsl;
+      }
     } else {
-      dx = parseInt(this.miles * 1.609344 * 10, 10) / 10 + ' km';
-      height = this.rcamsl;
+      height = 'unknown';
     }
 
     // black markers for old stations
