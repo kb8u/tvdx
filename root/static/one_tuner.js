@@ -160,7 +160,20 @@ function update_stations_received(sort_val, distance_units) {
 
   // remove all list times in stations received list, then update it
   $("#stations-received-ul").empty();
+
   $.each(tuner_map_data.markers, function (index, val){
+    var glyph_color_class = '';
+    if (new Date().getTime() < new Date(val.last_in).getTime() + 300000) {
+      if (val.color === 'red') {
+        glyph_color_class = 'glyph-red';
+      }
+      if (val.color === 'yellow') {
+        glyph_color_class = 'glyph-yellow';
+      }
+      if (val.color === 'green') {
+        glyph_color_class = 'glyph-green';
+      }
+    }
     if (typeof(val.rcamsl) === 'string') {
       if (distance_units === 'miles') {
         dx = val.miles + ' miles';
@@ -189,7 +202,7 @@ function update_stations_received(sort_val, distance_units) {
        + val.city_state + '<br>'
        + '<div class="hidden-lg hidden-md">' + sort_summary + '</div>'
        + '<div class="hidden-xs hidden-sm">'
-         + '<span class="glyphicon glyphicon-signal"></span>'
+         + '<span class="glyphicon glyphicon-signal ' + glyph_color_class + '"></span>'
          + '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + val.callsign + '> Graphs</a><br>'
          + 'RF channel ' + val.rf_channel + '<br>'
          + 'Virtual channel ' + val.virtual_channel + '<br>'

@@ -98,6 +98,10 @@
   width: 30px;
 }
 
+.glyph-red { color: red; }
+.glyph-yellow { color: yellow; }
+.glyph-green { color: green; }
+
 /* place legend at bottom of map */
 #map-legend {
   position:absolute;
