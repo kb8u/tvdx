@@ -98,9 +98,9 @@
   width: 30px;
 }
 
-.glyph-red { color: red; }
-.glyph-yellow { color: yellow; }
-.glyph-green { color: green; }
+.glyph-red { color: #ff0000; }
+.glyph-yellow { color: #ffff00; }
+.glyph-green { color: #00ff00; }
 
 /* place legend at bottom of map */
 #map-legend {
