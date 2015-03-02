@@ -131,7 +131,7 @@ function get_sort_summary(by,val,dx,time) {
 
 function update_stations_received(sort_val, distance_units) {
   "use strict";
-  z_top = 10000;
+  var z_top = 10000;
   // sort data
   var field = 'miles', asc = true, primer = parseInt, dx, height, t, time;
   // passed sort_val for sort-by click handler since .active isn't set until
