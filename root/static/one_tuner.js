@@ -1,8 +1,7 @@
-/*global $, google, MarkerWithLabel, root_url, static_url, tuner_id, tuner_number, tmd_interval */
+/*global $, google, StyledMarker, root_url, static_url, tuner_id, tuner_number, tmd_interval */
 $.cookie.defaults.path = '/';
 $.cookie.defaults.expires = 1000;
 var tuner_map_data = [], tmd_interval;
-var z_top = 11000000; // a zIndex that is always on top (for zoom to station)
 var map_or_graph = '#stations-map';
 
 
@@ -232,7 +231,7 @@ function update_stations_received(sort_val, distance_units) {
 
 function update_map() {
   "use strict";
-  var zBase = 10000000, z = 0, distance_units, values = [], options = [];
+  var distance_units, values = [], options = [];
   var map_options = [];
   if ($('#time-frame .active').attr('value') === 'last-24-hours') {
     $('#stations-map').gmap3({clear: { name: 'marker' }});
@@ -241,7 +240,7 @@ function update_map() {
 
   // iterate over tuner_map_data and build data structure for gmap3 placement
   $.each(tuner_map_data.markers,function () {
-    var height = 0, dx = 0, fill_color, labelStyle;
+    var height = 0, dx = 0, fill_color, fore_color;
     if (typeof(this.rcamsl) === 'string') {
       if (distance_units === 'miles') {
         dx = this.miles + ' miles';
@@ -255,21 +254,19 @@ function update_map() {
       height = 'unknown';
     }
 
-    // black markers for old stations
+    // black markers and white letters for old stations
     fill_color = "#000000";
-    labelStyle = 'blackLabels';
+    fore_color = "#FFFFFF";
 
     if (new Date().getTime() < new Date(this.last_in).getTime() + 300000) {
+      fore_color = "#000000";
       if (this.color === 'red') {
-        labelStyle = 'colorLabels'; // black letters against color background
         fill_color = '#FF0000';
       }
       if (this.color === 'yellow') {
-        labelStyle = 'colorLabels';
         fill_color = '#FFFF00';
       }
       if (this.color === 'green') {
-        labelStyle = 'colorLabels';
         fill_color = '#00FF00';
       }
     }
@@ -286,23 +283,11 @@ function update_map() {
         'DX ' + dx + '<br>' +
         '<span class="glyphicon glyphicon-signal"></span>' +
         '<a href=' + root_url + '/signal_graph/' + tuner_id + '/' + tuner_number + '/' + this.callsign + '> Graphs</a><br>',
-      options: {
-        icon: { path: google.maps.SymbolPath.CIRCLE,
-                fillColor: fill_color,
-                fillOpacity: 1,
-                strokeColor: "black",
-                scale: 16,
-                strokeWeight: 1
-        },
-        // show only the call, not the -TV or whatever
-        labelContent: this.callsign.replace(/-.*$/,"")+'<br> '+ this.rf_channel,
-        labelAnchor: new google.maps.Point(15,8),
-        labelClass: labelStyle, // the CSS class for the label
-        zIndex: zBase + z
-      }
+      options: { styleIcon: new StyledIcon( StyledIconTypes.BUBBLE,
+                                            { color: fill_color,
+                                              fore: fore_color,
+                                              text: this.callsign.replace(/-.*$/,"") + ' ' + this.rf_channel }) }
     });
-
-    z += 2; // markersOnMap uses +1 for text 
   });
 
   $('#map-progress-bar').toggle(false); //hide map progress bar
@@ -317,10 +302,9 @@ function update_map() {
   }
   $('#stations-map').gmap3({
     options: map_options,
-    defaults:{ classes:{ Marker:MarkerWithLabel } },
+    defaults:{ classes:{ Marker:StyledMarker } },
     marker: {
       values: values,
-      options: options,
       events:{
         click: function(marker, event, context) {
           var map = $(this).gmap3("get"),

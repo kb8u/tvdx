@@ -298,7 +298,7 @@ var static_url = '[% static_url %]'
   <script src="http://maps.googleapis.com/maps/api/js?v=3.15&sensor=false" type="text/javascript"></script>
   <script src="[% static_url %]/gmap3.min.js" type="text/javascript"></script>
   <script src="[% static_url %]/jquery.cookie.js" type="text/javascript"></script>
-  <script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
+  <script src="[% static_url %]/StyledMarker.js" type="text/javascript"></script>
   <script src="[% static_url %]/one_tuner.js" type="text/javascript"></script>
 </body>
 </html>

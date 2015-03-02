@@ -71,24 +71,6 @@
   list-style-type: none;
 }
 
-.colorLabels {
-  color: black;
-  background-color: transparent;
-  font-family: "Tahoma","Geneva";
-  font-size: 9px;
-  text-align: center;
-  width: 30px;
-}
-
-.blackLabels {
-  color: white;
-  background-color: transparent;
-  font-family: "Tahoma","Geneva";
-  font-size: 9px;
-  text-align: center;
-  width: 30px;
-}
-
 .tinyLabels {
   color: black;
   background-color: white;
