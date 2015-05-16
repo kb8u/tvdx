@@ -186,7 +186,8 @@ SCAN: while(1) {
     }
   }
 
-  # delete changed key on each channel
+  # delete changed key on each channel before copy to %last_scan
+  # so next scan won't have bogus changed key
   for my $channel (keys %scan) {
     delete $scan{rf_channel}->{$channel}->{changed};
   }
