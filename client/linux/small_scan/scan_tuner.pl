@@ -78,14 +78,14 @@ else {
 }
 print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if $DEBUG;
 
-my $user_id = "TunerID_$found_tuner_id" . "_$TUNER";
-$user_id =~ s/\///g; # get rid of slashes in /tunerX/ for XML names to be proper
+my $int_tuner_id = hex($found_tuner_id);
+$TUNER =~ /(\d)/;
+my $int_tuner_number = $1;
 
 my %last_scan;
 
 SCAN: while(1) {
   my $scan = {}; # information reported to web site
-  $scan->{user_id} = $user_id;
 
   my ($freq,$channel,$modulation,$strength,$sig_noise,$symbol_err,$tsid,$virtual);
 
@@ -97,14 +97,14 @@ SCAN: while(1) {
     if ($_ =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)/) {
       # add all information for previous channel unless this is the first
       if ($freq) {
-        $scan->{rf_channel}->{$channel}->{modulation} = $modulation,
-        $scan->{rf_channel}->{$channel}->{strength} = $strength,
-        $scan->{rf_channel}->{$channel}->{sig_noise} = $sig_noise,
-        $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
-        $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
-        $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
+        $scan->{$channel}->{modulation} = $modulation,
+        $scan->{$channel}->{strength} = $strength,
+        $scan->{$channel}->{sig_noise} = $sig_noise,
+        $scan->{$channel}->{symbol_err} = $symbol_err,
+        $scan->{$channel}->{tsid} = $tsid,
+        $scan->{$channel}->{virtual} = $virtual;
         if (exists $override{$channel}) {
-          $scan->{rf_channel}->{$channel}->{reporter_callsign}
+          $scan->{$channel}->{reporter_callsign}
             = $override{$channel};
         }
       }
@@ -133,21 +133,21 @@ SCAN: while(1) {
   }
   # get last channel in scan
   if ($freq) {
-    $scan->{rf_channel}->{$channel}->{modulation} = $modulation,
-    $scan->{rf_channel}->{$channel}->{strength} = $strength,
-    $scan->{rf_channel}->{$channel}->{sig_noise} = $sig_noise,
-    $scan->{rf_channel}->{$channel}->{symbol_err} = $symbol_err,
-    $scan->{rf_channel}->{$channel}->{tsid} = $tsid,
-    $scan->{rf_channel}->{$channel}->{virtual} = $virtual;
+    $scan->{$channel}->{modulation} = $modulation,
+    $scan->{$channel}->{strength} = $strength,
+    $scan->{$channel}->{sig_noise} = $sig_noise,
+    $scan->{$channel}->{symbol_err} = $symbol_err,
+    $scan->{$channel}->{tsid} = $tsid,
+    $scan->{$channel}->{virtual} = $virtual;
     if (exists $override{$channel}) {
-      $scan->{rf_channel}->{$channel}->{reporter_callsign}
+      $scan->{$channel}->{reporter_callsign}
         = $override{$channel};
     }
   }
   print "scan finished.\n" if $DEBUG;
 
   # Nothing more to do unless RF detected
-  if (! $scan->{rf_channel}) {
+  if (! $scan) {
     print "No channels found in scan!  Waiting 10 seconds before trying again...\n" if $DEBUG;
     sleep 10; # don't try to rapidly run hdhomerun_config over and over on a locked tuner
     undef %last_scan;
@@ -157,17 +157,34 @@ SCAN: while(1) {
   # set change flag on each channel if tsid or reporter_callsign or
   # any virtual channel changes
   for my $channel (keys %scan) {
-    if (   $scan->{rf_channel}->{$channel}->{tsid} != 
-           $last_scan->{rf_channel}->{$channel}->{tsid}
-        || Compare($scan->{rf_channel}->{$channel}->{virtual},
-                   $last_scan->{rf_channel}->{$channel}->{virtual})
+    if (   $scan->{$channel}->{tsid} != 
+           $last_scan->{$channel}->{tsid}
+        || Compare($scan->{$channel}->{virtual},
+                   $last_scan->{$channel}->{virtual})
           ) {
-      $scan{rf_channel}->{$channel}->{changed} = 1;
+      $scan->{$channel}->{changed} = 1;
     }
   }
 
-  # binary structure to send to web server
+  # binary structure to send to web server.  Format is:
+  # channels 2-36, 38-51 in order
+  # 1 bit decodeable/not-decodeable + 7 bits signal strength
+  # 1 bit change/no change from last scan + 7 bits quality
+  # optional null terminated string of opt_o entered by user
+  # JSON formatted scan information only for virtual channels that have changed
   my $blob;
+
+  my $packed_dsignal;
+  my $packed_cquality;
+  my %virtual_changed;
+
+  # only send spots for FCC licensed channels
+  for my $channel (2..36,38..51) {
+    $packed_dsignal .= pack('C', $scan->{channel}->{strength}
+                                 + $scan->{channel}->{modulation} ? 128 : 0);
+    $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise}
+                                 + $scan->{$channel}->{changed} ? 128 : 0);
+  }
 
   print "Sending results to $SPOT_URL\n" if $DEBUG;
   my $req = HTTP::Request->new(POST => $SPOT_URL);
@@ -189,7 +206,7 @@ SCAN: while(1) {
   # delete changed key on each channel before copy to %last_scan
   # so next scan won't have bogus changed key
   for my $channel (keys %scan) {
-    delete $scan{rf_channel}->{$channel}->{changed};
+    delete $scan->{$channel}->{changed};
   }
   %last_scan = %scan;
 
