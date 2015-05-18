@@ -7,6 +7,7 @@
 
 use strict 'vars';
 use Getopt::Std;
+use Storable 'dclone';
 use LWP;
 use JSON;
 use LWP::Simple;
@@ -82,7 +83,7 @@ my $int_tuner_id = hex($found_tuner_id);
 $TUNER =~ /(\d)/;
 my $int_tuner_number = $1;
 
-my %last_scan;
+my $last_scan;
 
 SCAN: while(1) {
   my $scan = {}; # information reported to web site
@@ -150,13 +151,13 @@ SCAN: while(1) {
   if (! $scan) {
     print "No channels found in scan!  Waiting 10 seconds before trying again...\n" if $DEBUG;
     sleep 10; # don't try to rapidly run hdhomerun_config over and over on a locked tuner
-    undef %last_scan;
+    undef $last_scan;
     next SCAN;
   }
 
   # set change flag on each channel if tsid or reporter_callsign or
   # any virtual channel changes
-  for my $channel (keys %scan) {
+  for my $channel (keys %{$scan}) {
     if (   $scan->{$channel}->{tsid} != 
            $last_scan->{$channel}->{tsid}
         || Compare($scan->{$channel}->{virtual},
@@ -203,12 +204,12 @@ SCAN: while(1) {
     }
   }
 
-  # delete changed key on each channel before copy to %last_scan
+  # delete changed key on each channel before copy to $last_scan
   # so next scan won't have bogus changed key
-  for my $channel (keys %scan) {
+  for my $channel (keys %{$scan}) {
     delete $scan->{$channel}->{changed};
   }
-  %last_scan = %scan;
+  $last_scan = dclone $scan;
 
 }
 
