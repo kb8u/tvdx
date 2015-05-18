@@ -195,7 +195,10 @@ SCAN: while(1) {
   $blob = pack('NC',$int_tuner_id, $int_tuner_number);
   $blob .= $packed_dsignal . $packed_cquality;
   $blob .= pack('Z*', $opt_o);
-  $blob .= encode_json(%virtual_changed);
+  $blob .= JSON->new->allow_nonref->encode_json(%virtual_changed);
+
+  # only send at five minute interval unless debug is on
+  while ( ! $debug && time % 300) { sleep 1 }
 
   print "Sending results to $SPOT_URL\n" if $DEBUG;
   my $req = HTTP::Request->new(POST => $SPOT_URL);
