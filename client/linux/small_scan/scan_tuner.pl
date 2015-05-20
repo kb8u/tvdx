@@ -178,7 +178,7 @@ SCAN: while(1) {
   my $packed_dsignal;
   my $packed_cquality;
   my $packed_changed_tsids;
-  my $virtual_changed;
+  my $virtual_changed = {};
 
   # only send spots for FCC licensed channels
   for my $channel (2..36,38..51) {
@@ -188,7 +188,7 @@ SCAN: while(1) {
                                  + $scan->{$channel}->{changed} ? 128 : 0);
     if ($scan->{channel}->{changed}) {
       $packed_changed_tsids .= pack('S', hex($scan->{channel}->{tsid}));
-      $virtual_changed->{$channel} = $scan->{$channel}->{virtual};
+      $virtual_changed->{$channel} = dclone($scan->{$channel}->{virtual});
     }
   }
 
@@ -222,7 +222,7 @@ SCAN: while(1) {
   for my $channel (keys %{$scan}) {
     delete $scan->{$channel}->{changed};
   }
-  $last_scan = dclone $scan;
+  $last_scan = dclone($scan);
 
 }
 
