@@ -186,9 +186,9 @@ SCAN: while(1) {
                                  + $scan->{$channel}->{modulation} ? 128 : 0);
     $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise}
                                  + $scan->{$channel}->{changed} ? 128 : 0);
-    if ($scan->{channel}->{changed}) {
+    if ($scan->{$channel}->{changed}) {
       $packed_changed_tsids .= pack('S', hex($scan->{channel}->{tsid}));
-      $virtual_changed->{$channel} = dclone($scan->{$channel}->{virtual});
+      $virtual_changed->{$channel} = $scan->{$channel}->{virtual};
     }
   }
 
