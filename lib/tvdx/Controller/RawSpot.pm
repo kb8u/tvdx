@@ -345,6 +345,13 @@ sub _virtual_current {
 
   # process each virtual channel
   for my $program (keys %{$ch->{virtual}}) {
+    # skip if missing name or channel
+    next unless $ch->{virtual}{$program}{name};
+    next unless $ch->{virtual}{$program}{channel};
+
+    # sometimes the name has bit errors
+    next if $ch->{virtual}{$program}{name} =~ /[^[:ascii:]]/;
+
     my ($v_row) =
       $args->{c}->model('DB::Virtual')->find(
         {'callsign' => $args->{callsign},
