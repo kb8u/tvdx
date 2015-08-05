@@ -158,11 +158,15 @@ SCAN: while(1) {
   # set change flag on each channel if tsid or reporter_callsign or
   # any virtual channel changes
   for my $channel (keys %{$scan}) {
-    unless (        $scan->{$channel}->{tsid} == 
-               $last_scan->{$channel}->{tsid}
-            &&  Compare($scan->{$channel}->{virtual},
-                   $last_scan->{$channel}->{virtual})
-          ) {
+    $scan->{$channel}->{changed} = 0;
+
+    if ( $scan->{$channel}->{tsid} != last_scan->{$channel}->{tsid}) {
+      print "channel $channel tsid changed since last scan\n" if $DEBUG;
+      $scan->{$channel}->{changed} = 1;
+    }
+    if (! Compare($scan->{$channel}->{virtual},
+                  $last_scan->{$channel}->{virtual})) {
+      print "channel $channel virtual(s) changed since last scan\n" if $DEBUG;
       $scan->{$channel}->{changed} = 1;
     }
   }
