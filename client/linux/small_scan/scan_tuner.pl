@@ -15,7 +15,7 @@ use Data::Compare;
 
 my $ua = LWP::UserAgent->new;
 
-my ($scan_from_file,$print_help,$overrides)
+my ($scan_from_file,$print_help,$overrides);
 # program used to interface with tuner
 my $CONFIG_PROGRAM = '/usr/bin/hdhomerun_config';
 # which tuner to scan
@@ -31,7 +31,7 @@ GetOptions("file=s" => \$scan_from_file,
            "overrides:s" => \$overrides,
            "hdhomerun_config:s" => \$CONFIG_PROGRAM,
            "tuner:s" => \$TUNER,
-           "spot_url:s" => \$SPOT_URL,
+           "url:s" => \$SPOT_URL,
            "tuner_id:s" => \$TUNER_ID,
            "debug" => \$DEBUG );
 help() if ($print_help);
@@ -256,19 +256,19 @@ This program sends all scan results there, so your anti-virus program
 may give you warnings about network activity.  It's normal, don't worry.
 
 Program options:
--h print help (you're reading it)
--o over-ride a callsign onto a channel e.g. -o 32,WDUD,44,CRUD forces channel
+--help print help (you're reading it)
+--overrides over-rides callsigns onto a channel e.g. -o 32,WDUD,44,CRUD forces channel
    32 to use a callsign WDUD and 44 to use CRUD
--p Path to hdhomerun_config.exe (used to scan the tuner).  It is normally
+--hdhomerun_config Path to hdhomerun_config (used to scan the tuner).  It is normally
    already installed from the CD that came with your tuner.
    Defaults to $CONFIG_PROGRAM
--t Which tuner to use (applicable only to dual-tuner models).
+--tuner Which tuner to use (applicable only to dual-tuner models).
    Defaults to $TUNER
--u URL to send scan results to.  Only change this if you're working with
+--url URL to send scan results to.  Only change this if you're working with
    the author.  Defaults to $SPOT_URL
--x Tuner ID.  Only needed if you have more than one HDHomeRun on your network.
+--tuner_id Tuner ID.  Only needed if you have more than one HDHomeRun on your network.
    Defaults to FFFFFFFF
--d Prints debugging information while the script runs.  Try this if you're
+--debug Prints debugging information while the script runs.  Try this if you're
    having problems.  Send the output to kb8u_vhf\@hotmail.com if you can't
    figure out what's wrong.
 EOHELP
