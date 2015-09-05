@@ -102,12 +102,12 @@ SCAN: while(1) {
     open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
   }
   else {
-    my $file = unshift @scan_from_file;
+    my $file = shift @scan_from_file;
     open(SCAN, "<", $file) or die "Can't open $scan_from_file"
   }
   
   while(<SCAN>) {
-    say $_ if $DEBUG;
+    print $_ if $DEBUG;
     if ($_ =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)/) {
       # add all information for previous channel unless this is the first
       if ($freq) {
