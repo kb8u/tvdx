@@ -257,20 +257,18 @@ may give you warnings about network activity.  It's normal, don't worry.
 
 Program options:
 --help print help (you're reading it)
---overrides over-rides callsigns onto a channel e.g. -o 32,WDUD,44,CRUD forces channel
-   32 to use a callsign WDUD and 44 to use CRUD
---hdhomerun_config Path to hdhomerun_config (used to scan the tuner).  It is normally
-   already installed from the CD that came with your tuner.
+--overrides over-rides callsigns onto a channel e.g. -o 32,WDUD,44,CRUD
+   forces channel 32 to use a callsign WDUD and 44 to use CRUD
+--hdhomerun_config Path to hdhomerun_config (used to scan the tuner).
+   It is normally already installed from the CD that came with your tuner.
    Defaults to $CONFIG_PROGRAM
 --tuner Which tuner to use (applicable only to dual-tuner models).
    Defaults to $TUNER
---url URL to send scan results to.  Only change this if you're working with
-   the author.  Defaults to $SPOT_URL
---tuner_id Tuner ID.  Only needed if you have more than one HDHomeRun on your network.
-   Defaults to FFFFFFFF
---debug Prints debugging information while the script runs.  Try this if you're
-   having problems.  Send the output to kb8u_vhf\@hotmail.com if you can't
-   figure out what's wrong.
+--tuner_id Tuner ID.  Only needed if you have more than one HDHomeRun on
+   your network.  Defaults to FFFFFFFF
+--debug Prints debugging information while the script runs.  Try this if
+   you're having problems.  Send the output to kb8u_vhf\@hotmail.com if
+   you can't figure out what's wrong.
 EOHELP
   exit;
 }
