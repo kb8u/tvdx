@@ -100,7 +100,8 @@ SCAN: while(1) {
     open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
   }
   else {
-    open(SCAN, "<", $scan_from_file) or die "Can't open $scan_from_file"
+    my $file = unshift @scan_from_file;
+    open(SCAN, "<", $file) or die "Can't open $scan_from_file"
   }
   
   while(<SCAN>) {
@@ -238,7 +239,7 @@ SCAN: while(1) {
   }
   $last_scan = dclone($scan);
 
-  last if $scan_from_file;
+  last if scalar @scan_from_file;
 }
 
 
@@ -256,7 +257,7 @@ This program sends all scan results there, so your anti-virus program
 may give you warnings about network activity.  It's normal, don't worry.
 
 Program options:
---help print help (you're reading it)
+--help prints this message.
 --overrides over-rides callsigns onto a channel e.g. -o 32,WDUD,44,CRUD
    forces channel 32 to use a callsign WDUD and 44 to use CRUD
 --hdhomerun_config Path to hdhomerun_config (used to scan the tuner).
