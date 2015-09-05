@@ -26,9 +26,11 @@ my $TUNER_ID = 'FFFFFFFF';
 # which tuner to scan
 my $TUNER = '/tuner0/';
 
-our ($opt_h,$opt_o,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
-getopts('ho:p:t:u:x:d');
+our ($opt_f,$opt_h,$opt_o,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
+getopts('f:ho:p:t:u:x:d');
 help() if ($opt_h);
+
+my $scan_from_file if $opt_f;
 my $DEBUG = $opt_d;
 
 my %override;
@@ -91,8 +93,17 @@ SCAN: while(1) {
   my ($freq,$channel,$modulation,$strength,$sig_noise,$symbol_err,$tsid,$virtual);
 
   # scan tuner
-  print "trying to run $CONFIG_PROGRAM $TUNER_ID scan $TUNER\n" if $DEBUG;
-  open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
+  print "trying to run $CONFIG_PROGRAM $TUNER_ID scan $TUNER\n" if ($DEBUG && ! $scan_from_file);
+  if (! $scan_from_file) {
+    open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
+  }
+  else {
+    print "Input file: ";
+    my $file = <STDIN>;
+    chomp $file;
+    open SCAN, $file or die "Can't open $file"
+  }
+  
   while(<SCAN>) {
     print $_ if $DEBUG;
     if ($_ =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)/) {

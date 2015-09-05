@@ -1,0 +1,227 @@
+SCANNING: 803000000 (us-bcast:69)
+LOCK: none (ss=40 snq=0 seq=0)
+SCANNING: 797000000 (us-bcast:68)
+LOCK: none (ss=43 snq=0 seq=0)
+SCANNING: 791000000 (us-bcast:67)
+LOCK: none (ss=50 snq=0 seq=0)
+SCANNING: 785000000 (us-bcast:66)
+LOCK: none (ss=50 snq=0 seq=0)
+SCANNING: 779000000 (us-bcast:65)
+LOCK: none (ss=60 snq=0 seq=0)
+SCANNING: 773000000 (us-bcast:64)
+LOCK: none (ss=44 snq=0 seq=0)
+SCANNING: 767000000 (us-bcast:63)
+LOCK: none (ss=53 snq=0 seq=0)
+SCANNING: 761000000 (us-bcast:62)
+LOCK: none (ss=54 snq=0 seq=0)
+SCANNING: 755000000 (us-bcast:61)
+LOCK: none (ss=100 snq=0 seq=0)
+SCANNING: 749000000 (us-bcast:60)
+LOCK: none (ss=100 snq=0 seq=0)
+SCANNING: 743000000 (us-bcast:59)
+LOCK: none (ss=100 snq=0 seq=0)
+SCANNING: 737000000 (us-bcast:58)
+LOCK: none (ss=100 snq=0 seq=0)
+SCANNING: 731000000 (us-bcast:57)
+LOCK: none (ss=96 snq=0 seq=0)
+SCANNING: 725000000 (us-bcast:56)
+LOCK: none (ss=53 snq=0 seq=0)
+SCANNING: 719000000 (us-bcast:55)
+LOCK: none (ss=43 snq=0 seq=0)
+SCANNING: 713000000 (us-bcast:54)
+LOCK: none (ss=39 snq=0 seq=0)
+SCANNING: 707000000 (us-bcast:53)
+LOCK: none (ss=48 snq=0 seq=0)
+SCANNING: 701000000 (us-bcast:52)
+LOCK: none (ss=54 snq=0 seq=0)
+SCANNING: 695000000 (us-bcast:51)
+LOCK: none (ss=60 snq=0 seq=0)
+SCANNING: 689000000 (us-bcast:50)
+LOCK: 8vsb (ss=78 snq=52 seq=100)
+TSID: 0x05B5
+PROGRAM 3: 31.1 ION
+PROGRAM 4: 31.2 qubo
+PROGRAM 5: 31.3 IONLife
+PROGRAM 6: 31.4 Shop
+PROGRAM 7: 31.5 QVC
+PROGRAM 8: 31.6 HSN
+SCANNING: 683000000 (us-bcast:49)
+LOCK: 8vsb (ss=93 snq=80 seq=100)
+TSID: 0x0907
+PROGRAM 3: 24.1 WNWO-DT
+PROGRAM 4: 24.2 WNWO-RT
+SCANNING: 677000000 (us-bcast:48)
+LOCK: none (ss=57 snq=0 seq=0)
+SCANNING: 671000000 (us-bcast:47)
+LOCK: none (ss=44 snq=0 seq=0)
+SCANNING: 665000000 (us-bcast:46)
+LOCK: 8vsb (ss=91 snq=86 seq=100)
+TSID: 0x090B
+PROGRAM 3: 36.1 WUPW TV
+PROGRAM 4: 36.2 Bounce
+PROGRAM 5: 36.3 Escape
+SCANNING: 659000000 (us-bcast:45)
+LOCK: 8vsb (ss=98 snq=82 seq=100)
+TSID: 0x05CB
+PROGRAM 3: 4.1 WDIV-HD
+PROGRAM 4: 4.2 This TV
+PROGRAM 5: 4.3 Me TV
+SCANNING: 653000000 (us-bcast:44)
+LOCK: 8vsb (ss=91 snq=76 seq=100)
+TSID: 0x05D5
+PROGRAM 1: 62.1 WWJ-HD
+PROGRAM 2: 62.2 Decades
+SCANNING: 647000000 (us-bcast:43)
+LOCK: 8vsb (ss=91 snq=79 seq=100)
+TSID: 0x05D3
+PROGRAM 1: 56.1 WTVS-HD
+PROGRAM 2: 56.2 WTVS-SD
+PROGRAM 3: 56.3 WTVSSD2
+SCANNING: 641000000 (us-bcast:42)
+LOCK: 8vsb (ss=85 snq=77 seq=100)
+TSID: 0x08FB
+PROGRAM 1: 52.1 WGGN HD
+PROGRAM 2: 52.2 WGGN D2
+SCANNING: 635000000 (us-bcast:41)
+LOCK: 8vsb (ss=94 snq=69 seq=100)
+TSID: 0x05CD
+PROGRAM 3: 7.1 WXYZ-HD
+PROGRAM 4: 7.2 WXYZ-BN
+PROGRAM 5: 7.3 WXYZ-LF
+SCANNING: 629000000 (us-bcast:40)
+LOCK: 8vsb (ss=65 snq=38 seq=0)
+TSID: 0x05D7
+PROGRAM 3: 0
+PROGRAM 4: 0
+PROGRAM 5: 0 (no data)
+SCANNING: 623000000 (us-bcast:39)
+LOCK: none (ss=61 snq=0 seq=0)
+SCANNING: 617000000 (us-bcast:38)
+LOCK: 8vsb (ss=81 snq=59 seq=100)
+TSID: 0x05F5
+PROGRAM 5: 47.1 FOX47HD
+PROGRAM 6: 47.2 MeTV
+PROGRAM 7: 47.3 Bounce
+SCANNING: 611000000 (us-bcast:37)
+LOCK: none (ss=54 snq=0 seq=0)
+SCANNING: 605000000 (us-bcast:36)
+LOCK: 8vsb (ss=100 snq=85 seq=100)
+TSID: 0x05F3
+PROGRAM 3: 6.1 WLNS-HD
+SCANNING: 599000000 (us-bcast:35)
+LOCK: none (ss=100 snq=0 seq=0)
+SCANNING: 593000000 (us-bcast:34)
+LOCK: 8vsb (ss=100 snq=93 seq=100)
+TSID: 0x05EB
+PROGRAM 4: 18.1 WHTV
+SCANNING: 587000000 (us-bcast:33)
+LOCK: none (ss=83 snq=0 seq=0)
+SCANNING: 581000000 (us-bcast:32)
+LOCK: 8vsb (ss=95 snq=91 seq=100)
+TSID: 0x43C1
+PROGRAM 1: 32.1 TVO
+SCANNING: 575000000 (us-bcast:31)
+LOCK: none (ss=52 snq=0 seq=0)
+SCANNING: 569000000 (us-bcast:30)
+LOCK: none (ss=50 snq=0 seq=0)
+SCANNING: 563000000 (us-bcast:29)
+LOCK: 8vsb (ss=94 snq=91 seq=100)
+TSID: 0x0909
+PROGRAM 3: 30.2 Family
+PROGRAM 6: 30.3 Create
+PROGRAM 7: 30.1 WGTE-HD
+SCANNING: 557000000 (us-bcast:28)
+LOCK: none (ss=67 snq=0 seq=0)
+SCANNING: 551000000 (us-bcast:27)
+LOCK: none (ss=62 snq=0 seq=0)
+SCANNING: 545000000 (us-bcast:26)
+LOCK: none (ss=54 snq=0 seq=0)
+SCANNING: 539000000 (us-bcast:25)
+LOCK: 8vsb (ss=96 snq=84 seq=100)
+TSID: 0x05F7
+PROGRAM 3: 53.1 WLAJ-HD
+PROGRAM 4: 53.2 WLAJ-CW
+SCANNING: 533000000 (us-bcast:24)
+LOCK: none (ss=48 snq=0 seq=0)
+SCANNING: 527000000 (us-bcast:23)
+LOCK: none (ss=68 snq=0 seq=0)
+SCANNING: 521000000 (us-bcast:22)
+LOCK: none (ss=57 snq=0 seq=0)
+SCANNING: 515000000 (us-bcast:21)
+LOCK: 8vsb (ss=88 snq=62 seq=100)
+TSID: 0x05CF
+PROGRAM 3: 20.1 WMYD-HD
+PROGRAM 4: 20.2 WMYD-CO
+PROGRAM 5: 20.3 WMYD-ES
+SCANNING: 509000000 (us-bcast:20)
+LOCK: none (ss=60 snq=0 seq=0)
+SCANNING: 503000000 (us-bcast:19)
+LOCK: none (ss=88 snq=0 seq=0)
+SCANNING: 497000000 (us-bcast:18)
+LOCK: none (ss=73 snq=0 seq=0)
+SCANNING: 491000000 (us-bcast:17)
+LOCK: 8vsb (ss=73 snq=56 seq=100)
+TSID: 0x08CD
+PROGRAM 1: 3.1 WKYC-HD
+PROGRAM 2: 3.2 Justice
+PROGRAM 3: 3.3 LiveWX
+SCANNING: 485000000 (us-bcast:16)
+LOCK: none (ss=61 snq=0 seq=0)
+SCANNING: 479000000 (us-bcast:15)
+LOCK: 8vsb (ss=71 snq=49 seq=100)
+TSID: 0x08CF
+PROGRAM 3: 5.1 WEWS-HD
+PROGRAM 4: 5.2 COZI
+PROGRAM 5: 5.3 LAFF
+SCANNING: 473000000 (us-bcast:14)
+LOCK: 8vsb (ss=100 snq=70 seq=100)
+TSID: 0x05D1
+PROGRAM 1: 50.1 WKBD-HD
+SCANNING: 213000000 (us-bcast:13)
+LOCK: 8vsb (ss=100 snq=85 seq=100)
+TSID: 0x0905
+PROGRAM 1: 13.1 WTVG HD
+PROGRAM 2: 13.2 CW 13
+PROGRAM 3: 13.3 WX Now
+SCANNING: 207000000 (us-bcast:12)
+LOCK: none (ss=64 snq=0 seq=0)
+SCANNING: 201000000 (us-bcast:11)
+LOCK: 8vsb (ss=98 snq=78 seq=100)
+TSID: 0x0903
+PROGRAM 3: 11.1 WTOL
+PROGRAM 4: 11.2 Me TV
+PROGRAM 5: 11.3 Grit
+SCANNING: 195000000 (us-bcast:10)
+LOCK: 8vsb (ss=97 snq=51 seq=100)
+TSID: 0x0605
+PROGRAM 3: 10.1 WILX-DT
+PROGRAM 4: 10.2 WILX-WX
+PROGRAM 5: 10.3 WILX-AT
+SCANNING: 189000000 (us-bcast:9)
+LOCK: 8vsb (ss=100 snq=85 seq=100)
+TSID: 0x43BF
+PROGRAM 3: 9.1 CBET-DT
+SCANNING: 183000000 (us-bcast:8)
+LOCK: 8vsb (ss=80 snq=55 seq=100)
+TSID: 0x08D1
+PROGRAM 3: 8.1 WJWDT-1
+PROGRAM 4: 8.2 WJWDT-2
+SCANNING: 177000000 (us-bcast:7)
+LOCK: 8vsb (ss=100 snq=83 seq=100)
+TSID: 0x05C9
+PROGRAM 3: 2.1 WJBK
+PROGRAM 4: 2.2 Movies!
+PROGRAM 5: 2.3 Buzzr
+SCANNING: 85000000 (us-bcast:6)
+LOCK: none (ss=98 snq=0 seq=0)
+SCANNING: 79000000 (us-bcast:5)
+LOCK: 8vsb (ss=84 snq=49 seq=100)
+TSID: 0x090D
+PROGRAM 1: 40.1 WLMB-DT
+PROGRAM 2: 40.2 WLMB-2
+SCANNING: 69000000 (us-bcast:4)
+LOCK: none (ss=80 snq=0 seq=0)
+SCANNING: 63000000 (us-bcast:3)
+LOCK: none (ss=90 snq=0 seq=0)
+SCANNING: 57000000 (us-bcast:2)
+LOCK: none (ss=86 snq=0 seq=0)
