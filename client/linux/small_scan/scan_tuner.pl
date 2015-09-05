@@ -6,12 +6,14 @@
 # of a scan.  Written 5/13/2015 by Russell Dwarshuis
 
 use strict 'vars';
+use feature 'say';
 use Getopt::Long;
 use Storable 'dclone';
 use LWP;
 use JSON;
 use LWP::Simple;
 use Data::Compare;
+use Data::HexDump;
 
 my $ua = LWP::UserAgent->new;
 
@@ -43,22 +45,22 @@ my @overrides = split /,/,$overrides;
 while(@overrides) { $override{pop @overrides} = pop @overrides; }
 foreach my $ch (keys %override) {
   unless ($ch =~ /\d+/ && $ch >1 && $ch < 70) {
-    print "Bad channel number in -o option.\n";
+    say "Bad channel number in -o option.";
         help();
   }
   unless ($override{$ch} =~ /^\S+/) {
-    print "Bad callsign in -o option.\n";
+    say "Bad callsign in -o option.";
         help();
   }
 }
 
 if (! -x $CONFIG_PROGRAM) {
-  print "$CONFIG_PROGRAM not found or can't be run.\n";
+  say "$CONFIG_PROGRAM not found or can't be run.";
   help();
 }
 
 unless ($TUNER eq '/tuner0/' || $TUNER eq '/tuner1/' || $TUNER eq '/tuner2/') {
-  print "Invalid tuner ID.  Must be /tuner0/ or /tuner1/ or /tuner2/\n";
+  say "Invalid tuner ID.  Must be /tuner0/ or /tuner1/ or /tuner2/";
   exit 1;
 }
 
@@ -67,7 +69,7 @@ unless ($scan_from_file) {
   if ($TUNER_ID ne 'FFFFFFFF') {
     $found_tuner_id = $TUNER_ID;
     if ($found_tuner_id !~ /^[0-9A-F]{8}$/) {
-      print "Invalid tuner ID.  Must be 8 characters of 0-9 and A-F\n";
+      say "Invalid tuner ID.  Must be 8 characters of 0-9 and A-F";
           exit 1;
     }
   }
@@ -76,11 +78,11 @@ unless ($scan_from_file) {
     while(<DISCOVER>) {
       if ($_ =~ /device\s+([0-9A-Fa-f]{8})\s+found/i) {
         $found_tuner_id = uc $1;
-        print "Found hdhomerun device $found_tuner_id\n" if $DEBUG;
+        say "Found hdhomerun device $found_tuner_id" if $DEBUG;
       }
     }
   }
-  print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if $DEBUG;
+  say "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER" if $DEBUG;
 }
 
 my $int_tuner_id = hex($found_tuner_id);
@@ -95,7 +97,7 @@ SCAN: while(1) {
   my ($freq,$channel,$modulation,$strength,$sig_noise,$symbol_err,$tsid,$virtual);
 
   # scan tuner
-  print "trying to run $CONFIG_PROGRAM $TUNER_ID scan $TUNER\n" if ($DEBUG && ! $scan_from_file);
+  say "trying to run $CONFIG_PROGRAM $TUNER_ID scan $TUNER" if ($DEBUG && ! $scan_from_file);
   if (! $scan_from_file) {
     open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
   }
@@ -105,7 +107,7 @@ SCAN: while(1) {
   }
   
   while(<SCAN>) {
-    print $_ if $DEBUG;
+    say $_ if $DEBUG;
     if ($_ =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)/) {
       # add all information for previous channel unless this is the first
       if ($freq) {
@@ -156,11 +158,11 @@ SCAN: while(1) {
         = $override{$channel};
     }
   }
-  print "scan finished.\n" if $DEBUG;
+  say "scan finished." if $DEBUG;
 
   # Nothing more to do unless RF detected
   if (! $scan) {
-    print "No channels found in scan!  Waiting 10 seconds before trying again...\n" if $DEBUG;
+    say "No channels found in scan!  Waiting 10 seconds before trying again..." if $DEBUG;
     sleep 10; # don't try to rapidly run hdhomerun_config over and over on a locked tuner
     undef $last_scan;
     next SCAN;
@@ -172,12 +174,12 @@ SCAN: while(1) {
     $scan->{$channel}->{changed} = 0;
 
     if ( $scan->{$channel}->{tsid} != $last_scan->{$channel}->{tsid}) {
-      print "channel $channel tsid changed since last scan\n" if $DEBUG;
+      say "channel $channel tsid changed since last scan" if $DEBUG;
       $scan->{$channel}->{changed} = 1;
     }
     if (! Compare($scan->{$channel}->{virtual},
                   $last_scan->{$channel}->{virtual})) {
-      print "channel $channel virtual(s) changed since last scan\n" if $DEBUG;
+      say "channel $channel virtual(s) changed since last scan" if $DEBUG;
       $scan->{$channel}->{changed} = 1;
     }
   }
@@ -212,23 +214,32 @@ SCAN: while(1) {
   $blob .= pack('Z*', $overrides);
   $blob .= encode_json($virtual_changed);
 
+  if ($DEBUG) {
+    say "packed_dsignal:";
+    print HexDump $packed_dsignal;
+    say "packed_cquality:";
+    print HexDump $packed_cquality;
+    say "blob:";
+    print HexDump $blob;
+  }
+
   # only send at five minute interval unless debug is on
   while ( ! $DEBUG && time % 300) { sleep 1 }
 
-  print "Sending results to $SPOT_URL\n" if $DEBUG;
+  say "Sending results to $SPOT_URL" if $DEBUG;
   my $req = HTTP::Request->new(POST => $SPOT_URL);
   $req->content_type('application/octet-stream');
   $req->content($blob);
   my $res = $ua->request($req);
 
   if ($DEBUG) {
-    print "Checking if web page got results ok\n";
+    say "Checking if web page got results ok";
     if ($res->is_success) {
-      print $res->content;
-      print "\n";
+      say $res->content;
+      say "";
     }
     else {
-      print $res->status_line, "\n";
+      say $res->status_line, "";
     }
   }
 
@@ -239,12 +250,12 @@ SCAN: while(1) {
   }
   $last_scan = dclone($scan);
 
-  last if scalar @scan_from_file;
+  last unless scalar @scan_from_file;
 }
 
 
 sub help {
-  print <<EOHELP;
+  say <<EOHELP;
 
 Scan channels on a SiliconDust HDHomeRun tuner and logs results.
 The tuner must already be configured for over-the-air reception.
