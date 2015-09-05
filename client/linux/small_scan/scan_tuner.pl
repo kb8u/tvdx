@@ -171,7 +171,7 @@ SCAN: while(1) {
   for my $channel (keys %{$scan}) {
     $scan->{$channel}->{changed} = 0;
 
-    if ( $scan->{$channel}->{tsid} != last_scan->{$channel}->{tsid}) {
+    if ( $scan->{$channel}->{tsid} != $last_scan->{$channel}->{tsid}) {
       print "channel $channel tsid changed since last scan\n" if $DEBUG;
       $scan->{$channel}->{changed} = 1;
     }
