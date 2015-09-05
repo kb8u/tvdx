@@ -6,7 +6,7 @@
 # of a scan.  Written 5/13/2015 by Russell Dwarshuis
 
 use strict 'vars';
-use Getopt::Std;
+use Getopt::Long;
 use Storable 'dclone';
 use LWP;
 use JSON;
@@ -15,26 +15,31 @@ use Data::Compare;
 
 my $ua = LWP::UserAgent->new;
 
-my $SPOT_URL = 'http://www.rabbitears.info/tvdx/s';
-
+my ($scan_from_file,$print_help,$overrides)
 # program used to interface with tuner
 my $CONFIG_PROGRAM = '/usr/bin/hdhomerun_config';
-
-# tuner ID; can use FFFFFFFF if it's the only one on network
-my $TUNER_ID = 'FFFFFFFF';
-
 # which tuner to scan
 my $TUNER = '/tuner0/';
+# where to send scans
+my $SPOT_URL = 'http://www.rabbitears.info/tvdx/s';
+# tuner ID; can use FFFFFFFF if it's the only one on network
+my $TUNER_ID = 'FFFFFFFF';
+my $DEBUG;
 
-our ($opt_f,$opt_h,$opt_o,$opt_p,$opt_t,$opt_u,$opt_x,$opt_d);
-getopts('f:ho:p:t:u:x:d');
-help() if ($opt_h);
+GetOptions("file=s" => \$scan_from_file,
+           "help" => \$print_help,
+           "overrides:s" => \$overrides,
+           "hdhomerun_config:s" => \$CONFIG_PROGRAM,
+           "tuner:s" => \$TUNER,
+           "spot_url:s" => \$SPOT_URL,
+           "tuner_id:s" => \$TUNER_ID,
+           "debug" => \$DEBUG );
+help() if ($print_help);
 
-my $scan_from_file if $opt_f;
-my $DEBUG = $opt_d;
+my @scan_from_file = split ',', $scan_from_file;
 
 my %override;
-my @overrides = split /,/,$opt_o;
+my @overrides = split /,/,$overrides;
 while(@overrides) { $override{pop @overrides} = pop @overrides; }
 foreach my $ch (keys %override) {
   unless ($ch =~ /\d+/ && $ch >1 && $ch < 70) {
@@ -47,39 +52,36 @@ foreach my $ch (keys %override) {
   }
 }
 
-$CONFIG_PROGRAM = $opt_p if ($opt_p);
 if (! -x $CONFIG_PROGRAM) {
   print "$CONFIG_PROGRAM not found or can't be run.\n";
   help();
 }
 
-$TUNER = $opt_t if $opt_t;
 unless ($TUNER eq '/tuner0/' || $TUNER eq '/tuner1/' || $TUNER eq '/tuner2/') {
   print "Invalid tuner ID.  Must be /tuner0/ or /tuner1/ or /tuner2/\n";
   exit 1;
 }
 
-$SPOT_URL = $opt_u if $opt_u;
-
-my $found_tuner_id;
-if ($opt_x) {
-  $TUNER_ID = $opt_x;
-  $found_tuner_id = $opt_x;
-  if ($found_tuner_id !~ /^[0-9A-F]{8}$/) {
-    print "Invalid tuner ID.  Must be 8 characters of 0-9 and A-F\n";
-        exit 1;
-  }
-}
-else {
-  open DISCOVER, "\"$CONFIG_PROGRAM\" discover |" or die "Can't run $CONFIG_PROGRAM discover";
-  while(<DISCOVER>) {
-    if ($_ =~ /device\s+([0-9A-Fa-f]{8})\s+found/i) {
-      $found_tuner_id = uc $1;
-      print "Found hdhomerun device $found_tuner_id\n" if $DEBUG;
+my $found_tuner_id = 0;
+unless ($scan_from_file) {
+  if ($TUNER_ID ne 'FFFFFFFF') {
+    $found_tuner_id = $TUNER_ID;
+    if ($found_tuner_id !~ /^[0-9A-F]{8}$/) {
+      print "Invalid tuner ID.  Must be 8 characters of 0-9 and A-F\n";
+          exit 1;
     }
   }
+  else {
+    open DISCOVER, "\"$CONFIG_PROGRAM\" discover |" or die "Can't run $CONFIG_PROGRAM discover";
+    while(<DISCOVER>) {
+      if ($_ =~ /device\s+([0-9A-Fa-f]{8})\s+found/i) {
+        $found_tuner_id = uc $1;
+        print "Found hdhomerun device $found_tuner_id\n" if $DEBUG;
+      }
+    }
+  }
+  print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if $DEBUG;
 }
-print "Reporting on scans of hdhomerun device $found_tuner_id tuner $TUNER\n" if $DEBUG;
 
 my $int_tuner_id = hex($found_tuner_id);
 $TUNER =~ /(\d)/;
@@ -98,10 +100,7 @@ SCAN: while(1) {
     open SCAN, "$CONFIG_PROGRAM $TUNER_ID scan $TUNER |" or die "can't run scan";
   }
   else {
-    print "Input file: ";
-    my $file = <STDIN>;
-    chomp $file;
-    open SCAN, $file or die "Can't open $file"
+    open(SCAN, "<", $scan_from_file) or die "Can't open $scan_from_file"
   }
   
   while(<SCAN>) {
@@ -186,7 +185,7 @@ SCAN: while(1) {
   # channels 2-36, 38-51 in order
   # 1 bit decodeable/not-decodeable + 7 bits signal strength
   # 1 bit change/no change from last scan + 7 bits quality
-  # optional null terminated string of opt_o entered by user
+  # optional null terminated string of --overrides entered by user
   # JSON formatted scan information only for virtual channels that have changed
   my $blob;
 
@@ -209,7 +208,7 @@ SCAN: while(1) {
 
   $blob = pack('NC',$int_tuner_id, $int_tuner_number);
   $blob .= $packed_dsignal . $packed_cquality;
-  $blob .= pack('Z*', $opt_o);
+  $blob .= pack('Z*', $overrides);
   $blob .= encode_json($virtual_changed);
 
   # only send at five minute interval unless debug is on
@@ -239,6 +238,7 @@ SCAN: while(1) {
   }
   $last_scan = dclone($scan);
 
+  last if $scan_from_file;
 }
 
 
