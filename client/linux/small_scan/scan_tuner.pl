@@ -171,7 +171,7 @@ SCAN: while(1) {
 
   # set change flag on each channel if tsid or reporter_callsign or
   # any virtual channel changes. 0 or 128 because it becomes high bit of $packed_cquality
-  for my $channel (keys %{$scan}) {
+  for my $channel (2..36,38..51) {
     $scan->{$channel}->{changed} = 0;
 
     if ( $scan->{$channel}->{tsid} != $last_scan->{$channel}->{tsid}) {
@@ -200,8 +200,8 @@ SCAN: while(1) {
 
   # only send spots for FCC licensed channels
   for my $channel (2..36,38..51) {
-    $packed_dsignal .= pack('C', $scan->{$channel}->{strength} + $scan->{$channel}->{modulation};
-    $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise} + $scan->{$channel}->{changed};
+    $packed_dsignal .= pack('C', $scan->{$channel}->{strength} + $scan->{$channel}->{modulation});
+    $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise} + $scan->{$channel}->{changed});
     if ($scan->{$channel}->{changed}) {
       $packed_changed_tsids .= pack('S', hex($scan->{channel}->{tsid}));
       $virtual_changed->{$channel} = $scan->{$channel}->{virtual};
@@ -244,7 +244,7 @@ SCAN: while(1) {
 
   # delete changed key on each channel before copy to $last_scan
   # so next scan won't have bogus changed key
-  for my $channel (keys %{$scan}) {
+  for my $channel (2..36,38..51) {
     delete $scan->{$channel}->{changed};
   }
   $last_scan = dclone($scan);
