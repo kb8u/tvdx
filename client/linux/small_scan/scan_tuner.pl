@@ -124,7 +124,7 @@ SCAN: while(1) {
       }
       $freq = $1;
       $channel = $2;
-      $modulation = '';
+      $modulation = 0;
       $strength = '';
       $sig_noise = '';
       $symbol_err = '';
@@ -132,7 +132,8 @@ SCAN: while(1) {
       $virtual = {};
     }
     if ($_ =~ /^LOCK:\s+(\S+)\s+\(ss=(\d+)\s+snq=(\d+)\s+seq=(\d+)\)/) {
-      $modulation = $1;
+      # $modulation is used as high bit of $packed_dsignal
+      $modulation = $1 eq '8vsb' ? 128 : 0;
       $strength   = $2;
       $sig_noise  = $3;
       $symbol_err = $4;
@@ -169,18 +170,18 @@ SCAN: while(1) {
   }
 
   # set change flag on each channel if tsid or reporter_callsign or
-  # any virtual channel changes
+  # any virtual channel changes. 0 or 128 because it becomes high bit of $packed_cquality
   for my $channel (keys %{$scan}) {
     $scan->{$channel}->{changed} = 0;
 
     if ( $scan->{$channel}->{tsid} != $last_scan->{$channel}->{tsid}) {
       say "channel $channel tsid changed since last scan" if $DEBUG;
-      $scan->{$channel}->{changed} = 1;
+      $scan->{$channel}->{changed} = 128;
     }
     if (! Compare($scan->{$channel}->{virtual},
                   $last_scan->{$channel}->{virtual})) {
       say "channel $channel virtual(s) changed since last scan" if $DEBUG;
-      $scan->{$channel}->{changed} = 1;
+      $scan->{$channel}->{changed} = 128;
     }
   }
 
@@ -199,10 +200,8 @@ SCAN: while(1) {
 
   # only send spots for FCC licensed channels
   for my $channel (2..36,38..51) {
-    $packed_dsignal .= pack('C', $scan->{$channel}->{strength}
-                                 + $scan->{$channel}->{modulation} ? 128 : 0);
-    $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise}
-                                 + $scan->{$channel}->{changed} ? 128 : 0);
+    $packed_dsignal .= pack('C', $scan->{$channel}->{strength} + $scan->{$channel}->{modulation};
+    $packed_cquality .= pack('C', $scan->{$channel}->{sig_noise} + $scan->{$channel}->{changed};
     if ($scan->{$channel}->{changed}) {
       $packed_changed_tsids .= pack('S', hex($scan->{channel}->{tsid}));
       $virtual_changed->{$channel} = $scan->{$channel}->{virtual};
