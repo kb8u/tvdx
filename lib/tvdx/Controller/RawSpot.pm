@@ -349,8 +349,13 @@ sub _virtual_current {
     next unless $ch->{virtual}{$program}{name};
     next unless $ch->{virtual}{$program}{channel};
 
-    # sometimes the name has bit errors
+    # sometimes the name or channel has bit errors
     next if $ch->{virtual}{$program}{name} =~ /[^[:ascii:]]/;
+    next if $ch->{virtual}{$program}{channel} =~ /[^[:ascii:]]/;
+
+    # sometimes trailing whitespace is added
+    $ch->{virtual}{$program}{name} =~ s/\s+$//;
+    $ch->{virtual}{$program}{channel} =~ s/\s+$//;
 
     my ($v_row) =
       $args->{c}->model('DB::Virtual')->find(
