@@ -217,7 +217,7 @@ LOCK: none (ss=98 snq=0 seq=0)
 SCANNING: 79000000 (us-bcast:5)
 LOCK: 8vsb (ss=84 snq=49 seq=100)
 TSID: 0x0FFF
-PROGRAM 1: 40.1 WLMB-DT
+PROGRAM 1: 40.1 WSEX-DT
 PROGRAM 2: 40.2 WLMB-2
 SCANNING: 69000000 (us-bcast:4)
 LOCK: none (ss=80 snq=0 seq=0)
