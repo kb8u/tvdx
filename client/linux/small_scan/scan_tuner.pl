@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # scan tuner on Silicon Dust HDHomeRun
-# Sends resluts to web site.
+# Sends results to web site.
 #
 # This version sends a minimal amount of information to communicate the results
 # of a scan.  Written 5/13/2015 by Russell Dwarshuis
@@ -164,7 +164,8 @@ SCAN: while(1) {
   # Nothing more to do unless RF detected
   if (! $scan) {
     say "No channels found in scan!  Waiting 10 seconds before trying again..." if $DEBUG;
-    sleep 10; # don't try to rapidly run hdhomerun_config over and over on a locked tuner
+    # don't try to rapidly run hdhomerun_config over and over on a locked tuner
+    sleep 10;
     undef $last_scan;
     next SCAN;
   }
@@ -247,7 +248,10 @@ SCAN: while(1) {
   for my $channel (2..36,38..51) {
     delete $scan->{$channel}->{changed};
   }
-  $last_scan = dclone($scan);
+
+  # save last scan if server was successful
+  undef $last_scan;
+  $last_scan = dclone($scan) if $req->code == 202;
 
   last unless scalar @scan_from_file;
 }
