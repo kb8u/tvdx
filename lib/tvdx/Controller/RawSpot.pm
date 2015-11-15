@@ -36,7 +36,6 @@ Accept raw spots from client and convert into a data structure Perl can use.
 =cut
 
 sub raw_spot :Global :ActionClass('REST') {}
-
 sub raw_spot_POST :Global {
   my ( $self, $c ) = @_;
 
@@ -106,6 +105,44 @@ sub raw_spot_POST :Global {
   }
   $c->response->body('OK');
   $c->response->status(202);
+}
+
+sub tiny_spot :Global :ActionClass('REST') {}
+sub tiny_spot_POST :Global {
+  my ( $self, $c ) = @_;
+
+  my ($int_tuner_id, $tuner_number,
+      $packed_dsignal, $packed_cquality,
+      $overrides, $virtual_json) = unpack("NCa49a49Za*", $c-req->data);
+
+  # database uses hexadecimal tuner ID
+  my $tuner_id = sprintf('%04X',$int_tuner_id);
+
+  # get last scan results from database
+BUG: need to determine what other subs need to process data (not json after all)
+BUG: need to write _last_json or whatever it should be called
+  my $last_json = _last_json($tuner_id,$tuner_number);
+
+  if (! $last_json) {
+    # 412 code so client will not save it's last scan
+    $c->response->body('last scan not found');
+    $c->response->status(412);
+    return;
+  }
+
+  # create data structure to send to old spot methods
+  my %json;
+  for my $channel (2..36,38..51) {
+    my ($dsignal,$cquality);
+    ($dsignal, $packed_dsignal) = unpack('Ca*', $packed_dsignal);
+    $json{$channel}{modulation} = '8vsb' if $dsignal & 128;
+    $json{$channel}{strength} = $dsignal & 127;
+
+    ($cquality, $packed_cquality) = unpack('Ca*', $packed_cquality);
+    $json{$channel}{changed} = $cquality & 128 ? 1 : 0;
+    $json{$channel}{quality} = $cquality & 127;
+  }
+BUG: tack on virtual from virtual_json
 }
 
 
