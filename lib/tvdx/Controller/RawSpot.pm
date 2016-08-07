@@ -389,9 +389,9 @@ sub _tsid_current {
   # nothing to do if tsid is missing or invalid
   unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) { return }
 
-  my ($tsid_row) = $args->{c}->model('DB::Tsid')->find(
+  my ($tsid_row) = $args->{c}->model('DB::Tsid')->search(
         {'callsign' => $args->{callsign},
-         'tsid'     => $ch->{tsid}});
+         'tsid'     => $ch->{tsid}})->first;
   # all new entry?
   if (! $tsid_row) {
     $args->{c}->model('DB::Tsid')->create({
@@ -414,9 +414,9 @@ sub _signal_update {
 
   # create new record if needed.  Station moving to new channel qualifies
   my $entry = $args->{c}->model('DB::Signal')
-               ->find({'tuner_id' => $args->{tuner_id},
+               ->search({'tuner_id' => $args->{tuner_id},
                        'tuner_number' => $args->{tuner_number},
-                       'callsign' => $args->{callsign},});
+                       'callsign' => $args->{callsign},})->first;
   if (! $entry) {
     my $spot = {
       'rx_date'         => $args->{sqlite_now},

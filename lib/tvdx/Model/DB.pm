@@ -8,7 +8,7 @@ __PACKAGE__->config(
     
     connect_info => {
 #        dsn => 'dbi:SQLite:tvdx.db',
-        dsn => 'dbi:SQLite:dbname=/home/kb8u/tvdx/tvdx.db',
+        dsn => 'dbi:SQLite:dbname=/dev/shm/tvdx.db',
         user => '',
         password => '',
         on_connect_do => q{PRAGMA foreign_keys = ON},

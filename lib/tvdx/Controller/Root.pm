@@ -304,6 +304,7 @@ sub many_tuner_map :Global {
   $c->stash(reception_locations => \@reception_locations);
   $c->stash(static_url          => $c->config->{static_url});
   $c->stash(root_url            => $c->config->{root_url});
+  $c->stash(gmap_key            => $c->config->{gmap_key});
   $c->stash(template            => 'Root/many_tuner_map.tt');
   $c->stash(current_view        => 'HTML');
 
@@ -337,6 +338,7 @@ sub one_tuner_map :Global {
   $c->stash(tuner_number => $tn);
   $c->stash(root_url     => $c->config->{root_url});
   $c->stash(static_url   => $c->config->{static_url});
+  $c->stash(gmap_key     => $c->config->{gmap_key});
   $c->stash(template     => 'Root/one_tuner_map.tt');
   $c->stash(current_view => 'HTML');
 
