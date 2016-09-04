@@ -7,7 +7,6 @@ __PACKAGE__->config(
     schema_class => 'tvdx::Schema',
     
     connect_info => {
-#        dsn => 'dbi:SQLite:tvdx.db',
         dsn => 'dbi:SQLite:dbname=/dev/shm/tvdx.db',
         user => '',
         password => '',
