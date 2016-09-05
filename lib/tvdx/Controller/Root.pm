@@ -386,6 +386,7 @@ sub tuner_map_data :Global {
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
                                    units => 'mi');
+    next unless ($signal->callsign->latitude && $signal->callsign->longitude);
     my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
                                         lon => $signal->callsign->longitude},
                                        -1);
