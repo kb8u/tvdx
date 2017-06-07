@@ -8,6 +8,7 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
+use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
@@ -390,8 +391,11 @@ sub tuner_map_data :Global {
     # Geo::Calc distance_to gives wrong distance!!
     my $gis = GIS::Distance->new(); 
     next unless ($signal->callsign->latitude && $signal->callsign->longitude);
-    my $miles = $gis->distance($tuner->latitude, $tuner->longitude =>
-                               $signal->callsign->latitude, $signal->callsign->longitude);
+    my $miles = $gis->distance($tuner->latitude,
+                               $tuner->longitude =>
+                               $signal->callsign->latitude,
+                               $signal->callsign->longitude)->miles();
+    $miles = nearest(.1, $miles); # to nearest 1/10 of mile
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
                                        -1));
 
