@@ -11,6 +11,7 @@ use List::MoreUtils 'none';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
+use GIS::Distance;
 use GD;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -386,10 +387,11 @@ sub tuner_map_data :Global {
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
                                    units => 'mi');
+    # Geo::Calc distance_to gives wrong distance!!
+    my $gis = GIS::Distance->new(); 
     next unless ($signal->callsign->latitude && $signal->callsign->longitude);
-    my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
-                                        lon => $signal->callsign->longitude},
-                                       -1);
+    my $miles = $gis->distance($tuner->latitude, $tuner->longitude =>
+                               $signal->callsign->latitude, $signal->callsign->longitude);
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
                                        -1));
 
