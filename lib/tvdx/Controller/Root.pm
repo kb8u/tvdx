@@ -390,6 +390,7 @@ sub tuner_map_data :Global {
                                    units => 'mi');
     # Geo::Calc distance_to gives wrong distance!!
     my $gis = GIS::Distance->new(); 
+    $gis->formula('Vincenty');
     next unless ($signal->callsign->latitude && $signal->callsign->longitude);
     my $miles = $gis->distance($tuner->latitude,
                                $tuner->longitude =>
