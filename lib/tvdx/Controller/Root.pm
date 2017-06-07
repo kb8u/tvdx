@@ -229,10 +229,10 @@ sub _call_current {
     my $location = "$city, $state";
 
     my $lat_decimal = $lat_deg + $lat_min/60 + $lat_sec/3600;
-    $lat_decimal = -1 * $lat_decimal if $n_or_s eq 'S';
+    $lat_decimal = -1 * $lat_decimal if ($n_or_s eq 'S' || $n_or_s eq '-');
 
     my $lon_decimal = $lon_deg + $lon_min/60 + $lon_sec/3600;
-    $lon_decimal = -1 * $lon_decimal if $w_or_e eq 'W';
+    $lon_decimal = -1 * $lon_decimal if ($w_or_e eq 'W' || $w_or_e eq '-');
 
     # the current time formatted to sqlite format (UTC time zone)
     my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);

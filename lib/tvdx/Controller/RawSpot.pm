@@ -272,11 +272,11 @@ sub _find_call {
   my $lat_decimal =    $transmitter{lat_deg}
                      + $transmitter{lat_min}/60
                      + $transmitter{lat_sec}/3600;
-  $lat_decimal = -1 * $lat_decimal if $transmitter{n_or_s} eq 'S';
+  $lat_decimal = -1 * $lat_decimal if ($transmitter{n_or_s} eq 'S' || $transmitter{n_or_s} eq '-');
   my $lon_decimal =    $transmitter{lon_deg}
                      + $transmitter{lon_min}/60
                      + $transmitter{lon_sec}/3600;
-  $lon_decimal = -1 * $lon_decimal if $transmitter{w_or_e} eq 'W';
+  $lon_decimal = -1 * $lon_decimal if ($transmitter{w_or_e} eq 'W' || $transmitter{w_or_e} eq '-');
 
   # update fcc table with %transmitter, if needed
   my ($fcc_call) = $args->{c}->model('DB::Fcc')
