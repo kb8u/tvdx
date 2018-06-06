@@ -254,11 +254,17 @@ sub _call_current {
         'last_fcc_lookup' => $sqlite_now, });
       return 1;
     }
-### BUG: FCC could return new location, need to update end and create
-### new record in that case.  DB needs to be changed to two primary keys???
     # else just update
     else {
-      $fcc_call->update({'last_fcc_lookup' => $sqlite_now, });
+      $fcc_call->update({
+        'rf_channel'      => $fcc_channel,
+        'latitude'        => $lat_decimal,
+        'longitude'       => $lon_decimal,
+        'virtual_channel' => $virtual_channel,
+        'city_state'      => $location,
+        'erp_kw'          => $erp,
+        'rcamsl'          => $rcamsl,
+        'last_fcc_lookup' => $sqlite_now, });
       return 1;
     }
   }
