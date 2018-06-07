@@ -3,7 +3,7 @@
 <head>
         <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
 	<title>TV reception map</title>
-	<script src="http://maps.googleapis.com/maps/api/js?sensor=false&key=[% gmap_key %]" type="text/javascript"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?sensor=false&key=[% gmap_key %]" type="text/javascript"></script>
 	<script src="[% static_url %]/markerwithlabel_packed.js" type="text/javascript"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/prototype.js" type="text/javascript"></script>
 	<script type="text/javascript">
