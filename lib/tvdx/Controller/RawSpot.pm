@@ -120,7 +120,7 @@ sub _lu_call {
             $re_call_find->last_re_lookup) < $args->{yesterday})) {
     $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
 
-    return undef if ($rlu eq 'Error connecting to RabbitEars database')
+    return undef if ($rlu eq 'Error connecting to RabbitEars database');
 
     if (defined $rlu) {
       # create or update rabbitears_call table
