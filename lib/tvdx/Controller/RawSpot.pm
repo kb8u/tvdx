@@ -119,6 +119,9 @@ sub _lu_call {
       || (DateTime::Format::SQLite->parse_datetime(
             $re_call_find->last_re_lookup) < $args->{yesterday})) {
     $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
+
+    return undef if ($rlu eq 'Error connecting to RabbitEars database')
+
     if (defined $rlu) {
       # create or update rabbitears_call table
       if (! $re_call_find) {
@@ -128,13 +131,17 @@ sub _lu_call {
            'last_re_lookup' => $args->{sqlite_now},});
       }
       else {
-        $re_call_find->update({'last_re_lookup' => $args->{sqlite_now}});
+        $re_call_find->update({
+          'last_re_lookup' => $args->{sqlite_now},
+          're_rval' => $rlu,});
       }
     }
   }
   else {
     $rlu = $re_call_find->re_rval;
   }
+
+  return $rlu;
 }
 
 
@@ -177,6 +184,8 @@ sub _find_call {
         || (DateTime::Format::SQLite->parse_datetime(
               $re_tsid_find->last_re_lookup) < $args->{yesterday})) {
       $rlu = get($RABBITEARS_TVQ . "tsid=$ch->{tsid}");
+      undef $rlu if $rlu eq 'Error connecting to RabbitEars database';
+
       if (defined $rlu) {
         # create or update rabbitears_tsid table
         if (! $re_tsid_find) {
@@ -186,7 +195,9 @@ sub _find_call {
              'last_re_lookup' => $args->{sqlite_now},});
         }
         else {
-          $re_tsid_find->update({'last_re_lookup' => $args->{sqlite_now}});
+          $re_tsid_find->update({
+            're_rval' => $rlu,
+            'last_re_lookup' => $args->{sqlite_now},});
         }
       }
     }
@@ -272,11 +283,11 @@ sub _find_call {
   my $lat_decimal =    $transmitter{lat_deg}
                      + $transmitter{lat_min}/60
                      + $transmitter{lat_sec}/3600;
-  $lat_decimal = -1 * $lat_decimal if $transmitter{n_or_s} eq 'S';
+  $lat_decimal = -1 * $lat_decimal if ($transmitter{n_or_s} eq 'S' || $transmitter{n_or_s} eq '-');
   my $lon_decimal =    $transmitter{lon_deg}
                      + $transmitter{lon_min}/60
                      + $transmitter{lon_sec}/3600;
-  $lon_decimal = -1 * $lon_decimal if $transmitter{w_or_e} eq 'W';
+  $lon_decimal = -1 * $lon_decimal if ($transmitter{w_or_e} eq 'W' || $transmitter{w_or_e} eq '-');
 
   # update fcc table with %transmitter, if needed
   my ($fcc_call) = $args->{c}->model('DB::Fcc')
@@ -300,7 +311,15 @@ sub _find_call {
   if (   $fcc_call
       && DateTime::Format::SQLite
          ->parse_datetime($fcc_call->last_fcc_lookup) < $args->{yesterday}) {
-    $fcc_call->update({'last_fcc_lookup' => $args->{sqlite_now}});
+    $fcc_call->update({
+      'rf_channel'      => $transmitter{fcc_channel},
+      'latitude'        => $lat_decimal,
+      'longitude'       => $lon_decimal,
+      'virtual_channel' => $transmitter{fcc_virt},
+      'city_state'      => $location,
+      'erp_kw'          => $erp,
+      'rcamsl'          => $rcamsl,
+      'last_fcc_lookup' => $args->{sqlite_now} });
   }
 
   if (defined $transmitter{call} && defined $transmitter{fcc_virt}) {

@@ -8,9 +8,11 @@ use XML::Simple;
 use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
+use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
+use GIS::Distance;
 use GD;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -229,10 +231,10 @@ sub _call_current {
     my $location = "$city, $state";
 
     my $lat_decimal = $lat_deg + $lat_min/60 + $lat_sec/3600;
-    $lat_decimal = -1 * $lat_decimal if $n_or_s eq 'S';
+    $lat_decimal = -1 * $lat_decimal if ($n_or_s eq 'S' || $n_or_s eq '-');
 
     my $lon_decimal = $lon_deg + $lon_min/60 + $lon_sec/3600;
-    $lon_decimal = -1 * $lon_decimal if $w_or_e eq 'W';
+    $lon_decimal = -1 * $lon_decimal if ($w_or_e eq 'W' || $w_or_e eq '-');
 
     # the current time formatted to sqlite format (UTC time zone)
     my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
@@ -252,11 +254,17 @@ sub _call_current {
         'last_fcc_lookup' => $sqlite_now, });
       return 1;
     }
-### BUG: FCC could return new location, need to update end and create
-### new record in that case.  DB needs to be changed to two primary keys???
     # else just update
     else {
-      $fcc_call->update({'last_fcc_lookup' => $sqlite_now, });
+      $fcc_call->update({
+        'rf_channel'      => $fcc_channel,
+        'latitude'        => $lat_decimal,
+        'longitude'       => $lon_decimal,
+        'virtual_channel' => $virtual_channel,
+        'city_state'      => $location,
+        'erp_kw'          => $erp,
+        'rcamsl'          => $rcamsl,
+        'last_fcc_lookup' => $sqlite_now, });
       return 1;
     }
   }
@@ -386,10 +394,15 @@ sub tuner_map_data :Global {
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
                                    units => 'mi');
+    # Geo::Calc distance_to gives wrong distance!!
+    my $gis = GIS::Distance->new(); 
+    $gis->formula('Vincenty');
     next unless ($signal->callsign->latitude && $signal->callsign->longitude);
-    my $miles = $gc_tuner->distance_to({lat => $signal->callsign->latitude,
-                                        lon => $signal->callsign->longitude},
-                                       -1);
+    my $miles = $gis->distance($tuner->latitude,
+                               $tuner->longitude =>
+                               $signal->callsign->latitude,
+                               $signal->callsign->longitude)->miles();
+    $miles = nearest(.1, $miles); # to nearest 1/10 of mile
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
                                        -1));
 
