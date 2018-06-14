@@ -127,7 +127,7 @@ sub automated_spot :Global {
     my $rrd_file = join '_', ($tuner_id,$tuner_number,$callsign);
     $rrd_file = $c->config->{rrd_dir} . "/$rrd_file.rrd";
 
-    if (! -r $rrd_file) {
+    if ( _rrd_not_pending($rrd_file) && ! -r $rrd_file ) {
       RRDs::create( $rrd_file, '--start', '-6hours', '--step', '60',
                     "DS:strength:GAUGE:300:0:100",
                     "DS:sig_noise:GAUGE:300:0:100",
@@ -136,20 +136,23 @@ sub automated_spot :Global {
       # short duration DX won't have a graph point unless it's stretched out
       for (my $i = 3; $i > 0; $i--) {
         my $te = $now_epoch - 60*$i;
-        RRDs::update( $rrd_file, '--template', 'strength:sig_noise',
+        RRDs::update( $rrd_file, '--daemon', $c->config->{socket},
+                      '--template', 'strength:sig_noise',
                       "$te:$tv_signal->{strength}:$tv_signal->{sig_noise}");
       }
     }
 
-    if ($now_epoch-600 > RRDs::last($rrd_file)) {
+    if (_rrd_not_pending($rrd_file) && $now_epoch-600 > RRDs::last($rrd_file)) {
       for (my $i = 3; $i > 0; $i--) {
         my $te = $now_epoch - 60*$i;
-        RRDs::update( $rrd_file, '--template', 'strength:sig_noise',
+        RRDs::update( $rrd_file, '--daemon', $c->config->{socket},
+                      '--template', 'strength:sig_noise',
                       "$te:$tv_signal->{strength}:$tv_signal->{sig_noise}");
       }
     } 
 
-    RRDs::update( $rrd_file, '--template', 'strength:sig_noise',
+    RRDs::update( $rrd_file, '--daemon', $c->config->{socket},
+                  '--template', 'strength:sig_noise',
                   "$now_epoch:$tv_signal->{strength}:$tv_signal->{sig_noise}");
   }
 
@@ -193,6 +196,18 @@ sub _spot_data_ok {
   return 0 if $spot->{'virtual_channel'} !~ /^\d+\.{0,1}\d*$/;
 
   return 1;
+}
+
+
+sub _rrd_not_pending {
+  my ($rrd) = @_;
+
+  $tvdx::socket_io->send("PENDING $rrd\n");
+  my $response;
+  $tvdx::socket_io->recv($response, 16384);
+  my ($status) = split /\s/, $response;
+
+  return $status > 0 ? 0 : 1;
 }
 
 
@@ -528,6 +543,7 @@ sub render_graph :Global {
   if ($arg_is_callsign && $is_channel_rrd) {
     # generate graph with both channel and call signal strength/quality
     $c->stash->{'graph'} = [
+      '--daemon', $c->config->{socket},
       '--lower-limit', '0', '--upper-limit', '100', '--rigid',
       '--start', $start_time,
       '--end', $end_time,
@@ -555,6 +571,7 @@ sub render_graph :Global {
   else {
     # just a callsign or channel number, not both
     $c->stash->{'graph'} = [
+      '--daemon', $c->config->{socket},
       '--lower-limit', '0', '--upper-limit', '100', '--rigid',
       '--start', $start_time,
       '--end', $end_time,

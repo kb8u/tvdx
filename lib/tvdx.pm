@@ -1,5 +1,6 @@
 package tvdx;
 use Moose;
+use IO::Socket::UNIX;
 use namespace::autoclean;
 
 use Catalyst::Runtime 5.80;
@@ -42,6 +43,17 @@ __PACKAGE__->config(
                            reception_locations markers) ] }
 
 );
+
+
+# use the same rrdcached socket everywhere
+unless (-S __PACKAGE__->config->{socket}) {
+  die "No socket " . __PACKAGE__->config->{socket} . "  Is rrdcached running?";
+}
+our $socket_io = IO::Socket::UNIX->new(
+        Type => SOCK_STREAM(),
+        Peer => __PACKAGE__->config->{socket},
+);
+
 
 # Start the application
 __PACKAGE__->setup();
