@@ -44,19 +44,17 @@ __PACKAGE__->config(
 
 );
 
-
-# Start the application
-__PACKAGE__->setup();
-
-
 # use the same rrdcached socket everywhere
-unless (-S __PACKAGE__->config->{socket}) {
-  die "No socket " . __PACKAGE__->config->{socket} . "  Is rrdcached running?";
+unless (-S '/var/run/rrdcached.sock') {
+  die "No socket /var/run/rrdcached.sock Is rrdcached running?";
 }
 our $socket_io = IO::Socket::UNIX->new(
         Type => SOCK_STREAM(),
-        Peer => __PACKAGE__->config->{socket},
+        Peer => '/var/run/rrdcached.sock',
 );
+
+# Start the application
+__PACKAGE__->setup();
 
 
 =head1 NAME
