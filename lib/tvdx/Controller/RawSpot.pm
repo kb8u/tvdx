@@ -145,6 +145,18 @@ sub _lu_call {
 }
 
 
+sub _rrd_not_pending {
+  my ($rrd) = @_;
+
+  $tvdx::socket_io->send("PENDING $rrd\n");
+  my $response;
+  $tvdx::socket_io->recv($response, 16384);
+  my ($status) = split /\s/, $response;
+
+  return $status > 0 ? 0 : 1;
+}
+
+
 # determine callsign from raw channel information.  Updates (if > 1 day old)
 # rabbitears_call, rabbitears_tsid and fcc tables. 
 sub _find_call {
@@ -343,7 +355,7 @@ sub _rrd_update_nocall {
                             $args->{channel});
   $rrd_file = $args->{c}->config->{rrd_dir} . "/$rrd_file.rrd";
 
-  if (! -r $rrd_file) {
+  if ( _rrd_not_pending($rrd_file) && ! -r $rrd_file) {
     RRDs::create( $rrd_file, '--start', '-6hours', '--step', '60',
                   "DS:strength:GAUGE:300:0:100",
                   "DS:sig_noise:GAUGE:300:0:100",
@@ -351,7 +363,8 @@ sub _rrd_update_nocall {
                   "RRA:MAX:.99:60:131040" );
   }
 
-  RRDs::update( $rrd_file, '--template', 'strength:sig_noise',
+  RRDs::update( $rrd_file, '--daemon', $args->{c}->config->{socket},
+                '--template', 'strength:sig_noise',
                 "N:$strength:$sig_noise");
 }
 
@@ -462,7 +475,7 @@ sub _signal_update {
                             $args->{callsign});
   $rrd_file = $args->{c}->config->{rrd_dir} . "/$rrd_file.rrd";
 
-  if (! -r $rrd_file) {
+  if ( _rrd_not_pending($rrd_file) && ! -r $rrd_file) {
     RRDs::create( $rrd_file, '--start', '-6hours', '--step', '60',
                   "DS:strength:GAUGE:300:0:100",
                   "DS:sig_noise:GAUGE:300:0:100",
@@ -471,27 +484,24 @@ sub _signal_update {
     # short duration DX won't have a graph point unless it's stretched out
     for (my $i = 3; $i > 0; $i--) {
       my $te = $args->{now_epoch} - 60*$i;
-      RRDs::update(
-        $rrd_file, '--template', 'strength:sig_noise',
-        "$te:$ch->{strength}:$ch->{sig_noise}"
-      );
+      RRDs::update( $rrd_file, '--daemon', $args->{c}->config->{socket},
+                    '--template', 'strength:sig_noise',
+                    "$te:$ch->{strength}:$ch->{sig_noise}" );
     }
   }
 
-  if ($args->{now_epoch}-600 > RRDs::last($rrd_file)) {
+  if (_rrd_not_pending($rrd_file) && $args->{now_epoch}-600 > RRDs::last($rrd_file)) {
     for (my $i = 3; $i > 0; $i--) {
       my $te = $args->{now_epoch} - 60*$i;
-      RRDs::update(
-        $rrd_file, '--template', 'strength:sig_noise',
-        "$te:$ch->{strength}:$ch->{sig_noise}"
-      );
+      RRDs::update( $rrd_file, '--daemon', $args->{c}->config->{socket},
+                    '--template', 'strength:sig_noise',
+                   "$te:$ch->{strength}:$ch->{sig_noise}" );
     }
   }
 
-  RRDs::update(
-    $rrd_file, '--template', 'strength:sig_noise',
-    "$args->{now_epoch}:$ch->{strength}:$ch->{sig_noise}"
-  );
+  RRDs::update( $rrd_file, '--daemon', $args->{c}->config->{socket},
+                '--template', 'strength:sig_noise',
+                "$args->{now_epoch}:$ch->{strength}:$ch->{sig_noise}" );
   return 1;
 }
 
