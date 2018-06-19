@@ -153,7 +153,7 @@ sub _rrd_not_pending {
   $tvdx::socket_io->recv($response, 16384);
   my ($status) = split /\s/, $response;
 
-  return $status > 0 ? 0 : 1;
+  return ($status !~ /^\-?\d+$/ || $status > 0) ? 0 : 1;
 }
 
 
