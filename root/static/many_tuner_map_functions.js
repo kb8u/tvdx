@@ -196,9 +196,9 @@ function updatePaths() {
 function init() {
   handleResize();
   bounds = new google.maps.LatLngBounds();
-  var initCenter = new google.maps.LatLng(42,-84);
+  var initCenter = new google.maps.LatLng(38.4674,-95.7772);
   var mapOptions = { mapTypeId: google.maps.MapTypeId.ROADMAP,
-                     zoom: 8,
+                     zoom: 5,
                      center: initCenter }
   map = new google.maps.Map($("map"), mapOptions);
   infoWindow = new google.maps.InfoWindow();
