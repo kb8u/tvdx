@@ -3,3 +3,4 @@
 *.db
 *.png
 tvdx.conf
+lib/tvdx/Model/DB.pm
