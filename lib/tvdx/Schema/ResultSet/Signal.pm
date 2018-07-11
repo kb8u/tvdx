@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base 'DBIx::Class::ResultSet';
 use DateTime;
-use DateTime::Format::SQLite;
+use DateTime::Format::MySQL;
     
 =head2 tuner_date_range
 
@@ -16,8 +16,8 @@ times must be in DateTime format.
 sub tuner_date_range {
   my ($self, $tuner_id, $tuner_number, $dt_start, $dt_end) = @_;
     
-  my $start = DateTime::Format::SQLite->format_datetime($dt_start);
-  my $end   = DateTime::Format::SQLite->format_datetime($dt_end);
+  my $start = DateTime::Format::MySQL->format_datetime($dt_start);
+  my $end   = DateTime::Format::MySQL->format_datetime($dt_end);
 
   return $self->search({
     tuner_id     => $tuner_id,
@@ -31,7 +31,7 @@ sub tuner_date_range {
 =head2 most_recent
 
 Select the most recent report and city for each call sign
-sqlite3 equivalent is:
+sql equivalent is:
 
 select signal.*,fcc.city_state from signal
 join fcc on signal.callsign=fcc.callsign

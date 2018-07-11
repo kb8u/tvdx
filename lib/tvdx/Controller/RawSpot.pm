@@ -2,7 +2,7 @@ package tvdx::Controller::RawSpot;
 use Moose;
 use namespace::autoclean;
 use DateTime;
-use DateTime::Format::SQLite;
+use DateTime::Format::MySQL;
 use DateTime::Format::HTTP;
 use LWP::Simple;
 use RRDs;
@@ -40,8 +40,8 @@ sub raw_spot :Global :ActionClass('REST') {}
 sub raw_spot_POST :Global {
   my ( $self, $c ) = @_;
 
-  # the current time formatted to sqlite format (UTC time zone)
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+  # the current time formatted to mysql format (UTC time zone)
+  my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
   my $now_epoch = time;
   # 24 hours ago
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
@@ -54,7 +54,7 @@ sub raw_spot_POST :Global {
   # log if tuner isn't found
   if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
     open L, ">>/tmp/unknown_tuner" or return 0;
-    print L "$sqlite_now: tuner_id $tuner_id not found in tuner table\n";
+    print L "$mysql_now: tuner_id $tuner_id not found in tuner table\n";
     close L;
     $c->response->body("FAIL: Tuner $tuner_id is not registered with site");
     $c->response->status(403);
@@ -78,7 +78,7 @@ sub raw_spot_POST :Global {
                  'channel' => $channel,
                  'channel_details' => $channel_details,
                  'now_epoch' => $now_epoch,
-                 'sqlite_now' => $sqlite_now,
+                 'mysql_now' => $mysql_now,
                  'yesterday' => $yesterday };
 
     # return callsign or undef if it can't be determined and a virtual
@@ -116,7 +116,7 @@ sub _lu_call {
                                  ->find({'callsign' => $possible_call});
   my $rlu;
   if (   (! $re_call_find)
-      || (DateTime::Format::SQLite->parse_datetime(
+      || (DateTime::Format::MySQL->parse_datetime(
             $re_call_find->last_re_lookup) < $args->{yesterday})) {
     $rlu = get($RABBITEARS_TVQ . "call=$possible_call");
 
@@ -128,11 +128,11 @@ sub _lu_call {
         $args->{c}->model('DB::RabbitearCall')->create({
            'callsign' => $possible_call,
            're_rval' => $rlu,
-           'last_re_lookup' => $args->{sqlite_now},});
+           'last_re_lookup' => $args->{mysql_now},});
       }
       else {
         $re_call_find->update({
-          'last_re_lookup' => $args->{sqlite_now},
+          'last_re_lookup' => $args->{mysql_now},
           're_rval' => $rlu,});
       }
     }
@@ -193,7 +193,7 @@ sub _find_call {
                                    ->find({'tsid'=>$ch->{tsid}});
     my $rlu;
     if (   (! $re_tsid_find)
-        || (DateTime::Format::SQLite->parse_datetime(
+        || (DateTime::Format::MySQL->parse_datetime(
               $re_tsid_find->last_re_lookup) < $args->{yesterday})) {
       $rlu = get($RABBITEARS_TVQ . "tsid=$ch->{tsid}");
       undef $rlu if $rlu eq 'Error connecting to RabbitEars database';
@@ -204,12 +204,12 @@ sub _find_call {
           $args->{c}->model('DB::RabbitearsTsid')->create({
              'tsid' => $ch->{tsid},
              're_rval' => $rlu,
-             'last_re_lookup' => $args->{sqlite_now},});
+             'last_re_lookup' => $args->{mysql_now},});
         }
         else {
           $re_tsid_find->update({
             're_rval' => $rlu,
-            'last_re_lookup' => $args->{sqlite_now},});
+            'last_re_lookup' => $args->{mysql_now},});
         }
       }
     }
@@ -312,16 +312,16 @@ sub _find_call {
       'rf_channel'      => $transmitter{fcc_channel},
       'latitude'        => $lat_decimal,
       'longitude'       => $lon_decimal,
-      'start_date'      => $args->{sqlite_now},
+      'start_date'      => $args->{mysql_now},
       'virtual_channel' => $transmitter{fcc_virt},
       'city_state'      => $location,
       'erp_kw'          => $erp,
       'rcamsl'          => $rcamsl,
-      'last_fcc_lookup' => $args->{sqlite_now}, });
+      'last_fcc_lookup' => $args->{mysql_now}, });
   }
   # update record if FCC data is old
   if (   $fcc_call
-      && DateTime::Format::SQLite
+      && DateTime::Format::MySQL
          ->parse_datetime($fcc_call->last_fcc_lookup) < $args->{yesterday}) {
     $fcc_call->update({
       'rf_channel'      => $transmitter{fcc_channel},
@@ -331,7 +331,7 @@ sub _find_call {
       'city_state'      => $location,
       'erp_kw'          => $erp,
       'rcamsl'          => $rcamsl,
-      'last_fcc_lookup' => $args->{sqlite_now} });
+      'last_fcc_lookup' => $args->{mysql_now} });
   }
 
   if (defined $transmitter{call} && defined $transmitter{fcc_virt}) {
@@ -390,15 +390,15 @@ sub _virtual_current {
     $ch->{virtual}{$program}{channel} =~ s/\s+$//;
 
     my ($v_row) =
-      $args->{c}->model('DB::Virtual')->find(
+      $args->{c}->model('DB::PsipVirtual')->find(
         {'callsign' => $args->{callsign},
          'name'     => $ch->{virtual}{$program}{name},
          'channel'  => $ch->{virtual}{$program}{channel}});
 
     # all new entry?
     if (!$v_row) {
-      $args->{c}->model('DB::Virtual')->create({
-        'rx_date'  => $args->{sqlite_now},
+      $args->{c}->model('DB::PsipVirtual')->create({
+        'rx_date'  => $args->{mysql_now},
         'name'     => $ch->{virtual}{$program}{name},
         'channel'  => $ch->{virtual}{$program}{channel},
         'callsign' => $args->{callsign}});
@@ -406,7 +406,7 @@ sub _virtual_current {
     }
     # else update existing row
     else {
-      $v_row->update({'rx_date'  => $args->{sqlite_now}});
+      $v_row->update({'rx_date'  => $args->{mysql_now}});
     }
   }
 }
@@ -427,13 +427,13 @@ sub _tsid_current {
   # all new entry?
   if (! $tsid_row) {
     $args->{c}->model('DB::Tsid')->create({
-      'rx_date'  => $args->{sqlite_now},
+      'rx_date'  => $args->{mysql_now},
       'tsid'     => $ch->{tsid},
       'callsign' => $args->{callsign}});
   }
   # else update existing row
   else {
-    $tsid_row->update({'rx_date'  => $args->{sqlite_now}});
+    $tsid_row->update({'rx_date'  => $args->{mysql_now}});
   }
 }
 
@@ -445,14 +445,14 @@ sub _signal_update {
   my $ch = $args->{channel_details};
 
   # create new record if needed.  Station moving to new channel qualifies
-  my $entry = $args->{c}->model('DB::Signal')
+  my $entry = $args->{c}->model('DB::SignalReport')
                ->search({'tuner_id' => $args->{tuner_id},
                        'tuner_number' => $args->{tuner_number},
                        'callsign' => $args->{callsign},})->first;
   if (! $entry) {
     my $spot = {
-      'rx_date'         => $args->{sqlite_now},
-      'first_rx_date'   => $args->{sqlite_now},
+      'rx_date'         => $args->{mysql_now},
+      'first_rx_date'   => $args->{mysql_now},
       'rf_channel'      => $args->{channel},
       'strength'        => $ch->{'strength'},
       'sig_noise'       => $ch->{'sig_noise'},
@@ -460,12 +460,12 @@ sub _signal_update {
       'tuner_number'    => $args->{tuner_number},
       'callsign'        => $args->{callsign},
       'virtual_channel' => $args->{fcc_virtual}, };
-    $entry = $args->{c}->model('DB::Signal')->create($spot);
+    $entry = $args->{c}->model('DB::SignalReport')->create($spot);
     if (! $entry) {
       return 0
     }
   }
-  $entry->update({'rx_date'    => $args->{sqlite_now},
+  $entry->update({'rx_date'    => $args->{mysql_now},
                   'rf_channel' => $args->{channel},
                   'strength'   => $ch->{strength},
                   'sig_noise'  => $ch->{sig_noise}});

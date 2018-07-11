@@ -1,20 +1,21 @@
-Copyright 2013 by Russell Dwarshuis.
-This application is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
-
 --- miscellaneous notes ---
-Created Model with:
-script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static  "dbi:mysql:database=tvdx" rjd ThePasswordHere
+--Created Model with:
+--script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static components=TimeStamp dbi:SQLite:tvdx.db on_connect_do="PRAGMA foreign_keys = ON"
 
 --- database notes ---
 
---- commands to create database. 
+-- commands to add tuners are:
+-- insert into tuner (tuner_id,latitude,longitude,owner_id,start_date) values ('DEADBEEF',45,-90,'Climax, MI',datetime());
+-- insert into tuner_number(tuner_id,tuner_number,description,start_date) values ('DEADBEEF','tuner0','25 foot dish aimed at Kalamazoo',datetime());
+-- insert into tuner_number(tuner_id,tuner_number,description,start_date) values ('DEADBEEF','tuner1','Rabbit Ears in basement',datetime());
 
-use tvdx;
+--- commands to create database.  Run sqlite11 tvdx.db and paste in the below:
 
+--PRAGMA foreign_keys = ON;
 --
 -- Information for the HDHomeRun unit sending signal reports
 --
+use tvdx;
 CREATE TABLE tuner (
   tuner_id VARCHAR(255) NOT NULL PRIMARY KEY,
   latitude FLOAT(11,8) NOT NULL,
@@ -57,7 +58,7 @@ CREATE TABLE fcc (
 CREATE TABLE rabbitears_tsid (
   re_tsid_key INTEGER NOT NULL PRIMARY KEY,
   tsid INTEGER NOT NULL,
-  re_rval VARCHAR(10000),
+  re_rval VARCHAR(255),
   last_re_lookup DATETIME NOT NULL
 );
 --
@@ -66,7 +67,7 @@ CREATE TABLE rabbitears_tsid (
 CREATE TABLE rabbitears_call (
   re_call_key INTEGER NOT NULL PRIMARY KEY,
   callsign VARCHAR(255) NOT NULL,
-  re_rval VARCHAR(10000),
+  re_rval VARCHAR(255),
   last_re_lookup DATETIME NOT NULL
 );
 --

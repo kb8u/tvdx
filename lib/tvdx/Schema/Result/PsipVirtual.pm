@@ -1,12 +1,12 @@
 use utf8;
-package tvdx::Schema::Result::Tsid;
+package tvdx::Schema::Result::PsipVirtual;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-tvdx::Schema::Result::Tsid
+tvdx::Schema::Result::PsipVirtual
 
 =cut
 
@@ -30,15 +30,15 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<tsid>
+=head1 TABLE: C<psip_virtual>
 
 =cut
 
-__PACKAGE__->table("tsid");
+__PACKAGE__->table("psip_virtual");
 
 =head1 ACCESSORS
 
-=head2 tsid_key
+=head2 virtual_key
 
   data_type: 'integer'
   is_nullable: 0
@@ -49,10 +49,17 @@ __PACKAGE__->table("tsid");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 tsid
+=head2 name
 
-  data_type: 'integer'
+  data_type: 'varchar'
   is_nullable: 0
+  size: 255
+
+=head2 channel
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 255
 
 =head2 callsign
 
@@ -64,7 +71,7 @@ __PACKAGE__->table("tsid");
 =cut
 
 __PACKAGE__->add_columns(
-  "tsid_key",
+  "virtual_key",
   { data_type => "integer", is_nullable => 0 },
   "rx_date",
   {
@@ -72,8 +79,10 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
-  "tsid",
-  { data_type => "integer", is_nullable => 0 },
+  "name",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
+  "channel",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
   "callsign",
   { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
 );
@@ -82,13 +91,13 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</tsid_key>
+=item * L</virtual_key>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("tsid_key");
+__PACKAGE__->set_primary_key("virtual_key");
 
 =head1 RELATIONS
 
@@ -109,7 +118,7 @@ __PACKAGE__->belongs_to(
 
 
 # Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-09 16:00:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nMYIgZ4iiQwOV6AsN//Kpg
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EE9srWvQ2MmErJ0tE18Mvg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

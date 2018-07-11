@@ -2,7 +2,7 @@ package tvdx::Controller::Root;
 use Moose;
 use namespace::autoclean;
 use DateTime;
-use DateTime::Format::SQLite;
+use DateTime::Format::MySQL;
 use DateTime::Format::HTTP;
 use XML::Simple;
 use LWP::Simple;
@@ -57,8 +57,8 @@ sub automated_spot :Global {
   my ( $self, $c ) = @_;
 
 
-  # the current time formatted to sqlite format (UTC time zone)
-  my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+  # the current time formatted to mysql format (UTC time zone)
+  my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
   my $now_epoch = time;
 
   # xml with information from (client) scanlog.pl
@@ -71,7 +71,7 @@ sub automated_spot :Global {
   # log if tuner isn't found
   if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
     open L, ">>/tmp/unknown_tuner" or return 0;
-    print L "$sqlite_now: tuner_id $tuner_id not found in tuner table\n";
+    print L "$mysql_now: tuner_id $tuner_id not found in tuner table\n";
     close L;
     $c->response->body("FAIL: Tuner $tuner_id is not registered with site");
     $c->response->status(403);
@@ -98,7 +98,7 @@ sub automated_spot :Global {
     }
 
     my $spot = {
-      'rx_date'         => $sqlite_now,
+      'rx_date'         => $mysql_now,
       'rf_channel'      => $channel,
       'strength'        => $tv_signal->{'strength'},
       'sig_noise'       => $tv_signal->{'sig_noise'},
@@ -110,16 +110,16 @@ sub automated_spot :Global {
     next TVSPOT if ( ! _spot_data_ok($spot) );
 
     # create new record if needed.  Station moving to new channel qualifies
-    $entry = $c->model('DB::Signal')
+    $entry = $c->model('DB::SignalReport')
                ->find({'tuner_id' => $tuner_id,
                        'tuner_number' => $tuner_number,
                        'callsign' => $callsign,});
     if (! $entry) {
-      $spot->{'first_rx_date'} = $sqlite_now;
-      $entry = $c->model('DB::Signal')->create($spot);
+      $spot->{'first_rx_date'} = $mysql_now;
+      $entry = $c->model('DB::SignalReport')->create($spot);
       last TVSPOT if (! $entry);
     }
-    $entry->update({'rx_date'    => $sqlite_now,
+    $entry->update({'rx_date'    => $mysql_now,
                     'rf_channel' => $channel,
                     'strength'   => $tv_signal->{'strength'},
                     'sig_noise'  => $tv_signal->{'sig_noise'}});
@@ -221,7 +221,7 @@ sub _call_current {
   my ($fcc_call) = $c->model('DB::Fcc')->find({'callsign' => $p_callsign});
 
   # Make sure FCC data is current
-  if ((! $fcc_call) || (DateTime::Format::SQLite->parse_datetime($fcc_call->last_fcc_lookup) < $yesterday)) {
+  if ((! $fcc_call) || (DateTime::Format::MySQL->parse_datetime($fcc_call->last_fcc_lookup) < $yesterday)) {
     my $tvq = get("http://www.rabbitears.info/rawlookup.php?call=$p_callsign");
     # get returns undef if it can't get data
     return 0 if ! defined $tvq;
@@ -251,8 +251,8 @@ sub _call_current {
     my $lon_decimal = $lon_deg + $lon_min/60 + $lon_sec/3600;
     $lon_decimal = -1 * $lon_decimal if ($w_or_e eq 'W' || $w_or_e eq '-');
 
-    # the current time formatted to sqlite format (UTC time zone)
-    my $sqlite_now = DateTime::Format::SQLite->format_datetime(DateTime->now);
+    # the current time formatted to mysql format (UTC time zone)
+    my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
 
     # all-new call sign?
     if (! $fcc_call) {
@@ -261,12 +261,12 @@ sub _call_current {
         'rf_channel'      => $fcc_channel,
         'latitude'        => $lat_decimal,
         'longitude'       => $lon_decimal,
-        'start_date'      => $sqlite_now,
+        'start_date'      => $mysql_now,
         'virtual_channel' => $virtual_channel,
         'city_state'      => $location,
         'erp_kw'          => $erp,
         'rcamsl'          => $rcamsl,
-        'last_fcc_lookup' => $sqlite_now, });
+        'last_fcc_lookup' => $mysql_now, });
       return 1;
     }
     # else just update
@@ -279,7 +279,7 @@ sub _call_current {
         'city_state'      => $location,
         'erp_kw'          => $erp,
         'rcamsl'          => $rcamsl,
-        'last_fcc_lookup' => $sqlite_now, });
+        'last_fcc_lookup' => $mysql_now, });
       return 1;
     }
   }
@@ -388,7 +388,7 @@ sub tuner_map_data :Global {
 
   my $rs;
   if ($period eq 'ever') {
-    $rs = $c->model('DB::Signal')->search({'tuner_id' => $tuner_id,
+    $rs = $c->model('DB::SignalReport')->search({'tuner_id' => $tuner_id,
                                            'tuner_number' => $tuner_number});
   }
   else {
@@ -396,7 +396,7 @@ sub tuner_map_data :Global {
     my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
 
     # get a ResultSet of signals
-    $rs = $c->model('DB::Signal')
+    $rs = $c->model('DB::SignalReport')
              ->tuner_date_range($tuner_id,$tuner_number,$last_24_hr,$now)
              ->most_recent;
   }
@@ -421,7 +421,7 @@ sub tuner_map_data :Global {
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->callsign->latitude,                                        lon => $signal->callsign->longitude},
                                        -1));
 
-    my $sdt = DateTime::Format::SQLite->parse_datetime($signal->rx_date);
+    my $sdt = DateTime::Format::MySQL->parse_datetime($signal->rx_date);
 
     my $call = $signal->callsign->callsign;
     $station{callsign} = $call;  # can't use key 'call', it trashes javascript
@@ -480,7 +480,7 @@ sub signal_graph  :Global {
   my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
                                                'tuner_number'=>$tuner_number});
 
-  my $entry = $c->model('DB::Signal')
+  my $entry = $c->model('DB::SignalReport')
                 ->find({'tuner_id' => $tuner_id,
                         'tuner_number' => $tuner_number,
                         'callsign' => $callsign,});
