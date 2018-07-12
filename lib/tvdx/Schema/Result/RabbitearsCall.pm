@@ -41,6 +41,7 @@ __PACKAGE__->table("rabbitears_call");
 =head2 re_call_key
 
   data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
 
 =head2 callsign
@@ -65,7 +66,7 @@ __PACKAGE__->table("rabbitears_call");
 
 __PACKAGE__->add_columns(
   "re_call_key",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "callsign",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "re_rval",
@@ -91,8 +92,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("re_call_key");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-09 16:00:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LGqZq7RUO3xiUc9k+DbRMA
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RjJEb2/oJn9vWYvSjdWMCw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

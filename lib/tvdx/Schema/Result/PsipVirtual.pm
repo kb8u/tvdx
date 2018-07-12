@@ -41,6 +41,7 @@ __PACKAGE__->table("psip_virtual");
 =head2 virtual_key
 
   data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
 
 =head2 rx_date
@@ -72,7 +73,7 @@ __PACKAGE__->table("psip_virtual");
 
 __PACKAGE__->add_columns(
   "virtual_key",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "rx_date",
   {
     data_type => "datetime",
@@ -117,8 +118,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-09 16:00:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:EE9srWvQ2MmErJ0tE18Mvg
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TeoVc7nFlATPLbCqN5Oliw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

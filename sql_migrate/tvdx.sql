@@ -28,7 +28,7 @@ CREATE TABLE tuner (
 -- Information on the individual tuners used.
 --
 CREATE TABLE tuner_number (
-tuner_number_key INTEGER NOT NULL PRIMARY KEY,
+tuner_number_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
 tuner_id VARCHAR(255) NOT NULL,
 tuner_number VARCHAR(255) NOT NULL,
 description VARCHAR(255) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE fcc (
 -- Copy of TSID query from rabbitears.info.  Avoids hammering the server
 --
 CREATE TABLE rabbitears_tsid (
-  re_tsid_key INTEGER NOT NULL PRIMARY KEY,
+  re_tsid_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   tsid INTEGER NOT NULL,
   re_rval VARCHAR(255),
   last_re_lookup DATETIME NOT NULL
@@ -65,7 +65,7 @@ CREATE TABLE rabbitears_tsid (
 -- Copy of CALL query from rabbitears.info.  Avoids hammering the server
 --
 CREATE TABLE rabbitears_call (
-  re_call_key INTEGER NOT NULL PRIMARY KEY,
+  re_call_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   callsign VARCHAR(255) NOT NULL,
   re_rval VARCHAR(255),
   last_re_lookup DATETIME NOT NULL
@@ -74,7 +74,7 @@ CREATE TABLE rabbitears_call (
 -- Most recent Reports from tuners when a signal is detected
 --
 CREATE TABLE signal_report (
-  signal_key INTEGER NOT NULL PRIMARY KEY,
+  signal_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   rx_date DATETIME NOT NULL,
   first_rx_date DATETIME NOT NULL,
   rf_channel INTEGER NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE signal_report (
 -- TSID received from a station
 --
 CREATE TABLE tsid (
-  tsid_key INTEGER NOT NULL PRIMARY KEY,
+  tsid_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   rx_date DATETIME NOT NULL,
   tsid INTEGER NOT NULL,
   callsign VARCHAR(255) NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE tsid (
 -- Virtual channels received in PSIP
 --
 CREATE TABLE psip_virtual (
-  virtual_key INTEGER NOT NULL PRIMARY KEY,
+  virtual_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   rx_date DATETIME NOT NULL,
   name VARCHAR(255) NOT NULL,
   channel VARCHAR(255) NOT NULL,

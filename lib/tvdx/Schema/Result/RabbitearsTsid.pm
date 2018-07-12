@@ -41,6 +41,7 @@ __PACKAGE__->table("rabbitears_tsid");
 =head2 re_tsid_key
 
   data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
 
 =head2 tsid
@@ -64,7 +65,7 @@ __PACKAGE__->table("rabbitears_tsid");
 
 __PACKAGE__->add_columns(
   "re_tsid_key",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "tsid",
   { data_type => "integer", is_nullable => 0 },
   "re_rval",
@@ -90,8 +91,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("re_tsid_key");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-09 16:00:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q6Wxq/s/xtV4j2cNC7+KHA
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:j2FvyW30+Nuajpoxeh0aNg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

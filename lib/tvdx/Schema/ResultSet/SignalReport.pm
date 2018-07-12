@@ -1,4 +1,4 @@
-package tvdx::Schema::ResultSet::Signal;
+package tvdx::Schema::ResultSet::SignalReport;
     
 use strict;
 use warnings;

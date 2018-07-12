@@ -74,6 +74,11 @@ sub insert_table {
 
         $#column = 9 if $name eq 'signal_report';
 
+        # tuner and fcc key is not auto_increment, others are
+        unless (any {$_ eq $name} (qw (tuner fcc))) {
+           $column[0] = 'NULL';
+        }
+
         $sql .= "INSERT INTO $name VALUES(";
         $sql .= join ',',(@column);
         $sql .= ");\n";

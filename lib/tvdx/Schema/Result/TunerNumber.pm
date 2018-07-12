@@ -41,6 +41,7 @@ __PACKAGE__->table("tuner_number");
 =head2 tuner_number_key
 
   data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
 
 =head2 tuner_id
@@ -78,7 +79,7 @@ __PACKAGE__->table("tuner_number");
 
 __PACKAGE__->add_columns(
   "tuner_number_key",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "tuner_id",
   { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
   "tuner_number",
@@ -129,8 +130,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-09 16:00:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jlcWvJjm+qcfXFL3T1MoNw
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RbrnZuGgD3BcauzAbXDZSw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
