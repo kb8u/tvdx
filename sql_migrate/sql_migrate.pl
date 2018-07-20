@@ -20,6 +20,7 @@ my @mysql_args = qw(--user=rjd
                     --verbose
                     -e); # -e is execute the following command
 
+
 sub delete_tables {
     my ($fh, $tempfile) = tempfile();
     print $fh <<EODELETE;
@@ -68,6 +69,8 @@ sub insert_table {
                 next;
             }
             next if any {$i == $_} @$number_column;
+            $column[$i] =~ s/\s$// unless $name eq 'psip_virtual' && $i == 2;
+            $column[$i] =~ s/\p{FORMAT}$//;
             $column[$i] =~ s/'/''/g;
             $column[$i] = "'$column[$i]'";
         }
@@ -95,6 +98,7 @@ sub insert_table {
     }
     close $fh;
 }
+
 
 say "deleting tables";
 delete_tables();

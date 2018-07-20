@@ -10,7 +10,7 @@ script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static  "dbi:mys
 
 --- commands to create database. 
 
-use tvdx;
+CREATE SCHEMA tvdx CHARACTER SET utf8 COLLATE utf8_bin;
 
 --
 -- Information for the HDHomeRun unit sending signal reports
@@ -102,7 +102,7 @@ CREATE TABLE tsid (
 CREATE TABLE psip_virtual (
   virtual_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
   rx_date DATETIME NOT NULL,
-  name VARCHAR(255) NOT NULL,
+  name TINYBLOB NOT NULL,
   channel VARCHAR(255) NOT NULL,
   callsign VARCHAR(255) NOT NULL,
   FOREIGN KEY(callsign) REFERENCES fcc(callsign)

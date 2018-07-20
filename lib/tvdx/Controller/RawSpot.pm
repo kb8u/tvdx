@@ -389,8 +389,8 @@ sub _virtual_current {
     $ch->{virtual}{$program}{name} =~ s/\s+$//;
     $ch->{virtual}{$program}{channel} =~ s/\s+$//;
 
-    my ($v_row) =
-      $args->{c}->model('DB::PsipVirtual')->find(
+    my $v_row =
+      $args->{c}->model('DB::PsipVirtual')->search(
         {'callsign' => $args->{callsign},
          'name'     => $ch->{virtual}{$program}{name},
          'channel'  => $ch->{virtual}{$program}{channel}});
@@ -406,7 +406,9 @@ sub _virtual_current {
     }
     # else update existing row
     else {
-      $v_row->update({'rx_date'  => $args->{mysql_now}});
+      while (my $psip = $v_row->next) {
+        $psip->update({'rx_date'  => $args->{mysql_now}});
+      }
     }
   }
 }

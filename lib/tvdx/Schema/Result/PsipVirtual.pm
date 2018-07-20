@@ -52,9 +52,8 @@ __PACKAGE__->table("psip_virtual");
 
 =head2 name
 
-  data_type: 'varchar'
+  data_type: 'tinyblob'
   is_nullable: 0
-  size: 255
 
 =head2 channel
 
@@ -81,7 +80,7 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
   },
   "name",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "tinyblob", is_nullable => 0 },
   "channel",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "callsign",
@@ -118,8 +117,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:TeoVc7nFlATPLbCqN5Oliw
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-20 09:59:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ncMb+AvNxr5kTgkRnXwxIA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
