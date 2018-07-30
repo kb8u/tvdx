@@ -31,10 +31,10 @@ sub tuner_date_range {
 =head2 most_recent
 
 Select the most recent report and city for each call sign
-sql equivalent is:
+The goal in sql was:
 
-select signal.*,fcc.city_state from signal
-join fcc on signal.callsign=fcc.callsign
+select signal_report.*,fcc.city_state from signal_report
+join fcc on signal_report.callsign=fcc.callsign
 group by callsign having max(rx_date)
 order by rx_date,strength,fcc.city_state;
 

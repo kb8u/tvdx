@@ -4,7 +4,7 @@ it under the same terms as Perl itself.
 
 --- miscellaneous notes ---
 Created Model with:
-script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static  "dbi:mysql:database=tvdx" rjd ThePasswordHere
+script/tvdx_create.pl model DB DBIC::Schema tvdx::Schema create=static  "dbi:mysql:database=tvdx" TheUserHere ThePasswordHere
 
 --- database notes ---
 

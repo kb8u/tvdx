@@ -183,4 +183,21 @@ __PACKAGE__->belongs_to(
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
+
+=head2 color
+
+Returns 'red' for signal strength < 75
+Returns 'yellow' for signal strentgh between 75 and 85
+Returns 'green' for signal strength > 85
+
+=cut
+
+sub color {
+  my ($self) = @_;
+
+  return 'green' if $self->strength > 85;
+  return 'yellow' if $self->strength > 75;
+  return 'red';
+}
+
 1;
