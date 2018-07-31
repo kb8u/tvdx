@@ -1,0 +1,14 @@
+name tvdx
+# URL to root of static content
+static_url https://rabbitears.info/tvdx/root/static
+# URL to root of application
+root_url https://rabbitears.info/tvdx
+# directory where images are stored
+image_dir /home/rjd/tvdx/root/static/images
+# directory where .rrd files are stored
+rrd_dir /var/rrd
+# Google maps API key
+gmap_key .......................
+# rrdcached socket
+socket /var/run/rrdcached.sock
+# also set mysql user and password in lib/tvdx/Model/DB.pm  See DB.pm.example
