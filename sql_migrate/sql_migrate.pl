@@ -14,7 +14,7 @@ my @csv_db = ('-csv',$db);
 
 my $mysql = '/usr/bin/mysql';
 my @mysql_args = qw(--user=rjd
-                    --password=isb0XAcfaZYHVDKpchfN
+                    --password=...
                     --database=tvdx
                     --show-warnings
                     --verbose
