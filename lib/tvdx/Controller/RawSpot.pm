@@ -112,7 +112,7 @@ sub raw_spot_POST :Global {
 sub _lu_call {
   my ($args,$possible_call) = @_;
   # update or create rabbitears_call if entry is old or missing
-  my ($re_call_find) = $args->{c}->model('DB::RabbitearCall')
+  my ($re_call_find) = $args->{c}->model('DB::RabbitearsCall')
                                  ->find({'callsign' => $possible_call});
   my $rlu;
   if (   (! $re_call_find)
@@ -125,7 +125,7 @@ sub _lu_call {
     if (defined $rlu) {
       # create or update rabbitears_call table
       if (! $re_call_find) {
-        $args->{c}->model('DB::RabbitearCall')->create({
+        $args->{c}->model('DB::RabbitearsCall')->create({
            'callsign' => $possible_call,
            're_rval' => $rlu,
            'last_re_lookup' => $args->{mysql_now},});
