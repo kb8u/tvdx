@@ -90,13 +90,13 @@ __PACKAGE__->table("signal_report");
 
   data_type: 'varchar'
   is_foreign_key: 1
-  is_nullable: 0
+  is_nullable: 1
   size: 255
 
 =head2 virtual_channel
 
   data_type: 'float'
-  is_nullable: 0
+  is_nullable: 1
   size: [11,8]
 
 =cut
@@ -127,9 +127,9 @@ __PACKAGE__->add_columns(
   "tuner_number",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "callsign",
-  { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_foreign_key => 1, is_nullable => 1, size => 255 },
   "virtual_channel",
-  { data_type => "float", is_nullable => 0, size => [11, 8] },
+  { data_type => "float", is_nullable => 1, size => [11, 8] },
 );
 
 =head1 PRIMARY KEY
@@ -158,7 +158,12 @@ __PACKAGE__->belongs_to(
   "callsign",
   "tvdx::Schema::Result::Fcc",
   { callsign => "callsign" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "RESTRICT",
+    on_update     => "RESTRICT",
+  },
 );
 
 =head2 tuner
@@ -177,8 +182,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eoRUZI0tfW8LV3GDlDDZgg
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-08-05 20:13:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MpE3eRZruGWB3f8KpxMHIA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -70,7 +70,7 @@ CREATE TABLE rabbitears_call (
   last_re_lookup DATETIME NOT NULL
 );
 --
--- Most recent Reports from tuners when a signal is detected
+-- Most recent Reports from tuners
 --
 CREATE TABLE signal_report (
   signal_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -81,8 +81,8 @@ CREATE TABLE signal_report (
   sig_noise FLOAT(11,8) NOT NULL,
   tuner_id VARCHAR(255) NOT NULL,
   tuner_number VARCHAR(255) NOT NULL,
-  callsign VARCHAR(255) NOT NULL,
-  virtual_channel FLOAT(11,8) NOT NULL,
+  callsign VARCHAR(255),
+  virtual_channel FLOAT(11,8),
   FOREIGN KEY(tuner_id) REFERENCES tuner(tuner_id),
   FOREIGN KEY(callsign) REFERENCES fcc(callsign)
 );
