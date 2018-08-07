@@ -46,7 +46,6 @@ sub most_recent {
   return($self->search(
          undef,
          { prefetch => 'callsign',
-           callsign => { '!=', undef },
            group_by => 'me.callsign having max(rx_date)',
            order_by => { -desc => [qw(rx_date strength callsign.city_state)] },
          } ));
