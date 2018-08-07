@@ -406,6 +406,7 @@ sub tuner_map_data :Global {
   my @markers;
 
   while(my $signal = $rs->next) {
+    next unless defined $signal->callsign;
     my %station;
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
