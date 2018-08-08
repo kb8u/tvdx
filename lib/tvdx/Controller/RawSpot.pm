@@ -423,7 +423,8 @@ sub _signalreport_update {
                                   'tuner_number' => $args->{tuner_number},
                                   'rf_channel' => $args->{channel},
                                   'callsign' => $callsign,})->first;
-  if (! $entry) {
+  # test $entry as scalar (ResultSet boolean is always true)
+  if ($entry == 0) {
     my $spot = {
       'rx_date'         => $args->{mysql_now},
       'first_rx_date'   => $args->{mysql_now},
@@ -473,8 +474,8 @@ sub _virtual_current {
          'name'     => $ch->{virtual}{$program}{name},
          'channel'  => $ch->{virtual}{$program}{channel}});
 
-    # all new entry?
-    if (!$v_row) {
+    # all new entry? Test $v_row as scalar (ResultSet boolean is always true)
+    if ($v_row == 0) {
       $args->{c}->model('DB::PsipVirtual')->create({
         'rx_date'  => $args->{mysql_now},
         'name'     => $ch->{virtual}{$program}{name},
@@ -504,8 +505,8 @@ sub _tsid_current {
   my ($tsid_row) = $args->{c}->model('DB::Tsid')->search(
         {'callsign' => $args->{callsign},
          'tsid'     => $ch->{tsid}})->first;
-  # all new entry?
-  if (! $tsid_row) {
+  # all new entry? Test $tsid_row as scalar (ResultSet boolean is always true)
+  if ($tsid_row == 0) {
     $args->{c}->model('DB::Tsid')->create({
       'rx_date'  => $args->{mysql_now},
       'tsid'     => $ch->{tsid},
