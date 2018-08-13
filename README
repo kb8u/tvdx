@@ -107,3 +107,9 @@ CREATE TABLE psip_virtual (
   callsign VARCHAR(255) NOT NULL,
   FOREIGN KEY(callsign) REFERENCES fcc(callsign)
 );
+--
+-- Log these tuners to catalyst $c->log->info
+--
+CREATE TABLE tuner_debug (
+  tuner_id VARCHAR(255) NOT NULL PRIMARY KEY;
+);
