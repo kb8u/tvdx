@@ -63,10 +63,7 @@ sub raw_spot_POST :Global {
 
   # log if tuner is in tuner_debug table
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_id})) {
-    {
-      local $Data::Dumper::Indent = 1;
-      $c->log->info(Dumper($json));
-    }
+    $c->log->info(Dumper($json));
   }
 
   RAWSPOT: for my $channel (keys %{$json->{'rf_channel'}}) {
