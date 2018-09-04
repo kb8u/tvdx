@@ -6,7 +6,7 @@ use DateTime::Format::MySQL;
 use DateTime::Format::HTTP;
 use LWP::Simple;
 use RRDs;
-use List::MoreUtils qw(all zip);
+use List::MoreUtils 'none';
 use Data::Dumper;
 
 # URL for looking up callsign, location, TSID, etc.
@@ -228,27 +228,27 @@ sub _find_call {
     if (defined $rlu) {
       # discard tsid's on other channels
       my @rlu;
-      foreach my $line (split /\n/, $rlu) {
-        my @rlu_values = split /\s*\|/,$line;
-        if ($args->{channel} == $rlu_values[1]) {
-          push @rlu, { zip @rabbitears_keys, @rlu_values };
+      foreach my $s (split /\n/, $rlu) {
+        my %rlu_values;
+        @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+        if ($args->{channel} == $rlu_values{fcc_channel}) {
+          push @rlu,$s;
         }
       }
 
-      # use last line if all the calls are the same
-      @rlu = ($rlu[$#rlu]) if all { $_->{call} eq $rlu[0]->{call} } @rlu;
-
       # use match if it's the only one
       if (scalar @rlu == 1) {
-        %transmitter = %{$rlu[0]};
+        @transmitter{@rabbitears_keys} = split /\s*\|/,$rlu[0];
         $transmitter{fcc_virt} = $fcc_virt;
       }
 
       # try reporter_callsign if there's more than one
       if (scalar @rlu > 1 && $ch->{reporter_callsign}) {
-        foreach my $h (@rlu) {
-          if ($ch->{reporter_callsign} eq $h->{call}) {
-            %transmitter = %{$h};
+        foreach my $s (@rlu) {
+          my %rlu_values;
+          @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
+          if ($ch->{reporter_callsign} eq $rlu_values{call}){
+            %transmitter = %rlu_values;
             $transmitter{fcc_virt} = $fcc_virt;
             last;
           }
