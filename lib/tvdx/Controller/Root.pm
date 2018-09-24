@@ -387,7 +387,7 @@ sub tuner_map_data :Global {
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
 
   my $rs;
-  if ($period eq 'ever') {
+  if (defined $period && $period eq 'ever') {
     $rs = $c->model('DB::SignalReport')->search({'tuner_id' => $tuner_id,
                                            'tuner_number' => $tuner_number,
                                            'callsign' => { '!=', undef}});
@@ -652,6 +652,17 @@ sub _check_tuners {
   while (@check_tuner_info) {
     my $tuner_id =     shift @check_tuner_info;
     my $tuner_number = shift @check_tuner_info; 
+
+    unless (defined $tuner_id) {
+      $c->response->body("FAIL: missing tuner id");
+      $c->response->status(403);
+      $c->detach();
+    }
+    unless (defined $tuner_id) {
+      $c->response->body("FAIL: missing tuner number");
+      $c->response->status(403);
+      $c->detach();
+    }
 
     if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
       $c->response->body("FAIL: Tuner $tuner_id is not registered with site");

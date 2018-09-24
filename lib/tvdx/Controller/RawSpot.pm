@@ -49,13 +49,11 @@ sub raw_spot_POST :Global {
   # json with information from (client) scanlog.pl
   my $json = $c->req->data;
 
-  my ($junk,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
+  my (undef,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
 
   # log if tuner isn't found
   if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
-    open L, ">>/tmp/unknown_tuner" or return 0;
-    print L "$mysql_now: tuner_id $tuner_id not found in tuner table\n";
-    close L;
+    $c->log->info("tuner_id $tuner_id is not registered with site");
     $c->response->body("FAIL: Tuner $tuner_id is not registered with site");
     $c->response->status(403);
     return;
@@ -65,7 +63,7 @@ sub raw_spot_POST :Global {
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_id})) {
     {
       local $Data::Dumper::Indent = 1;
-      $c->log->info(Dumper($json));
+      $c->log->info("$tuner_id $tuner_number in tuner_debug table:",Dumper($json));
     }
   }
 
