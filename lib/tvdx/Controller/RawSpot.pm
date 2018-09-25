@@ -170,8 +170,6 @@ sub _find_call {
   my ($self,$args) = @_;
 
   my $ch = $args->{channel_details};
-  $args->{c}->log->debug("processing channel ".$args->{channel});
-  $args->{c}->log->debug("args->{channel_details}:\n",Dumper $args->{channel_details});
 
   # nothing to look up if there's no modulation
   return (undef,undef) if $ch->{modulation} eq 'none';
@@ -180,12 +178,10 @@ sub _find_call {
   # use channel number if there are no virtuals
   my $fcc_virt = $args->{channel};
   if (%{$ch->{virtual}}) {
-    $args->{c}->log->debug('saw ch->{virtual}');
     # any subchannel will do, just choose a random one
     my ($some_key) = keys %{$ch->{virtual}}; 
     if (exists $ch->{virtual}{$some_key}{channel}) {
       ($fcc_virt) = split /\./,$ch->{virtual}{$some_key}{channel};
-      $args->{c}->log->debug("fcc_virt now $fcc_virt");
     }
   }
 
@@ -198,7 +194,6 @@ sub _find_call {
 
   # try tsid (excepting 0, 1 and greater than 65535) and channel
   if ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) {
-    $args->{c}->log->debug('checking tsid');
     # update or create rabbitears_tsid if entry is old or missing
     my ($re_tsid_find) = $args->{c}->model('DB::RabbitearsTsid')
                                    ->find({'tsid'=>$ch->{tsid}});
@@ -206,23 +201,18 @@ sub _find_call {
     if (   (! $re_tsid_find)
         || (DateTime::Format::MySQL->parse_datetime(
               $re_tsid_find->last_re_lookup) < $args->{yesterday})) {
-      $args->{c}->log->debug("DB::RabbitearsTsid on tsid failed or is too old");
-      $args->{c}->log->debug("getting ",$RABBITEARS_TVQ . "tsid=$ch->{tsid}");
       $rlu = get($RABBITEARS_TVQ . "tsid=$ch->{tsid}");
-      $args->{c}->log->debug("RABBITEARS_TVQ on tsid returned $rlu");
       undef $rlu if $rlu eq 'Error connecting to RabbitEars database';
 
       if (defined $rlu) {
         # create or update rabbitears_tsid table
         if (! $re_tsid_find) {
-          $args->{c}->log->debug('creating DB::RabbitearsTsid entry for new tsid');
           $args->{c}->model('DB::RabbitearsTsid')->create({
              'tsid' => $ch->{tsid},
              're_rval' => $rlu,
              'last_re_lookup' => $args->{mysql_now},});
         }
         else {
-          $args->{c}->log->debug('updating DB::RabbitearsTsid entry for tsid');
           $re_tsid_find->update({
             're_rval' => $rlu,
             'last_re_lookup' => $args->{mysql_now},});
@@ -230,11 +220,9 @@ sub _find_call {
       }
     }
     else {
-      $args->{c}->log->debug("DB::RabbitearsTsid on tsid is current");
       $rlu = $re_tsid_find->re_rval;
     }
     if (defined $rlu) {
-      $args->{c}->log->debug("Using rlu $rlu");
       # discard tsid's on other channels
       my @rlu;
       foreach my $line (split /\n/, $rlu) {
@@ -246,7 +234,6 @@ sub _find_call {
 
       # use last line if all the calls are the same
       @rlu = ($rlu[$#rlu]) if all { $_->{call} eq $rlu[0]->{call} } @rlu;
-      $args->{c}->log->debug("\@rlu has:",Dumper \@rlu);
       # use match if it's the only one
       if (scalar @rlu == 1 && defined $rlu[0]) {
         %transmitter = %{$rlu[0]};
@@ -255,10 +242,8 @@ sub _find_call {
 
       # try reporter_callsign if there's more than one
       if (scalar @rlu > 1 && $ch->{reporter_callsign}) {
-        $args->{c}->log->debug("more than one line on \@rlu, trying reporter_callsign");
         foreach my $h (@rlu) {
           if ($ch->{reporter_callsign} eq $h->{call}) {
-            $args->{c}->log->debug("matched $h");
             %transmitter = %{$h};
             $transmitter{fcc_virt} = $fcc_virt;
             last;
@@ -270,7 +255,6 @@ sub _find_call {
 
   # try callsign and channel unless TSID lookup worked
   unless (%transmitter) {
-    $args->{c}->log->debug("tsid lookup failed, trying callsign and channel");
     # loop over virtual channels, look for something resembling a callsign
     VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
       next if ($ch->{virtual}{$program}{name} !~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
@@ -278,12 +262,10 @@ sub _find_call {
 
       my $rlu = _lu_call($args,$possible_call);
       if (defined $rlu) {
-        $args->{c}->log->debug("looked up $possible_call in _lu_call, got:\n$rlu");
         foreach my $s (split /\n/, $rlu) {
           my %rlu_values;
           @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
           if ($args->{channel} == $rlu_values{fcc_channel}) {
-            $args->{c}->log->debug("found match in _lu_call on $possible_call");
             %transmitter = %rlu_values;
             $transmitter{fcc_virt} = $fcc_virt;
             last VIRT_CHAN;
@@ -294,7 +276,6 @@ sub _find_call {
   }
 
   if (!%transmitter && $ch->{reporter_callsign}) {
-    $args->{c}->log->debug("no \%transmitter and reporter_callsign");
     my $rlu = _lu_call($args,$ch->{reporter_callsign});
     if (defined $rlu) {
       foreach my $s (split /\n/, $rlu) {
@@ -331,7 +312,6 @@ sub _find_call {
 
   # new record if FCC data is missing
   if (! $fcc_call) {
-    $args->{c}->log->debug("new call $transmitter{call} into DB::Fcc");
     $args->{c}->model('DB::Fcc')->create({
       'callsign'        => $transmitter{call},
       'rf_channel'      => $transmitter{fcc_channel},
@@ -348,7 +328,6 @@ sub _find_call {
   if (   $fcc_call
       && DateTime::Format::MySQL
          ->parse_datetime($fcc_call->last_fcc_lookup) < $args->{yesterday}) {
-    $args->{c}->log->debug("updating $transmitter{call} in DB::Fcc");
     $fcc_call->update({
       'rf_channel'      => $transmitter{fcc_channel},
       'latitude'        => $lat_decimal,
