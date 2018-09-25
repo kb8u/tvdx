@@ -6,7 +6,7 @@ use DateTime::Format::MySQL;
 use DateTime::Format::HTTP;
 use LWP::Simple;
 use RRDs;
-use List::MoreUtils 'none';
+use List::MoreUtils qw(all zip);
 use Data::Dumper;
 
 # URL for looking up callsign, location, TSID, etc.
@@ -194,7 +194,6 @@ sub _find_call {
 
   # try tsid (excepting 0, 1 and greater than 65535) and channel
   if ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) {
-
     # update or create rabbitears_tsid if entry is old or missing
     my ($re_tsid_find) = $args->{c}->model('DB::RabbitearsTsid')
                                    ->find({'tsid'=>$ch->{tsid}});
@@ -226,27 +225,26 @@ sub _find_call {
     if (defined $rlu) {
       # discard tsid's on other channels
       my @rlu;
-      foreach my $s (split /\n/, $rlu) {
-        my %rlu_values;
-        @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
-        if ($args->{channel} == $rlu_values{fcc_channel}) {
-          push @rlu,$s;
+      foreach my $line (split /\n/, $rlu) {
+        my @rlu_values = split /\s*\|/,$line;
+        if ($args->{channel} == $rlu_values[1]) {
+          push @rlu, { zip @rabbitears_keys, @rlu_values };
         }
       }
 
+      # use last line if all the calls are the same
+      @rlu = ($rlu[$#rlu]) if all { $_->{call} eq $rlu[0]->{call} } @rlu;
       # use match if it's the only one
-      if (scalar @rlu == 1) {
-        @transmitter{@rabbitears_keys} = split /\s*\|/,$rlu[0];
+      if (scalar @rlu == 1 && defined $rlu[0]) {
+        %transmitter = %{$rlu[0]};
         $transmitter{fcc_virt} = $fcc_virt;
       }
 
       # try reporter_callsign if there's more than one
       if (scalar @rlu > 1 && $ch->{reporter_callsign}) {
-        foreach my $s (@rlu) {
-          my %rlu_values;
-          @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
-          if ($ch->{reporter_callsign} eq $rlu_values{call}){
-            %transmitter = %rlu_values;
+        foreach my $h (@rlu) {
+          if ($ch->{reporter_callsign} eq $h->{call}) {
+            %transmitter = %{$h};
             $transmitter{fcc_virt} = $fcc_virt;
             last;
           }
