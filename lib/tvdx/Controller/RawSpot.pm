@@ -257,6 +257,7 @@ sub _find_call {
   unless (%transmitter) {
     # loop over virtual channels, look for something resembling a callsign
     VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
+      next if ($ch->{virtual}{$program}{name} !~ /^[CWKX]/i);
       next if ($ch->{virtual}{$program}{name} !~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
       my $possible_call = uc $1;
 
