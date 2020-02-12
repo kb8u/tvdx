@@ -120,7 +120,7 @@ function init() {
   station_l = L.layerGroup();
   station_mt = L.layerGroup();
   onepixel = L.icon({
-    iconUrl: './1x1.png',
+    iconUrl: static_url + '/images/1x1.png',
     iconSize: [1, 1],
   });
   // for stations moved to top by zoom buttons in sidebar (station_mt markers)
