@@ -5,7 +5,24 @@ use warnings;
 use base 'DBIx::Class::ResultSet';
 use DateTime;
 use DateTime::Format::MySQL;
-    
+
+=head2 all_last_24
+
+Finds all signal reports from anybody in the last 24 hours.
+
+=cut
+
+sub all_last_24 {
+  my ($self) = @_;
+
+  my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
+  my $end = DateTime::Format::MySQL->format_datetime($last_24_hr);
+  return $self->search({ rx_date => { '>=' => $end },
+                         'me.callsign' => { '!=', undef} },
+                       { prefetch => ['tuner','callsign'] });
+}
+ 
+
 =head2 tuner_date_range
 
 Finds all signal reports for a tuner that were between a start and end time.

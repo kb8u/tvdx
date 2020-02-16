@@ -108,10 +108,10 @@
     </div> <!-- end of controls -->
     <div class="col-xs-9 boxit" id="right-side">
       <div id="map-legend">
-        <img src="https://rabbitears.info/tvdx/root/static/images/green_dot.png" width='15' height='15' />Strong
-        <img src="https://rabbitears.info/tvdx/root/static/images/yellow_dot.png" width='15' height='15' />Medium
-        <img src="https://rabbitears.info/tvdx/root/static/images/red_dot.png" width='15' height='15' />Weak signal
-        <img src="https://rabbitears.info/tvdx/root/static/images/black_dot.png" width='15' height='15' /><span id="black-text">Signal in last 24 hours, but not currently</span>
+        <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong
+        <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium
+        <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
+        <img src="[% static_url %]/images/black_dot.png" width='15' height='15' /><span id="black-text">Signal in last 24 hours, but not currently</span>
       </div> <!-- end of map-legend -->
       <div id="stations-map">
       </div><!-- end of stations-map -->

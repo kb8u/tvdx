@@ -481,11 +481,51 @@ sub all_tuner_data :Global {
   $json{stations} = { 'type' => 'FeatureCollection', 'features' => []};
   $json{paths} = { 'type' => 'FeatureCollection', 'features' => []};
   my %tuners;
+  my %stations;
 
   my $rs;
   # get a ResultSet of signals
   $rs = $c->model('DB::SignalReport')->all_last_24();
   while(my $signal = $rs->next) {
+    push @{$json{paths}{features}},
+      { 'type' => "Feature",
+        'geometry' => { 'type' => 'LineString',
+                        'coordinates' => [[0+$signal->callsign->longitude,
+                                           0+$signal->callsign->latitude],
+                                          [0+$signal->tuner->longitude,
+                                           0+$signal->tuner->latitude]]
+                      },
+        'properties' => { 'rx_date' => DateTime::Format::HTTP->format_datetime(DateTime::Format::MySQL->parse_datetime($signal->rx_date)),
+                          'rf_channel' => 0+$signal->rf_channel,
+                          'strength' => 0+$signal->strength,
+                          'sig_noise' => 0+$signal->sig_noise,
+                          'tuner_id' => $signal->tuner_id,
+                          'tuner_number' => $signal->tuner_number,
+                          'callsign' => $signal->callsign->callsign,
+                          'virtual_channel' => int $signal->virtual_channel,
+                          'color' => $signal->color,
+                        }
+      };
+
+    # update %stations
+    unless (exists $stations{$signal->callsign->callsign}) {
+      # remove ' m' from rcamsl and make it a number
+      my $rcamsl = $signal->callsign->rcamsl;
+      chop $rcamsl; chop $rcamsl;
+      $rcamsl = 0+$rcamsl;
+
+      $stations{$signal->callsign->callsign} = {
+        rf_channel       => 0+$signal->callsign->rf_channel,
+        longlat          => [0+$signal->callsign->longitude,
+                             0+$signal->callsign->latitude],
+        virtual_channel  => 0+$signal->callsign->virtual_channel,
+        city_state       => $signal->callsign->city_state,
+        erp_kw           => $signal->callsign->erp_kw,
+        rcamsl           => $rcamsl,
+      }
+    }
+
+    # update %tuners if necessary
     unless (exists $tuners{$signal->tuner_id}
             && exists $tuners{$signal->tuner_id}{$signal->tuner_number}) {
       $tuners{$signal->tuner_id}{$signal->tuner_number} = {};
@@ -501,6 +541,7 @@ sub all_tuner_data :Global {
     }
   }
   
+  # populate $json{tuners} from %tuners
   while (my ($tuner_id_key,$tuner_id_value) = each %tuners) {
     while (my ($tuner_number_key,$tuner_number_value) = each %$tuner_id_value) {
       push @{$json{tuners}{features}},
@@ -509,6 +550,18 @@ sub all_tuner_data :Global {
           'properties' => { 'description' => $tuner_number_value->{descr}}
         }
     }
+  }
+
+  #populate $json{stations} from %stations
+  while (my ($callsign,$fcc) = each %stations) {
+    push @{$json{stations}{features}},
+        { 'type' => "Feature",
+          'geometry' => { 'type' => 'Point', 'coordinates' => $fcc->{longlat}},
+          'properties' => { 'rf_channel' => $fcc->{rf_channel},
+                            'virtual_channel' => $fcc->{virtual_channel},
+                            'erp_kw'          => $fcc->{erp_kw},
+                            'rcamsl'          => $fcc->{rcamsl}, }
+        }
   }
 local $Data::Dumper::Indent = 1;
 $c->log->debug(Dumper(\%tuners),$rs->count());
