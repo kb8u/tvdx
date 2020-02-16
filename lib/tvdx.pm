@@ -40,7 +40,7 @@ __PACKAGE__->config(
     disable_component_resolution_regex_fallback => 1,
     'View::JSON' => {
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
-                           reception_locations markers) ] }
+                           reception_locations markers json) ] }
 
 );
 

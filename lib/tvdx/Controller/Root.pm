@@ -9,6 +9,7 @@ use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
 use Math::Round 'nearest';
+use Data::Dumper;
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
@@ -462,6 +463,56 @@ sub tuner_map_data :Global {
   $c->stash('tuner_longitude' => $tuner->longitude);
   $c->stash('tuner_latitude' => $tuner->latitude);
   $c->stash('markers' => \@markers);
+  $c->detach( $c->view('JSON') );
+}
+
+
+=head2 all_tuner_data
+
+JSON data for all stations received by anyone in the last 24 hours
+
+=cut
+
+sub all_tuner_data :Global {
+  my ($self, $c) = @_;
+
+  my %json;
+  $json{tuners} = { 'type' => 'FeatureCollection', 'features' => []};
+  $json{stations} = { 'type' => 'FeatureCollection', 'features' => []};
+  $json{paths} = { 'type' => 'FeatureCollection', 'features' => []};
+  my %tuners;
+
+  my $rs;
+  # get a ResultSet of signals
+  $rs = $c->model('DB::SignalReport')->all_last_24();
+  while(my $signal = $rs->next) {
+    unless (exists $tuners{$signal->tuner_id}
+            && exists $tuners{$signal->tuner_id}{$signal->tuner_number}) {
+      $tuners{$signal->tuner_id}{$signal->tuner_number} = {};
+      my $tn =$c->model('DB::TunerNumber')
+                ->find({'tuner_id'=>$signal->tuner_id,
+                        'tuner_number'=>$signal->tuner_number});
+      my $t = $c->model('DB::Tuner')->find({'tuner_id' => $signal->tuner_id});
+      $tuners{$signal->tuner_id}{$signal->tuner_number}{descr} =
+        $t->owner_id . ' ' . $tn->description;
+      $tuners{$signal->tuner_id}{$signal->tuner_number}{longlat} =
+        # 0+ to force to a float from a string
+        [0+$signal->tuner->longitude,0+$signal->tuner->latitude];
+    }
+  }
+  
+  while (my ($tuner_id_key,$tuner_id_value) = each %tuners) {
+    while (my ($tuner_number_key,$tuner_number_value) = each %$tuner_id_value) {
+      push @{$json{tuners}{features}},
+        { 'type' => "Feature",
+          'geometry' => { 'type' => 'Point', 'coordinates' => $tuner_number_value->{longlat}},
+          'properties' => { 'description' => $tuner_number_value->{descr}}
+        }
+    }
+  }
+local $Data::Dumper::Indent = 1;
+$c->log->debug(Dumper(\%tuners),$rs->count());
+  $c->stash('json' => \%json);
   $c->detach( $c->view('JSON') );
 }
 
