@@ -9,7 +9,6 @@ use LWP::Simple;
 use RRDs;
 use List::MoreUtils 'none';
 use Math::Round 'nearest';
-use Data::Dumper;
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
@@ -487,57 +486,69 @@ sub all_tuner_data :Global {
   # get a ResultSet of signals
   $rs = $c->model('DB::SignalReport')->all_last_24();
   while(my $signal = $rs->next) {
+    my $callsign = $signal->callsign->callsign;
+    # 0+ to force to a number.  Don't know why accessor returns a string.
+    my $callsign_longitude = 0+$signal->callsign->longitude;
+    my $callsign_latitude = 0+$signal->callsign->latitude;
+    my $tuner_longitude = 0+$signal->tuner->longitude;
+    my $tuner_latitude = 0+$signal->tuner->latitude;
+    my $rf_channel = 0+$signal->rf_channel;
+    my $tuner_id = $signal->tuner_id;
+    my $tuner_number = $signal->tuner_number;
+    my $virtual_channel = $signal->virtual_channel;
+    $virtual_channel = defined $virtual_channel ? int $virtual_channel : 0;
+    my $owner_id = $signal->tuner->owner_id;
+    my $city_state = $signal->callsign->city_state;
     push @{$json{paths}{features}},
       { 'type' => "Feature",
         'geometry' => { 'type' => 'LineString',
-                        'coordinates' => [[0+$signal->callsign->longitude,
-                                           0+$signal->callsign->latitude],
-                                          [0+$signal->tuner->longitude,
-                                           0+$signal->tuner->latitude]]
+                        'coordinates' => [[$callsign_longitude,
+                                           $callsign_latitude],
+                                          [$tuner_longitude,
+                                           $tuner_latitude]]
                       },
         'properties' => { 'rx_date' => DateTime::Format::HTTP->format_datetime(DateTime::Format::MySQL->parse_datetime($signal->rx_date)),
-                          'rf_channel' => 0+$signal->rf_channel,
+                          'rf_channel' => $rf_channel,
                           'strength' => 0+$signal->strength,
                           'sig_noise' => 0+$signal->sig_noise,
-                          'tuner_id' => $signal->tuner_id,
-                          'tuner_number' => $signal->tuner_number,
-                          'callsign' => $signal->callsign->callsign,
-                          'virtual_channel' => int $signal->virtual_channel,
+                          'tuner_id' => $tuner_id,
+                          'tuner_number' => $tuner_number,
+                          'callsign' => $callsign,
+                          'virtual_channel' => $virtual_channel,
                           'color' => $signal->color,
+                          'description' => "$owner_id to $callsign ($city_state)",
                         }
       };
 
     # update %stations
-    unless (exists $stations{$signal->callsign->callsign}) {
+    unless (exists $stations{$callsign}) {
       # remove ' m' from rcamsl and make it a number
       my $rcamsl = $signal->callsign->rcamsl;
       chop $rcamsl; chop $rcamsl;
       $rcamsl = 0+$rcamsl;
 
-      $stations{$signal->callsign->callsign} = {
-        rf_channel       => 0+$signal->callsign->rf_channel,
-        longlat          => [0+$signal->callsign->longitude,
-                             0+$signal->callsign->latitude],
-        virtual_channel  => 0+$signal->callsign->virtual_channel,
-        city_state       => $signal->callsign->city_state,
+      $stations{$callsign} = {
+        rf_channel       => $rf_channel,
+        longlat          => [$callsign_longitude, $callsign_latitude],
+        virtual_channel  => $virtual_channel,
+        city_state       => $city_state,
         erp_kw           => $signal->callsign->erp_kw,
         rcamsl           => $rcamsl,
       }
     }
 
     # update %tuners if necessary
-    unless (exists $tuners{$signal->tuner_id}
-            && exists $tuners{$signal->tuner_id}{$signal->tuner_number}) {
-      $tuners{$signal->tuner_id}{$signal->tuner_number} = {};
+    unless (exists $tuners{$tuner_id}
+            && exists $tuners{$tuner_id}{$tuner_number}) {
+      $tuners{$tuner_id}{$tuner_number} = {};
       my $tn =$c->model('DB::TunerNumber')
-                ->find({'tuner_id'=>$signal->tuner_id,
-                        'tuner_number'=>$signal->tuner_number});
-      my $t = $c->model('DB::Tuner')->find({'tuner_id' => $signal->tuner_id});
-      $tuners{$signal->tuner_id}{$signal->tuner_number}{descr} =
+                ->find({'tuner_id'=>$tuner_id,
+                        'tuner_number'=>$tuner_number});
+      my $t = $c->model('DB::Tuner')->find({'tuner_id' => $tuner_id});
+      $tuners{$tuner_id}{$tuner_number}{descr} =
         $t->owner_id . ' ' . $tn->description;
-      $tuners{$signal->tuner_id}{$signal->tuner_number}{longlat} =
-        # 0+ to force to a float from a string
-        [0+$signal->tuner->longitude,0+$signal->tuner->latitude];
+      $tuners{$tuner_id}{$tuner_number}{longlat} =
+        [$tuner_longitude,$tuner_latitude];
     }
   }
   
@@ -563,8 +574,6 @@ sub all_tuner_data :Global {
                             'rcamsl'          => $fcc->{rcamsl}, }
         }
   }
-local $Data::Dumper::Indent = 1;
-$c->log->debug(Dumper(\%tuners),$rs->count());
   $c->stash('json' => \%json);
   $c->detach( $c->view('JSON') );
 }
