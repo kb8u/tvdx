@@ -558,7 +558,8 @@ sub all_tuner_data :Global {
       push @{$json{tuners}{features}},
         { 'type' => "Feature",
           'geometry' => { 'type' => 'Point', 'coordinates' => $tuner_number_value->{longlat}},
-          'properties' => { 'description' => $tuner_number_value->{descr}}
+          'properties' => { 'description' => $tuner_number_value->{descr},
+                            'url_path' => "$tuner_id_key/$tuner_number_key" }
         }
     }
   }
