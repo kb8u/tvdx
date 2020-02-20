@@ -569,7 +569,8 @@ sub all_tuner_data :Global {
     push @{$json{stations}{features}},
         { 'type' => "Feature",
           'geometry' => { 'type' => 'Point', 'coordinates' => $fcc->{longlat}},
-          'properties' => { 'rf_channel' => $fcc->{rf_channel},
+          'properties' => { 'callsign'        => $callsign,
+                            'rf_channel'      => $fcc->{rf_channel},
                             'virtual_channel' => $fcc->{virtual_channel},
                             'erp_kw'          => $fcc->{erp_kw},
                             'rcamsl'          => $fcc->{rcamsl}, }
