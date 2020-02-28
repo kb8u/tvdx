@@ -462,6 +462,8 @@ sub tuner_map_data :Global {
   $c->stash('tuner_longitude' => $tuner->longitude);
   $c->stash('tuner_latitude' => $tuner->latitude);
   $c->stash('markers' => \@markers);
+  $c->res->header('Access-Control-Allow-Origin'=>'https://www.rabbitears.info',
+                  'Access-Control-Allow-Methods'=>'GET');
   $c->detach( $c->view('JSON') );
 }
 
@@ -593,6 +595,8 @@ sub all_tuner_data :Global {
         }
   }
   $c->stash('json' => \%json);
+  $c->res->header('Access-Control-Allow-Origin'=>'https://www.rabbitears.info',
+                  'Access-Control-Allow-Methods'=>'GET');
   $c->detach( $c->view('JSON') );
 }
 
@@ -738,6 +742,8 @@ sub tuner_location_data :Global {
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
   $c->stash('tuner_latitude'  => $tuner->latitude);
   $c->stash('tuner_longitude' => $tuner->longitude);
+  $c->res->header('Access-Control-Allow-Origin'=>'https://www.rabbitears.info',
+                  'Access-Control-Allow-Methods'=>'GET');
   $c->detach( $c->view('JSON') );
 }
 

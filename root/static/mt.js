@@ -15,6 +15,16 @@ var tuner_longlat = {};
 var curDateTime;
 var extent = {};
 
+// CORS preflight options check rejection fix
+Ajax.Responders.register({
+    onCreate:function(r){
+        r.options.requestHeaders={
+        'X-Prototype-Version':null,
+        'X-Requested-With':null
+        };
+    }
+});
+
 (function( $ ) { // use jquery $, not prototype.js $
 // send errors to console for debugging
 window.onerror = function(m,u,l) {
