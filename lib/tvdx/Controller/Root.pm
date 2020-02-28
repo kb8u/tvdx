@@ -466,6 +466,22 @@ sub tuner_map_data :Global {
 }
 
 
+=head2 all_tuners
+
+Replacement for all_tuner_map.  Much quicker and more functional
+
+=cut
+
+sub all_tuners :Global {
+  my ($self, $c) = @_;
+
+  $c->stash(root_url     => $c->config->{root_url});
+  $c->stash(static_url   => $c->config->{static_url});
+  $c->stash(template     => 'Root/all_tuners.tt');
+  $c->stash(current_view => 'HTML');
+}
+
+
 =head2 all_tuner_data
 
 JSON data for all stations received by anyone in the last 24 hours

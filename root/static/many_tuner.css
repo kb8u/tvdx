@@ -1,0 +1,45 @@
+body {
+  height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#time-and-legend {
+  display: block;
+  border: 1px solid black;
+}
+#time-and-legend h1 {
+  margin: 0;
+  font: bold 18px Helvetica, sans-serif;
+}
+
+#stations-map {
+  display: inline-block;
+  float: left;
+  width: 80%;
+  height: 100%;
+  border: 1px solid black;
+}
+#sidebar-label-container {
+  display: inline-flex;
+  flex-flow: column;
+  width: 20%;
+  height: 100%;
+  border: 1px solid black;
+}
+#sidebar-label {
+  text-align: center;
+}
+#sidebar {
+  overflow: auto;
+}  
+ul {
+  margin-left: 20px;
+  margin-bottom: 5px;
+  list-style-type: circle;
+  list-style-position: outside;
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="shortcut icon" href="https://rabbitears.info/tvdx/root/static/favicon.ico">
+  <title>TV reception map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" rel="stylesheet"> 
+  <link href="[% static_url %]/many_tuner.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <div id="time-and-legend">
+    <!-- Current time and date gets set by javascript -->
+    <div><h1 id="lastUpdateTime">Map loading....</h1></div>
+    <img src="https://rabbitears.info/tvdx/root/static/images/green_dot.png" width='15' height='15' />Strong signal
+    <img src="https://rabbitears.info/tvdx/root/static/images/yellow_dot.png" width='15' height='15' />Medium signal
+    <img src="https://rabbitears.info/tvdx/root/static/images/red_dot.png" width='15' height='15' />Weak signal
+    <img src="https://rabbitears.info/tvdx/root/static/images/black_dot.png" width='15' height='15' />Detected in last 24 hours, but not currently<br>
+    This page updates every five minutes. Click on a path for more information. 
+    Alt-click on reception location at right to zoom there.
+  </div> <!-- end of timeAndLegend -->
+  <div id="map-and-sidebar">
+    <div id="stations-map">
+    </div>
+    <div id="sidebar-label-container">
+      <div id="sidebar-label">
+        <h4>Reception locations</h4><h4>(east to west)</h4>
+      </div>
+      <div id="sidebar">
+        <ul id="sidebar-list">
+          <li>Map loading...
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prototype/1.7.3/prototype.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/esri-leaflet/2.3.3/esri-leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.geodesic@2.5.2/dist/leaflet.geodesic.umd.min.js"></script>
+  <script type="text/javascript">
+// pass paths, tuner_id and tuner_number to javascript from template toolkit
+var root_url = '[% root_url %]'
+var static_url = '[% static_url %]'
+  </script>
+  <script src="[% static_url %]/mt.js"></script>
+</body>
+</html>
