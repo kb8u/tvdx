@@ -205,7 +205,8 @@ function update_call_markers(url) {
           station_l.addLayer(
               L.geodesic([tuner_ll, station_ll[i]],
                          { weight: 3,
-                           opacity: 0.5,
+                           opacity: (m.color === 'black') ? 0.25 : 1,
+                           zIndexOffset: (m.color === 'black') ? -500 : 0,
                            color: m.color,
                            steps: 4 }));
         }
