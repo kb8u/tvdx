@@ -125,7 +125,14 @@ function init() {
     - $("#map-legend").outerHeight()
     - 2);
 
-  map = L.map('stations-map');
+  // requires esri-leaflet.js and ESRI could change the terms of service anytime
+  var streets = L.esri.basemapLayer('Streets',{ maxZoom:15, minZoom:3 });
+  var topo = L.esri.basemapLayer('Topographic',{ maxZoom:15, minZoom:3 });
+  var photo = L.esri.basemapLayer('Imagery',{ maxZoom:15, minZoom:3 });
+  map = L.map('stations-map', { layers: [streets] });
+  L.control.layers({ 'Streets' : streets,
+                     'Topographic' : topo,
+                     'Imagery' : photo }).addTo(map);
   station_m = L.layerGroup();
   station_l = L.layerGroup();
   station_mt = L.layerGroup();
@@ -138,24 +145,6 @@ function init() {
   map.createPane('topPopup');
   map.getPane('topTooltip').style.zIndex = 800;
   map.getPane('topPopup').style.zIndex = 900;
-
-  // requires esri-leaflet.js and ESRI could change the terms of service anytime
-  L.esri.basemapLayer('Streets',{ maxZoom:15, minZoom:3 }).addTo(map);
-
-/*
-  // requires esri-leaflet.js but uses public server instead of ESRI proprietary
-  L.esri.tiledMapLayer({
-      url: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer',
-      maxNativeZoom: 16,
-      attribution: 'Map data from <a href="https://www.usgs.gov/core-science-systems/national-geospatial-program/national-map" title="The National Map"> The National Map</a>'
-  }).addTo(map);
-
-  // openstreetmap doesn't need esri-leaflet.js or rely on ESRI anything
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 17,
-        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-      }).addTo(map);
-*/
 
   if ($.cookie('time-frame') !== "ever") {
     ucm_24();
