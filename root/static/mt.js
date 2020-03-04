@@ -244,7 +244,7 @@ function update() {
 
         if (typeof($.cookie('bounds')) !== 'undefined') {
           var b = $.cookie('bounds').split(',').map(function(v){return parseFloat(v)});
-          map.fitBounds([[b[1],b[0]],[b[3],b[2]]]);a
+          map.fitBounds([[b[1],b[0]],[b[3],b[2]]]);
         } else {
         map.fitBounds([[extent.s,extent.w], [extent.n,extent.e]]);
         }
