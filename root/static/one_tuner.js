@@ -138,7 +138,7 @@ function init() {
   station_mt = L.layerGroup();
   onepixel = L.icon({
     iconUrl: static_url + '/images/1x1.png',
-    iconSize: [1, 1],
+    iconSize: [1, 1]
   });
   // for stations moved to top by zoom buttons in sidebar (station_mt markers)
   map.createPane('topTooltip');
@@ -198,7 +198,9 @@ function update_call_markers(url) {
                          .bindTooltip(m.callsign.replace(/-.*$/,"") + ' ' + m.rf_channel,
                                       { interactive: true,
                                         permanent: true,
-                                        direction: 'top' })
+                                        direction: 'top',
+                                        className: 'marker_' + m.color,
+                                        offset: [0, 2] })
                          .bindPopup(popup_text);
           station_m.addLayer(tmarker);
           m.marker_id = station_m.getLayerId(tmarker);

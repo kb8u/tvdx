@@ -97,3 +97,56 @@ body {
   flex-grow:1;
   width:100%;
 }
+
+.marker_black {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: white;
+  background-color: black;
+  border-color: white;
+}
+.leaflet-tooltip-top.marker_black::before {
+  border-top-color: black;
+}
+.marker_red {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: black;
+  background-color: red;
+  border-color: black;
+}
+.leaflet-tooltip-top.marker_red::before {
+  border-top-color: black;
+}
+.marker_yellow {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: black;
+  background-color: yellow;
+  border-color: black;
+}
+.leaflet-tooltip-top.marker_yellow::before {
+  border-top-color: black;
+}
+.marker_green {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: black;
+  background-color: green;
+  border-color: black;
+}
+.leaflet-tooltip-top.marker_green::before {
+  border-top-color: black;
+}
