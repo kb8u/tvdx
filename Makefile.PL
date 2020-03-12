@@ -20,14 +20,16 @@ requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
 requires 'DateTime';
-requires 'DateTime::Format::SQLite';
+requires 'DateTime::Format::MySQL';
 requires 'DateTime::Format::HTTP';
 requires 'DBIx::Class::TimeStamp';
 requires 'XML::Simple';
 requires 'LWP::Simple';
 requires 'GD';
 requires 'RRDs';
-requiers 'Geo::Calc';
+requires 'Geo::Calc';
+requires 'GIS::Distance';
+requires 'Compress::Bzip2';
 test_requires 'Test::More' => '0.88';
 catalyst;
 

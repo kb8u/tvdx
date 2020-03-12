@@ -10,6 +10,7 @@ use Getopt::Std;
 use LWP;
 use JSON;
 use LWP::Simple;
+use Compress::Bzip2 ':utilities';
 
 my $ua = LWP::UserAgent->new;
 
@@ -162,8 +163,8 @@ SCAN: while(1) {
     print "Sending results to $SPOT_URL\n" if $DEBUG;
     print "JSON:\n$json" if $DEBUG;
     my $req = HTTP::Request->new(POST => $SPOT_URL);
-    $req->content_type('application/json');
-    $req->content($json);
+    $req->content_type('application/octet-stream');
+    $req->content(memBzip($json));
     my $res = $ua->request($req);
   
     if ($DEBUG) {

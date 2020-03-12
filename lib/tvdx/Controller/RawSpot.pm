@@ -8,6 +8,7 @@ use LWP::Simple;
 use RRDs;
 use List::MoreUtils qw(all zip);
 use Data::Dumper;
+use Compress::Bzip2 ':utilities';
 
 # URL for looking up callsign, location, TSID, etc.
 my $RABBITEARS_TVQ = "http://www.rabbitears.info/rawlookup.php?";
@@ -47,7 +48,9 @@ sub raw_spot_POST :Global {
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
   # json with information from (client) scanlog.pl
-  my $json = $c->req->data;
+  my $json = ($c->req->headers->content_type eq 'application/octet-stream')
+           ? memBunzip($c->req->data)
+           : $c->req->data;
 
   my (undef,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
 
