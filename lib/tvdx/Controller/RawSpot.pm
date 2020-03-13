@@ -46,7 +46,6 @@ sub raw_spot_POST :Global {
   my $now_epoch = time;
   # 24 hours ago
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
-
   # json with information from (client) scanlog.pl
   my $json = ($c->req->headers->content_type eq 'application/octet-stream')
            ? memBunzip($c->req->data)
