@@ -38,7 +38,7 @@ __PACKAGE__->config(
     name => 'tvdx',
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
-    data_handlers => {'application/octet-stream' => sub { return $_->getline }},
+    data_handlers => {'application/octet-stream' => sub { return (<$_>) }},
     'View::JSON' => {
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
                            reception_locations markers json) ] }
