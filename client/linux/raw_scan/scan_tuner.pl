@@ -1,9 +1,10 @@
 #!/usr/bin/env perl
 # scan tuner on Silicon Dust HDHomeRun
-# Sends resluts to web site.
+# Sends results to web site.
 #
 # This version sends the raw scan.  Written 5/24/2013 by Russell Dwarshuis
 # Added -o option Feb. 1, 2014 -rd
+# Added bzip2 March 15, 2020 -rd
 
 use strict 'vars';
 use Getopt::Std;
@@ -154,6 +155,7 @@ SCAN: while(1) {
 
   my $j = JSON->new->allow_nonref;
   my $json = $DEBUG ? $j->pretty->encode($scan) : $j->encode($scan);
+  my $bzipped = memBzip($json);
 
   if (length($json) < 500) {
     print "Scan not successful, length of JSON data is too short\n" if $DEBUG;
@@ -164,9 +166,11 @@ SCAN: while(1) {
     print "JSON:\n$json" if $DEBUG;
     my $req = HTTP::Request->new(POST => $SPOT_URL);
     $req->content_type('application/octet-stream');
-    $req->content(memBzip($json));
+    $req->content_charset('binary');
+    $req->content_length(length($bzipped));
+    $req->content($bzipped);
     my $res = $ua->request($req);
-  
+
     if ($DEBUG) {
       print "Checking if web page got results ok\n";
       if ($res->is_success) {
