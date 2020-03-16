@@ -9,6 +9,7 @@ use RRDs;
 use List::MoreUtils qw(all zip);
 use Data::Dumper;
 use Compress::Bzip2 ':utilities';
+use JSON::XS;
 
 # URL for looking up callsign, location, TSID, etc.
 my $RABBITEARS_TVQ = "http://www.rabbitears.info/rawlookup.php?";
@@ -40,7 +41,6 @@ sub raw_spot :Global :ActionClass('REST') {}
 
 sub raw_spot_POST :Global {
   my ( $self, $c ) = @_;
-
   # the current time formatted to mysql format (UTC time zone)
   my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
   my $now_epoch = time;
@@ -48,9 +48,8 @@ sub raw_spot_POST :Global {
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
   # json with information from (client) scanlog.pl
   my $json = ($c->req->headers->content_type eq 'application/octet-stream')
-           ? memBunzip($c->req->body_data)
+           ? decode_json(memBunzip($c->req->body_data))
            : $c->req->data;
-
   my (undef,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
 
   # log if tuner isn't found

@@ -30,6 +30,7 @@ requires 'RRDs';
 requires 'Geo::Calc';
 requires 'GIS::Distance';
 requires 'Compress::Bzip2';
+requires 'JSON::XS';
 test_requires 'Test::More' => '0.88';
 catalyst;
 
