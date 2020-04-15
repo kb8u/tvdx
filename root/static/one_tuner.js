@@ -1,10 +1,11 @@
 jQuery.noConflict();
 var map;
-var station_m;   //station markers
-var station_l;   //lines between receiver and transmitter
-var station_mt;  //station markers moved to top by zoom buttons in sidebar
+var station_m;   //station marker layer group
+var station_l;   //lines (between receiver and transmitter) layer group
+var station_mt;  //(markers on top activated by zoom in sidebar) layer group
 var onepixel;
 var json;
+var markers = {}; // dictionary of markers to populate station_mt from
 var sidebar = {}; // key is sort-by
 var pe;           // PeriodicalExecutor instance
 
@@ -176,12 +177,14 @@ function update_call_markers(url) {
         station_m.clearLayers();
         station_l.clearLayers();
         station_mt.clearLayers();
+        markers = {};
         json = responseJSON.responseText.evalJSON();
         var tuner_ll = new L.LatLng(json.tuner_latitude,json.tuner_longitude);
 
         var station_ll = [];
         for(var i=0; i<json.markers.length; i++) {
           var m = json.markers[i];
+          var call_ch = m.callsign.replace(/-.*$/,"") + ' ' + m.rf_channel;
           if (new Date().getTime() > new Date(m.last_in).getTime() + 300000) {
             m.color = 'black';
           }
@@ -194,16 +197,24 @@ function update_call_markers(url) {
                       'Azimuth ' + m.azimuth + '&deg<br>' +
                       'Distance ' + m.miles + ' miles<br>' +
                       '<a href="' + m.graphs_url + '">Graphs</a>';
-          var tmarker = L.marker(station_ll[i], {icon: onepixel })
-                         .bindTooltip(m.callsign.replace(/-.*$/,"") + ' ' + m.rf_channel,
-                                      { interactive: true,
-                                        permanent: true,
-                                        direction: 'top',
-                                        className: 'marker_' + m.color,
-                                        offset: [0, 2] })
-                         .bindPopup(popup_text);
-          station_m.addLayer(tmarker);
-          m.marker_id = station_m.getLayerId(tmarker);
+          markers[call_ch] = L.marker(station_ll[i], {icon: onepixel })
+                              .bindTooltip(call_ch,
+                                           { interactive: true,
+                                             permanent: true,
+                                             direction: 'top',
+                                             className: 'marker_' + m.color,
+                                             offset: [0, 2] })
+                              .bindPopup(popup_text);
+          var marker = L.marker(station_ll[i], {icon: onepixel })
+                        .bindTooltip(call_ch,
+                                     { interactive: true,
+                                       permanent: true,
+                                       direction: 'top',
+                                       className: 'marker_' + m.color,
+                                       offset: [0, 2] })
+                        .bindPopup(popup_text);
+          station_m.addLayer(marker);
+          m.markers_key = call_ch;
           station_l.addLayer(
               L.geodesic([tuner_ll, station_ll[i]],
                          { weight: 3,
@@ -344,7 +355,7 @@ function update_sidebar(markers) {
       sidebar[field].push(
          '<li class="sr-list">'
        + '<span class="glyphicon glyphicon-zoom-in"></span> '
-       + '<a class="callsign" value="' + val.marker_id + '">' + val.callsign + '</a><br>'
+       + '<a class="callsign" value="' + val.markers_key + '">' + val.callsign + '</a><br>'
        + val.city_state + '<br>'
        + '<div class="hidden-lg hidden-md">' + sort_summary + '</div>'
        + '<div class="hidden-xs hidden-sm">'
@@ -379,21 +390,11 @@ function fill_sidebar(sortby) {
   $("#stations-received-ul").empty().append(sidebar[sortby])
   .on("click",".callsign",function (e) {
     // copy clicked station_m marker to station_mt, recenter and redraw
-    var marker = station_m.getLayer(e.target.getAttribute('value'));
-    var tt_text = marker.getTooltip().getContent();
-    var pu_text = marker.getPopup().getContent();
-    var ll = marker.getLatLng();
+    var ll = markers[e.target.getAttribute('value')].getLatLng();
     map.removeLayer(station_mt);
     station_mt.clearLayers();
     map.setView(ll,10);
-    var tmarker = L.marker(ll, {icon: onepixel })
-                   .bindTooltip(tt_text,
-                                { interactive: true,
-                                  permanent: true,
-                                  direction: 'top',
-                                  pane: 'topTooltip' })
-                   .bindPopup(pu_text, { pane: 'topPopup'});
-    station_mt.addLayer(tmarker);
+    station_mt.addLayer(markers[e.target.getAttribute('value')]);
     map.addLayer(station_mt);
   });
 }
