@@ -804,6 +804,11 @@ sub is_ota :Global {
       return;
   }
   $minutes = 5 if $minutes eq '';
+  if ($minutes > 604800) {
+      $c->response->body("FAIL: minutes can not exceed 1 week (604800)");
+      $c->response->status(400);
+      return;
+  }
 
   my $start = DateTime::Format::MySQL->format_datetime(
     DateTime->from_epoch(epoch => time-$minutes*60));
