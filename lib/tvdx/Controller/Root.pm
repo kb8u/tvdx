@@ -782,7 +782,7 @@ sub all_stations_ever_map :Global {
 }
 
 
-=head2
+=head2 is_ota
 
 Body has the number of signal reports of a callsign for the number
 of minutes requested.  Returns HTTP code 201 if 0, otherwise 200.
