@@ -782,6 +782,43 @@ sub all_stations_ever_map :Global {
 }
 
 
+=head2
+
+Body has the number of signal reports of a callsign for the number
+of minutes requested.  Returns HTTP code 201 if 0, otherwise 200.
+Optionally include a tuner id and number to narrow query.
+
+=cut
+
+sub is_ota :Global {
+  my ($self,$c,$call,$minutes,$tuner_id,$tuner_number) = @_;
+
+  if ($minutes =~ /\D+/) {
+    $c->response->body("FAIL: invalid minutes argument");
+    $c->response->status(400);
+    return;
+  }
+  unless ($call) {
+      $c->response->body("FAIL: invalid callsign argument");
+      $c->response->status(400);
+      return;
+  }
+  $minutes = 5 if $minutes eq '';
+
+  my $start = DateTime::Format::MySQL->format_datetime(
+    DateTime->from_epoch(epoch => time-$minutes*60));
+
+  my %q = (callsign => $call, rx_date => { '>=' => $start });
+  $q{tuner_id} = $tuner_id if $tuner_id;
+  $q{tuner_number} = $tuner_number if $tuner_number;
+
+  my $count = $c->model('DB::SignalReport')->count(%q);
+
+  $c->response->body($count);
+  $c->response->status($count > 0 ? 200 : 201)
+}
+
+
 # if any tuner is unknown, send back an error message
 sub _check_tuners {
   my ($self,$c,@check_tuner_info) = @_;
