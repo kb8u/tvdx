@@ -5,7 +5,8 @@
 AppName=scan_tuner
 AppVersion=2.0
 WizardStyle=modern
-DefaultDirName={autopf}\TVDX
+DisableDirPage=no
+DefaultDirName={sd}\TVDX
 DefaultGroupName=TVDX
 UninstallDisplayIcon={app}\scan_tuner.exe
 Compression=lzma2
@@ -21,6 +22,7 @@ ArchitecturesInstallIn64BitMode=x64
 OutputBaseFilename=tvdx_install
 
 [Files]
+; scan_tuner.exe was created with 'pp -o scan_tuner.exe scan_tuner.pl
 Source: "C:\tvdx_src\client\win32\bzip2\scan_tuner.exe"; DestDir: "{app}";
 
 [Run]
@@ -30,9 +32,13 @@ Filename: "schtasks"; \
     StatusMsg: "Running schtasks to run scan_tuner on start up"
 ; schtasks does not have certain switches so change it with powershell
 Filename: "powershell"; \
-    Parameters: "-command ""$task = Get-ScheduledTask 'TVDX scan';$task.Settings.RestartInterval = 'PT5M';$task.Settings.RestartCount = 9999;$task.Settings.ExecutionTimeLimit = 'PT0S';$task.Settings.DisallowStartIfOnBatteries = 0;$task.Settings.StopIfGoingOnBatteries = 0;Set-ScheduledTask $task;"; \
+    Parameters: "-command ""$t=Get-ScheduledTask 'TVDX scan';$s=$t.Settings;$s.RestartInterval='PT5M';$s.RestartCount=9999;$s.ExecutionTimeLimit='PT0S';$s.DisallowStartIfOnBatteries=0;$s.StopIfGoingOnBatteries=0;Set-ScheduledTask $t;"; \
     Flags: runhidden; \
     StatusMsg: "Changing scheduled task execution time limit"
+Filename: "schtasks"; \
+    Parameters: "/Run /TN ""TVDX scan"""; \
+    Flags: runhidden; \
+    StatusMsg: "Starting scan_tuner.exe scheduled task"
 
 [UninstallRun]
 Filename: "schtasks"; \
