@@ -562,9 +562,10 @@ sub all_tuner_data :Global {
       my $tn =$c->model('DB::TunerNumber')
                 ->find({'tuner_id'=>$tuner_id,
                         'tuner_number'=>$tuner_number});
+      my $description = (defined $tn) ? $tn->description : '(no description)';
       my $t = $c->model('DB::Tuner')->find({'tuner_id' => $tuner_id});
       $tuners{$tuner_id}{$tuner_number}{descr} =
-        $t->owner_id . ' ' . $tn->description;
+        $t->owner_id . ' ' . $description;
       $tuners{$tuner_id}{$tuner_number}{longlat} =
         [$tuner_longitude,$tuner_latitude];
     }
