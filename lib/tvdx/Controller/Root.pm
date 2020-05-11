@@ -69,7 +69,7 @@ sub automated_spot :Global {
   my ($junk,$tuner_id,$tuner_number) = split /_/, $href->{'user_id'};
 
   # log if tuner isn't found
-  if (! $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id})) {
+  unless ($c->model('DB::Tuner')->count({'tuner_id'=>$tuner_id})) {
     open L, ">>/tmp/unknown_tuner" or return 0;
     print L "$mysql_now: tuner_id $tuner_id not found in tuner table\n";
     close L;
@@ -562,9 +562,10 @@ sub all_tuner_data :Global {
       my $tn =$c->model('DB::TunerNumber')
                 ->find({'tuner_id'=>$tuner_id,
                         'tuner_number'=>$tuner_number});
+      my $description = (defined $tn) ? $tn->description : '(no description)';
       my $t = $c->model('DB::Tuner')->find({'tuner_id' => $tuner_id});
       $tuners{$tuner_id}{$tuner_number}{descr} =
-        $t->owner_id . ' ' . $tn->description;
+        $t->owner_id . ' ' . $description;
       $tuners{$tuner_id}{$tuner_number}{longlat} =
         [$tuner_longitude,$tuner_latitude];
     }
@@ -618,9 +619,9 @@ sub signal_graph  :Global {
                                                'tuner_number'=>$tuner_number});
 
   my $entry = $c->model('DB::SignalReport')
-                ->find({'tuner_id' => $tuner_id,
-                        'tuner_number' => $tuner_number,
-                        'callsign' => $callsign,});
+                ->count({'tuner_id' => $tuner_id,
+                         'tuner_number' => $tuner_number,
+                         'callsign' => $callsign,});
   if (! $entry) {
     $c->response->body( "No reception reports for $callsign from $tuner_id $tuner_number" );
     $c->response->status(404);
@@ -678,6 +679,11 @@ sub render_graph :Global {
   my $is_channel_rrd = -e $channel_rrd_file ?  1 : 0;
 
   if ($arg_is_callsign && $is_channel_rrd) {
+    unless (-e $call_rrd_file) {
+      $c->response->body("FAIL: no data for $callsign");
+      $c->response->status(404);
+      $c->detach();
+    }
     # generate graph with both channel and call signal strength/quality
     $c->stash->{'graph'} = [
       '--daemon', $c->config->{socket},
@@ -707,6 +713,11 @@ sub render_graph :Global {
   }
   else {
     # just a callsign or channel number, not both
+    unless (-e $call_rrd_file) {
+      $c->response->body("FAIL: no data for $callsign");
+      $c->response->status(404);
+      $c->detach();
+    }
     $c->stash->{'graph'} = [
       '--daemon', $c->config->{socket},
       '--lower-limit', '0', '--upper-limit', '100', '--rigid',

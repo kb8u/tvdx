@@ -258,6 +258,8 @@ sub _find_call {
   unless (%transmitter) {
     # loop over virtual channels, look for something resembling a callsign
     VIRT_CHAN: for my $program (keys %{$ch->{virtual}}) {
+      next unless (exists $ch->{virtual}{$program}{name});
+      next unless (defined $ch->{virtual}{$program}{name});
       next if ($ch->{virtual}{$program}{name} !~ /^[CWKX]/i);
       next if ($ch->{virtual}{$program}{name} !~ /([CWKX](\d\d)*[A-Z]{2,3})/i);
       my $possible_call = uc $1;
@@ -430,7 +432,7 @@ sub _signalreport_update {
                                   'rf_channel' => $args->{channel},
                                   'callsign' => $callsign,})->first;
   # test $entry as scalar (ResultSet boolean is always true)
-  if ($entry == 0) {
+  if ((!defined $entry) || $entry == 0) {
     my $spot = {
       'rx_date'         => $args->{mysql_now},
       'first_rx_date'   => $args->{mysql_now},
@@ -481,7 +483,7 @@ sub _virtual_current {
          'channel'  => $ch->{virtual}{$program}{channel}});
 
     # all new entry? Test $v_row as scalar (ResultSet boolean is always true)
-    if ($v_row == 0) {
+    if ((!defined $v_row) || $v_row == 0) {
       $args->{c}->model('DB::PsipVirtual')->create({
         'rx_date'  => $args->{mysql_now},
         'name'     => $ch->{virtual}{$program}{name},
@@ -512,7 +514,7 @@ sub _tsid_current {
         {'callsign' => $args->{callsign},
          'tsid'     => $ch->{tsid}})->first;
   # all new entry? Test $tsid_row as scalar (ResultSet boolean is always true)
-  if ($tsid_row == 0) {
+  if ((!defined $tsid_row) || $tsid_row == 0) {
     $args->{c}->model('DB::Tsid')->create({
       'rx_date'  => $args->{mysql_now},
       'tsid'     => $ch->{tsid},
