@@ -1,0 +1,41 @@
+See the INSTALL file for installation instructions.
+
+This is a program to continuously scan all channels on your SiliconDust
+HDHomerun device on "/tuner0/".  The results are sent to
+https://rabbitears.info/all_tuners where maps are available to show what
+TV transmitters were detected by all participants.  You must email
+webmaster@rabbitears.info with your tuner ID, a description for the map, and
+latitude and longitude so that the site will accept your data and show your
+location.
+
+The script that does the scanning is normally installed to
+~/tvdx/scan_tuner.pl  Also, a cron job has been configured so that the program
+starts automatically after installation and after each computer restart.
+
+You can either reboot your computer to start it, or open a terminal window
+and run the command `~/tvdx/scan_tuner.pl &`
+
+If you want to use /tuner0/ for other purposes, you will need to stop the
+cron job.  Run `pkill -QUIT -f scan_tuner.pl` to stop it.  It may take a minute
+or two for the tuner to actually become available after the program is stopped.
+You can power-cycle the tuner if you don't want to wait.  The cron job can be
+deleted using the command crontab -e
+
+If you have more than one HDHomerun device on your network, want to use a tuner
+other than /tuner0/ or have hdhomerun_config installed in a different
+location than normal, you will need to take some additional steps to get this
+program to work.  Options must be added to the end of the cron job line using
+the command crontab -e
+The program accepts the following options:
+
+-p Path to hdhomerun_config (used to scan the tuner).
+   Defaults to /usr/bin/hdhomerun_config
+-t Which tuner to use (applicable only to multi-tuner models).
+   Defaults to /tuner0/
+-x Tuner ID.  Only needed if you have more than one HDHomeRun on your network.
+   Defaults to FFFFFFFF
+
+If you want to see what the program is doing in real time, stop the cron job,
+open a terminal window and run ~/tvdx/scan_tuner -d
+The -d option will print debugging information to the screen as the program
+runs.

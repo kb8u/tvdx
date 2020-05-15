@@ -1,0 +1,8 @@
+# run the following commands in a termianl window to install the scanning
+# program on debian
+sudo apt-get install wget tar hdhomerun-config
+sudo apt-get install libwww-perl libjson-perl libcompress-bzip2-perl
+mkdir ~/tvdx && cd $_
+wget https://rabbitears.info/tvdx/root/static/linux_scan.tar
+tar xvf linux_scan.tar
+crontab -l | { cat; echo "@reboot $HOME/tvdx/scan_tuner.pl"; } | crontab -
