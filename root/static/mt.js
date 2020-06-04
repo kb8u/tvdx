@@ -283,7 +283,7 @@ function init() {
     iconUrl: './1x1.png',
     iconSize: [1, 1],
   });
-  var attribution = 'TSID data thanks to <a href="www.rabbitears.info">rabbitears.info</a> | ';
+  var attribution = 'TSID data thanks to <a href="https://rabbitears.info">rabbitears.info</a> | ';
   map.attributionControl.addAttribution(attribution);
   // for stations moved to top by zoom buttons in sidebar (on_top markers)
   map.createPane('topLine');
