@@ -15,7 +15,7 @@
     <img src="https://rabbitears.info/tvdx/root/static/images/green_dot.png" width='15' height='15' />Strong signal
     <img src="https://rabbitears.info/tvdx/root/static/images/yellow_dot.png" width='15' height='15' />Medium signal
     <img src="https://rabbitears.info/tvdx/root/static/images/red_dot.png" width='15' height='15' />Weak signal
-    <img src="https://rabbitears.info/tvdx/root/static/images/black_dot.png" width='15' height='15' />Detected in last 24 hours, but not currently<br>
+    <img src="https://rabbitears.info/tvdx/root/static/images/black_dot.png" width='15' height='15' />Detected in last 24 hours, but not currently (hideable in layer control)<br>
     This page updates every five minutes. Click on a path for more information. 
     Alt-click on reception location at right to zoom there.
   </div> <!-- end of timeAndLegend -->

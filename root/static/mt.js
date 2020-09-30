@@ -5,7 +5,8 @@ var station_mt = {};  //station markers with tooltip on top
 var station_mb = {};  //station markers with tooltip on bottom
 var tuner_mt = {};    //tuner markers with tooltip on top
 var tuner_mb = {};    //tuner markers with tooltip on bottom
-var lines;   // layerGroup of lines between receiver and transmitter
+var lines;   // layerGroup of colored lines between receiver and transmitter
+var black_lines; // layerGroup of black lines " "
 var stations; // layerGroup of station markers show on both ends of a path
 var on_top;  // used by tuners list mouseover and lines on mouseover
 var onepixel;
@@ -40,6 +41,7 @@ L.LayerGroup.include({
         return this._layers[i];
       }
     }
+    return undefined;
   }
 });
 
@@ -109,6 +111,7 @@ function update() {
         json = responseJSON.responseText.evalJSON();
         update_tuners_list();
         lines.clearLayers();
+        black_lines.clearLayers();
         stations.clearLayers();
         on_top.clearLayers();
         extent = {n:0, s:90, e:-179.9, w:0};
@@ -177,11 +180,18 @@ function update() {
                     on_top.clearLayers();
                     stations.clearLayers();
                     var m = lines.getLayer(e.target._leaflet_id);
+                    if (m === undefined) {
+                        m = black_lines.getLayer(e.target._leaflet_id);
+                    }
                     var ll = m.getLatLngs();
-                    var options = e.target.options;
+                    var options = {};
                     options['weight'] = 6;
                     options['pane'] = 'topLine';
                     options['bubblingMouseEvents'] = true;
+                    options['opacity'] = e.target.options['opacity'];
+                    options['color'] = e.target.options['color'];
+                    options['zIndexOffset'] = e.target.options['zIndexOffset'];
+                    options['steps'] = e.target.options['steps'];
                     var nm = L.geodesic(ll,options)
                       .on({mouseout:
                              function(e){
@@ -190,7 +200,11 @@ function update() {
                              },
                            click:
                              function(e) {
-                               lines.gettvdxLayer(e.target.callsign,e.target.tuner).openPopup();
+                               var line = lines.gettvdxLayer(e.target.callsign,e.target.tuner);
+                               if (line === undefined) {
+                                   line = black_lines.gettvdxLayer(e.target.callsign,e.target.tuner);
+                               }
+                               line.openPopup();
                              }
                           });
                     nm.callsign = m.callsign;
@@ -230,7 +244,11 @@ function update() {
 
           line.callsign = p.callsign;
           line.tuner = p.tuner_id+'/'+p.tuner_number;
-          lines.addLayer(line);
+          if (color === 'black') {
+              black_lines.addLayer(line);
+          } else {
+              lines.addLayer(line);
+          }
 
           extent.n = (c[0][1] > extent.n) ? c[0][1] : extent.n;
           extent.n = (c[1][1] > extent.n) ? c[1][1] : extent.n;
@@ -268,19 +286,21 @@ function init() {
   var streets = L.esri.basemapLayer('Streets',{ attribution:attribution, maxZoom:15, minZoom:3 });
   var topo = L.esri.basemapLayer('Topographic',{ attribution:attribution, maxZoom:15, minZoom:3 });
   var photo = L.esri.basemapLayer('Imagery',{ attribution:attribution, maxZoom:15, minZoom:3 });
-  map = L.map('stations-map', { layers: [streets] });
+  lines = L.layerGroup();
+  black_lines = L.layerGroup();
+  stations = L.layerGroup();
+  on_top = L.layerGroup();
+  map = L.map('stations-map', { layers: [streets,black_lines] });
   map.on('zoomend moveend', function(e) {
     $.cookie('bounds', map.getBounds().toBBoxString()); 
   });
-  lines = L.layerGroup();
-  stations = L.layerGroup();
-  on_top = L.layerGroup();
   L.control.layers({ 'Streets' : streets,
                      'Topographic' : topo,
-                     'Imagery' : photo }).addTo(map);
+                     'Imagery' : photo },
+                   { 'Old reports' : black_lines}).addTo(map);
 
   onepixel = L.icon({
-    iconUrl: './1x1.png',
+    iconUrl: static_url + '/images/1x1.png',
     iconSize: [1, 1],
   });
   var attribution = 'TSID data thanks to <a href="https://rabbitears.info">rabbitears.info</a> | ';
