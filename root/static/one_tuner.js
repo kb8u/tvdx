@@ -97,7 +97,7 @@ function init() {
 
   $("#time-frame .btn").click(function (e) {
     "use strict";
-    $.cookie('time-frame', $(this).attr('value'));
+    $.cookie('time-frame', $(this).attr('value'), { expires : 365, path: "/;SameSite=Strict", secure: true});
     if (typeof(pe) !== 'undefined') {
       pe.stop();
       pe = undefined;
@@ -113,13 +113,13 @@ function init() {
 
   $("#sort-by .btn").click(function () {
     "use strict";
-    $.cookie('sort-by', $(this).attr('value'));
+    $.cookie('sort-by', $(this).attr('value'), { expires : 365, path: "/;SameSite=Strict", secure: true});
     fill_sidebar($(this).attr('value'));
     set_units($('#distance-units .active').attr('value'));
   });
   $("#distance-units .btn").click(function(e) {
     set_units(e.target.getAttribute('value'));
-    $.cookie('distance-units', e.target.getAttribute('value'));
+    $.cookie('distance-units', e.target.getAttribute('value'), { expires : 365, path: "/;SameSite=Strict", secure: true});
   });
   $("#stations-map").outerHeight(
       $("#right-side").outerHeight()
@@ -191,7 +191,7 @@ function update_call_markers(url) {
           station_ll[i] = new L.LatLng(m.latitude,m.longitude);
           var popup_text = m.callsign + '<br>' +
                       'RF Channel ' + m.rf_channel + '<br>' +
-                      'Virtual Channel ' + m.virtual_channel.replace(/\..*$/,"") + '<br>' +
+                      'Virtual Channel ' + parseInt(m.virtual_channel) + '<br>' +
                       m.city_state + '<br>' +
                       'RCAMSL ' + m.rcamsl + '.<br>' + 
                       'Azimuth ' + m.azimuth + '&deg<br>' +

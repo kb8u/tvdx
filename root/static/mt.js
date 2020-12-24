@@ -292,7 +292,7 @@ function init() {
   on_top = L.layerGroup();
   map = L.map('stations-map', { layers: [streets,black_lines] });
   map.on('zoomend moveend', function(e) {
-    $.cookie('bounds', map.getBounds().toBBoxString()); 
+    $.cookie('bounds', map.getBounds().toBBoxString(), { expires : 365, path: "/;SameSite=Strict", secure: true}); 
   });
   L.control.layers({ 'Streets' : streets,
                      'Topographic' : topo,
