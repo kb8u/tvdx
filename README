@@ -113,3 +113,54 @@ CREATE TABLE psip_virtual (
 CREATE TABLE tuner_debug (
   tuner_id VARCHAR(255) NOT NULL PRIMARY KEY;
 );
+
+--
+-- fm dx tables
+--
+create table fm_user (
+  user_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user varchar(255) not null,
+  password varchar(255) not null,
+  email varchar(255) not null,
+  description varchar(255)
+);
+
+create table fm_tuner (
+  tuner_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  description varchar(255) not null,
+  user_key integer,
+  start_date DATETIME NOT NULL,
+  end_date DATETIME,
+  latitude FLOAT(11,8) NOT NULL,
+  longitude FLOAT(11,8) NOT NULL,
+  foreign key (user_key) references fm_user(user_key)
+);
+
+create table fm_fcc (
+  fcc_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  pi INTEGER NOT NULL,
+  callsign VARCHAR(255) NOT NULL,
+  frequency FLOAT(11,8),
+  facility_id integer,
+  class VARCHAR(255) NOT NULL,
+  erp FLOAT(11,8),
+  haat FLOAT(11,8),
+  latitude FLOAT(11,8) NOT NULL,
+  longitude FLOAT(11,8) NOT NULL,
+  start_date DATETIME NOT NULL,
+  end_date DATETIME,
+  city_state VARCHAR(255) NOT NULL,
+  last_fcc_lookup DATETIME NOT NULL
+);
+
+create TABLE fm_signal_report (
+  signal_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  rx_date DATETIME NOT NULL,
+  first_rx_date DATETIME NOT NULL,
+  frequency FLOAT(11,8) NOT NULL,
+  tuner_key INTEGER NOT NULL,
+  fcc_key INTEGER,
+  strength FLOAT(11,8),
+  foreign key (tuner_key) references fm_tuner(tuner_key),
+  foreign key (fcc_key) references fm_fcc(fcc_key)
+);
