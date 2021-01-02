@@ -27,7 +27,6 @@ my $debug = $opt_d;
 do {
   my $scan = {'tuner_key' => $opt_t};
   for (my $freq = 87.9; $freq <= 107.9; $freq += .2) {
-#  for (my $freq = 91.5; $freq <= 91.8; $freq += .2) {
 
     my $freq_str = sprintf('%.1f', $freq);
 
@@ -93,8 +92,6 @@ do {
       }
     }
   }
-
-#} while 1;
 } while !$debug;
 
 sub help {
