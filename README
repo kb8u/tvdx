@@ -115,7 +115,7 @@ CREATE TABLE tuner_debug (
 );
 
 --
--- fm dx tables
+-- FM DX tables
 --
 create table fm_user (
   user_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
