@@ -64,8 +64,10 @@ sub fm_spot_POST :Global {
     }
   }
 
-  foreach my $frequency ($json->signal) {
-    my $pi = defined $json->{signal}->{frequency}->{pi} ? $json->{signal}->{frequency}->{pi} : undef;
+  foreach my $frequency (keys %{$json->{signal}}) {
+    my $pi = defined $json->{signal}{$frequency}{pi}
+           ? $json->{signal}{$frequency}{pi}
+           : undef;
     next unless $pi;
 
     # add or update fcc table if needed and return FmFcc table fcc_key
@@ -92,18 +94,19 @@ sub fm_spot_POST :Global {
 
 # create, retrieve or update fcc_key from fm_fcc table
 sub _cru_fcc_key {
-  my ($self,$c,$frequency,$pi) = @_;
+  my ($c,$frequency,$pi) = @_;
+$c->log->debug("freq $frequency pi $pi");
 
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
 
   my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
                                                 'pi' => $pi,
-                                                'end_date' => { '==', undef}});
+                                                'end_date' => undef});
   if (!defined $fcc_row || $fcc_row == 0 || (DateTime::Format::MySQL->parse_datetime($fcc_row->last_fcc_lookup) < $yesterday)) {
       return undef unless (_update_fm_fcc($c)); 
       $fcc_row = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
                                                 'pi' => $pi,
-                                                'end_date' => { '==', undef}});
+                                                'end_date' => undef});
   }
 
   if (!defined $fcc_row || $fcc_row == 0 || (DateTime::Format::MySQL->parse_datetime($fcc_row->last_fcc_lookup) < $yesterday)) {
@@ -117,12 +120,12 @@ sub _cru_fcc_key {
 
 # update fm_fcc table from remote database
 sub _update_fm_fcc {
-  my ($self,$c) = @_;
-
+  my ($c) = @_;
+$c->log->debug('in _update_fm_fcc');
   my $sql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
 
   # only try URL at most once an hour
-  next unless $tvdx::fm_get_attempt_epoch < (time - 3600);
+  return 0 unless $tvdx::fm_get_attempt_epoch < (time - 3600);
   $tvdx::fm_get_attempt_epoch = time;
 
   my $dom = Mojo::DOM->new(get($c->config->{'nrsc_pi_url'}));
@@ -155,7 +158,7 @@ sub _update_fm_fcc {
     # create entry in fm_fcc?
     my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
                                                   'pi' => $pi,
-                                                  'end_date' =>{ '==', undef}});
+                                                  'end_date' => undef});
     if (!defined $fcc_row || $fcc_row == 0) {
       unless (all {defined $_} ($pi,$call,$class,$lat,$lon,$sql_now,$city,$state)) {
         $c->log->warn("Missing or bad data in ".$c->config->{'nrsc_pi_url'}." Row was: $pi,$call,$class,$lat,$lon,$sql_now,$city,$state");
