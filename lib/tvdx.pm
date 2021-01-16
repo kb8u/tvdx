@@ -54,6 +54,9 @@ our $socket_io = IO::Socket::UNIX->new(
         Peer => '/var/run/rrdcached.sock',
 );
 
+# time of last get on FM PI data
+our $fm_get_attempt_epoch = 0;
+
 # Start the application
 __PACKAGE__->setup();
 
