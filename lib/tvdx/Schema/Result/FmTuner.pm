@@ -54,7 +54,7 @@ __PACKAGE__->table("fm_tuner");
 
   data_type: 'integer'
   is_foreign_key: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 start_date
 
@@ -88,7 +88,7 @@ __PACKAGE__->add_columns(
   "description",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "user_key",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "start_date",
   {
     data_type => "datetime",
@@ -148,17 +148,12 @@ __PACKAGE__->belongs_to(
   "user_key",
   "tvdx::Schema::Result::FmUser",
   { user_key => "user_key" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "RESTRICT",
-    on_update     => "RESTRICT",
-  },
+  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2020-12-30 14:42:13
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:L/obncVHDncyqjjB7mJskQ
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-19 14:05:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Xgj1UKTB0o0IqMVGpP8J1A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
