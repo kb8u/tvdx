@@ -70,132 +70,41 @@ sub fm_spot_POST :Global {
            : undef;
     next unless $pi;
 
-    # add or update fcc table if needed and return FmFcc table fcc_key
-    my $fcc_key = _cru_fcc_key($c,$frequency,$pi);
-    unless (defined $fcc_key) {
-      $c->log->warn("Could not update/create FM FCC table");
+    my $s = defined $json->{signal}{$frequency}{s}
+           ? $json->{signal}{$frequency}{s}
+           : undef;
+
+    my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
+                                                  'pi' => $pi,
+                                                  'end_date' => undef});
+    unless (defined $fcc_row && $fcc_row) {
+      $c->log->warn("Couldn't find fm_fcc entry for frequency $frequency pi $pi");
       next;
     }
-
 
     # create or update report
     my $entry =
       $c->model('DB::FmSignalReport')->search({'tuner_key' =>$json->{tuner_key},
                                                'frequency' => $frequency,
-                                               'fcc_key' => $fcc_key});
-#TODO: see line 117 of Root.pm and etc.
-
+                                               'fcc_key' => $fcc_row->fcc_key});
+    if (!defined $entry || $entry == 0) {
+      $c->model('DB::FmSignalReport')
+        ->create({'rx_date' => $mysql_now,
+                  'first_rx_date' => $mysql_now,
+                  'frequency' => $frequency,
+                  'tuner_key' =>$json->{tuner_key},
+                  'fcc_key' => $fcc_row->fcc_key},
+                  'strength' => $s);
+      next;
+    }
+    else {
+      $entry->update({'rx_date' => $mysql_now, 'strength' => $s});
+    }
   }
 
   $c->response->body('OK');
   $c->response->status(202);
 }
-
-
-# create, retrieve or update fcc_key from fm_fcc table
-sub _cru_fcc_key {
-  my ($c,$frequency,$pi) = @_;
-$c->log->debug("freq $frequency pi $pi");
-
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
-
-  my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
-                                                'pi' => $pi,
-                                                'end_date' => undef});
-  if (!defined $fcc_row || $fcc_row == 0 || (DateTime::Format::MySQL->parse_datetime($fcc_row->last_fcc_lookup) < $yesterday)) {
-      return undef unless (_update_fm_fcc($c)); 
-      $fcc_row = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
-                                                'pi' => $pi,
-                                                'end_date' => undef});
-  }
-
-  if (!defined $fcc_row || $fcc_row == 0 || (DateTime::Format::MySQL->parse_datetime($fcc_row->last_fcc_lookup) < $yesterday)) {
-    $c->log->error("Couldn't retrieve fcc_key from fm_fcc table");
-    return undef;
-  }
-
-  return $fcc_row->fcc_key;
-}
-
-
-# update fm_fcc table from remote database
-sub _update_fm_fcc {
-  my ($c) = @_;
-$c->log->debug('in _update_fm_fcc');
-  my $sql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
-
-  # only try URL at most once an hour
-  return 0 unless $tvdx::fm_get_attempt_epoch < (time - 3600);
-  $tvdx::fm_get_attempt_epoch = time;
-
-  my $dom = Mojo::DOM->new(get($c->config->{'nrsc_pi_url'}));
-  return undef unless defined $dom;
-
-  # parse html and create or update fm_fcc for each station in table
-  for my $row ($dom->find('tr')->each) {
-    my $td = $row->find('td')->to_array;
-    next unless all {$_} (@{$td}[0..6]);
-    my $call = $td->[0]->at('a')->text;
-    my $hex_pi = $td->[1]->at('code')->text;
-    my $pi = hex $hex_pi;
-    my $frequency = $td->[2]->text;
-    my $facility_id = $td->[3]->at('a')->text;
-    my $city = $td->[4]->text;
-    my $state = $td->[5]->text;
-#TODO: get class, erp, haat from FCC
-    my $class = 'unknown';
-
-    my $latlong = $td->[6]->text;
-    $latlong = substr($latlong,1);
-    $latlong =~ s/ +//gs;
-    my (@ll) = split /[^\d.NSEW]/, $latlong;
-
-    my $lat = $ll[0] + $ll[1]/60 + $ll[2]/3600;
-    $lat *= -1 if $ll[3] eq 'S';
-    my $lon = $ll[4] + $ll[5]/60 + $ll[6]/3600;
-    $lon *= -1 if $ll[7] eq 'W';
-
-    # create entry in fm_fcc?
-    my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
-                                                  'pi' => $pi,
-                                                  'end_date' => undef});
-    if (!defined $fcc_row || $fcc_row == 0) {
-      unless (all {defined $_} ($pi,$call,$class,$lat,$lon,$sql_now,$city,$state)) {
-        $c->log->warn("Missing or bad data in ".$c->config->{'nrsc_pi_url'}." Row was: $pi,$call,$class,$lat,$lon,$sql_now,$city,$state");
-        next;
-      }
-      my $entry = $c->model('DB::FmFcc')->create({
-        'pi' => $pi,
-        'callsign' => $call,
-        'frequency' => $frequency,
-        'facility_id' => $facility_id,
-        'start_date' => $sql_now,
-        'city_state' => "$city, $state",
-        'last_fcc_lookup' => $sql_now,
-      });
-      if (!$entry) {
-        $c->log->error("Couldn't create new fm_fcc row with $pi,$call,$class,$lat,$lon,$sql_now,$city,$state");
-        next;
-      }
-    }
-    # else row exists, just update it.
-    else {
-      $fcc_row->update({
-        'pi' => $pi,
-        'callsign' => $call,
-        'frequency' => $frequency,
-        'facility_id' => $facility_id,
-        'start_date' => $sql_now,
-        'city_state' => "$city, $state",
-        'last_fcc_lookup' => $sql_now,
-      });
-    }
-  }
-
-  return 1;
-}
-
-
 
 =head1 AUTHOR
 
@@ -203,7 +112,7 @@ Russell J Dwarshuis
 
 =head1 LICENSE
 
-Copyright 2020 by Russell Dwarshuis.
+Copyright 2021 by Russell Dwarshuis.
 This library is free software. You can redistribute it and/or modify
 it under the same terms as Perl itself.
 

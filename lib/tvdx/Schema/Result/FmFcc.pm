@@ -57,9 +57,8 @@ __PACKAGE__->table("fm_fcc");
 
 =head2 frequency
 
-  data_type: 'float'
+  data_type: 'integer'
   is_nullable: 0
-  size: [11,8]
 
 =head2 facility_id
 
@@ -130,7 +129,7 @@ __PACKAGE__->add_columns(
   "callsign",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "frequency",
-  { data_type => "float", is_nullable => 0, size => [11, 8] },
+  { data_type => "integer", is_nullable => 0 },
   "facility_id",
   { data_type => "integer", is_nullable => 1 },
   "class",
@@ -195,8 +194,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-19 14:05:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:fzK8Wx09zwxelc97vrjalA
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-19 16:24:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hgThuKBmikaVXgv1y4Dprg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
