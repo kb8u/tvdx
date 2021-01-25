@@ -65,20 +65,20 @@ sub fm_spot_POST :Global {
   }
 
   foreach my $frequency (keys %{$json->{signal}}) {
-    my $pi = defined $json->{signal}{$frequency}{pi}
-           ? $json->{signal}{$frequency}{pi}
+    my $pi_code = defined $json->{signal}{$frequency}{pi_code}
+           ? $json->{signal}{$frequency}{pi_code}
            : undef;
-    next unless $pi;
+    next unless $pi_code;
 
     my $s = defined $json->{signal}{$frequency}{s}
            ? $json->{signal}{$frequency}{s}
            : undef;
 
     my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
-                                                  'pi' => $pi,
+                                                  'pi_code' => $pi_code,
                                                   'end_date' => undef});
     unless (defined $fcc_row && $fcc_row) {
-      $c->log->warn("Couldn't find fm_fcc entry for frequency $frequency pi $pi");
+      $c->log->warn("Couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
       next;
     }
 

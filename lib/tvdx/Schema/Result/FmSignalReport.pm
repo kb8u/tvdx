@@ -75,9 +75,9 @@ __PACKAGE__->table("fm_signal_report");
 
 =head2 strength
 
-  data_type: 'float'
+  data_type: 'decimal'
   is_nullable: 1
-  size: [11,8]
+  size: [5,2]
 
 =cut
 
@@ -103,7 +103,7 @@ __PACKAGE__->add_columns(
   "fcc_key",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "strength",
-  { data_type => "float", is_nullable => 1, size => [11, 8] },
+  { data_type => "decimal", is_nullable => 1, size => [5, 2] },
 );
 
 =head1 PRIMARY KEY
@@ -156,8 +156,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-19 16:24:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BAyY+xmN6Xq2DrW18hkVvQ
+# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-24 20:50:07
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZOgSl6khInPzBS/4Ck+YtQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
