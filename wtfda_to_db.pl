@@ -46,26 +46,39 @@ else {
 }
 
 say "csrftoken: $csrftoken" if $opt_d;
-#BUG: Can't get numperpage to work, access is denied
-#$res = $ua->post($site => form => {numperpage => 3000, csrfmiddlewaretoken => $csrftoken})->result;
-#if ($res->is_error)    {
-#  say "POST failed: ",$res->message if $opt_d;
-#  exit 1;
-#}
 
-my $page_str = $res->dom->find('h3+div')->first->text;
-my $last_page;
-if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
-  $last_page = $1;
-  say "last page number $last_page" if $opt_d;
+
+my $header = { 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0',
+               'Referer' => 'https://db.wtfda.org',
+               'Upgrade-Insecure-Requests' => 1 };
+my $form = { csrfmiddlewaretoken => $csrftoken,
+             callsign => '',
+             frequency => '', city => '', state => '', fac_country => '',
+             prl => '', format => '', slogan => '', language => '',
+             picode => '', numperpage => 3000 };
+$res = $ua->post($site => $header => form => $form)->result;
+
+my $last_page = 0;
+if ($res) {
+  process_res($res);
+  my $page_str = $res->dom->find('h3+div')->first->text;
+  if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
+    $last_page = $1;
+    say "last page number $last_page" if $opt_d;
+  }
+  else {
+    say "Can't find last page number" if $opt_d;
+    exit;
+  }
 }
 else {
-  say "Can't find last page number" if $opt_d;
-  exit;
+  say "no result from first post" if $opt_d;
+  exit 1;
 }
 
-process_res($res);
-PAGE: for (my $page=978; $page <= $last_page; $page++) {
+
+
+PAGE: for (my $page=2; $page <= $last_page ; $page++) {
   say "processing page $page" if $opt_d;
   RETRY: for (my $retry = 0; $retry < 5; $retry++) {
     $res = 0;
@@ -77,7 +90,19 @@ PAGE: for (my $page=978; $page <= $last_page; $page++) {
       say "retrying $url" if $opt_d;
       next RETRY;
     };
-    process_res($res) if $res;
+    if ($res) {
+      my $page_str = $res->dom->find('h3+div')->first->text;
+      if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
+        $last_page = $1;
+        say "last page number $last_page" if $opt_d;
+      }
+      else {
+        say "Can't find last page number" if $opt_d;
+        exit;
+      }
+      process_res($res);
+      last PAGE if $page == $last_page;
+    }
     next PAGE;
   }
   exit 1;
