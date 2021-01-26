@@ -3,6 +3,7 @@
 use strict;
 use feature 'say';
 use Getopt::Std;
+use Try::Tiny;
 use Mojo::UserAgent;
 use Mojo::DOM;
 use DateTime;
@@ -64,10 +65,22 @@ else {
 }
 
 process_res($res);
-for (my $page=2; $page <= $last_page; $page++) {
+PAGE: for (my $page=978; $page <= $last_page; $page++) {
   say "processing page $page" if $opt_d;
-  my $url = "$site/fac_frequency/down/$page";
-  process_res($ua->get($url)->result);
+  RETRY: for (my $retry = 0; $retry < 5; $retry++) {
+    $res = 0;
+    my $url = "$site/fac_frequency/down/$page";
+    try {
+      $res = $ua->get($url)->result;
+    } catch {
+      sleep 3*$retry;
+      say "retrying $url" if $opt_d;
+      next RETRY;
+    };
+    process_res($res) if $res;
+    next PAGE;
+  }
+  exit 1;
 }
   
 
@@ -76,102 +89,83 @@ sub process_res {
   my ($res) = @_;
 
   for my $row ($res->dom->find('#content>table tr')->each) {
+    my %row;
     my $td = $row->find('td')->to_array;
-    my $callsign = $td->[0]->text;
-    next unless $callsign;  # column descriptions row?
-    my $relay_of = $td->[1]->text;
-    my $frequency = $td->[2]->text;
+    $row{callsign} = $td->[0]->text;
+    next unless $row{callsign};  # column descriptions row?
+    $row{relay_of} = $td->[1]->text;
+    $row{frequency} = $td->[2]->text;
     my $city = $td->[3]->text;
     my $s_p = $td->[4]->text;
-    my $country = $td->[5]->text;
-    my $mode = $td->[6]->text;
-    my $lang = $td->[7]->text;
-    my $format = $td->[8]->text;
-    my $slogan = $td->[9]->text;
-    my $erp_h = $td->[10]->text;
-    my $erp_v = $td->[11]->text;
-    my $haat_h = $td->[12]->text;
-    my $haat_v = $td->[13]->text;
+    $row{country} = $td->[5]->text;
+    $row{mode} = $td->[6]->text;
+    $row{lang} = $td->[7]->text;
+    $row{format} = $td->[8]->text;
+    $row{slogan} = $td->[9]->text;
+    $row{erp_h} = $td->[10]->text;
+    $row{erp_v} = $td->[11]->text;
+    $row{haat_h} = $td->[12]->text;
+    $row{haat_v} = $td->[13]->text;
     my $lat = $td->[14]->text;
     my $lon = $td->[15]->text;
-    my $pi_code = hex $td->[16]->text;
-    my $ps_info = $td->[17]->text; 
-    my $radiotext = $td->[18]->text;
-    my $pty = $td->[19]->text;
-    my $remarks = $td->[20]->text;
+    $row{pi_code} = $td->[16]->text;
+    $row{ps_info} = $td->[17]->text; 
+    $row{radiotext} = $td->[18]->text;
+    $row{pty} = $td->[19]->text;
+    $row{remarks} = $td->[20]->text;
 
-    $callsign =~ s/\s+//g;
-    $frequency =~ s/\.//;
-    $frequency .= '0000';
-    my $city_state = "$city, $s_p";
+    $row{callsign} =~ s/\s+//g;
+    $row{frequency} =~ s/\.//;
+    $row{frequency} .= '00000';
+    $row{city_state} = "$city, $s_p";
     my @lat = split '-',$lat;
-    my $latitude = $lat[0] + $lat[1]/60 + $lat[2]/3600;
+    $row{latitude} = $lat[0] + $lat[1]/60 + $lat[2]/3600;
     my @lon = split '-',$lon;
-    my $longitude = -1 * ($lon[0] + $lon[1]/60 + $lon[2]/3600);
+    $row{longitude} = -1 * ($lon[0] + $lon[1]/60 + $lon[2]/3600);
+    $row{pi_code} = ($row{pi_code }=~ /([0-9a-f]{1,4})/i) ? hex $1 : 0;
+
+    $row{erp_h} = ($row{erp_h} =~ /^[+-]?\d+(\.\d+)?$/) ? $row{erp_h} : 0;
+    $row{erp_v} = ($row{erp_v} =~ /^[+-]?\d+(\.\d+)?$/) ? $row{erp_v} : 0;
+    $row{haat_h} = ($row{haat_h} =~ /^[+-]?\d+(\.\d+)?$/) ? $row{haat_h} : 0;
+    $row{haat_v} = ($row{haat_v} =~ /^[+-]?\d+(\.\d+)?$/) ? $row{haat_v} : 0;
+
+    if (   $row{frequency} < 87500000 || $row{frequency} > 108100000
+        || $row{erp_h} < 0 || $row{erp_h} > 1000
+        || $row{erp_v} < 0 || $row{erp_v} > 1000 
+        || $row{haat_h} < -1000 || $row{haat_h} > 2000
+        || $row{haat_v} < -1000 || $row{haat_v} > 2000
+        || $row{latitude} < -90 || $row{latitude} > 90
+        || $row{longitude} < -180 || $row{longitude} > 180
+        || $row{pi_code} < 0 || $row{pi_code} > 65535
+        || (length($row{callsign}) < 3) || (length($row{callsign}) > 10)
+    ) {
+      say "bad data read for $row{callsign}" if $opt_d;
+      next;
+    }
+
+    $row{last_fcc_lookup} = $sql_now;
     
     # create entry in fm_fcc?
-    my ($fcc_row) = $fm_fcc_rs->find({'frequency' => $frequency,
-                                      'callsign' => $callsign,
+    my ($fcc_row) = $fm_fcc_rs->find({'frequency' => $row{frequency},
+                                      'callsign' => $row{callsign},
                                       'end_date' => undef});
     if (!defined $fcc_row || $fcc_row == 0) {
-      unless (all {defined $_} ($pi_code,$callsign,$latitude,$longitude,$sql_now,$city_state,$country)) {
-        say ("Missing or bad data in row: ",$pi_code,$callsign,$latitude,$longitude,$sql_now,$city_state,$country) if $opt_d;
+      unless (all {defined $_} (@row{qw(pi_code callsign latitude longitude last_fcc_lookup city_state country)})) {
+        say ("Missing or bad data in row: ",join ' ',@row{qw(pi_code callsign latitude longitude sql_now city_state country)}) if $opt_d;
         next;
       }
-      my $entry = $fm_fcc_rs->create({
-        'callsign' => $callsign,
-        'relay_of' => $relay_of,
-        'frequency' => $frequency,
-        'city_state' => $city_state,
-        'country' => $country,
-        'mode' => $mode,
-        'lang' => $lang,
-        'format' => $format,
-        'slogan' => $slogan,
-        'erp_h' => $erp_h,
-        'erp_v' => $erp_v,
-        'haat_h' => $haat_h,
-        'haat_v' => $haat_v,
-        'latitude' => $latitude,
-        'longitude' => $longitude,
-        'pi_code' => $pi_code,
-        'ps_info' => $ps_info,
-        'radiotext' => $radiotext,
-        'pty' => $pty,
-        'remarks' => $remarks,
-        'start_date' => $sql_now,
-        'last_fcc_lookup' => $sql_now,
-      });
+      say "creating row for $row{callsign}" if $opt_d;
+      $row{start_date} = $sql_now;
+      my $entry = $fm_fcc_rs->create(\%row);
       if (!$entry) {
-        say ("Couldn't create new fm_fcc row with $pi_code,$callsign,$latitude,$longitude,$sql_now,$city_state,$country") if $opt_d;
+        say ("Couldn't create new fm_fcc row with: ",join ' ',@row{qw(pi_code callsign latitude longitude last_fcc_lookup start_date city_state country)}) if $opt_d;
         next;
       }
     }
     # else row exists, just update it.
     else {
-      $fcc_row->update({
-        'callsign' => $callsign,
-        'relay_of' => $relay_of,
-        'frequency' => $frequency,
-        'city_state' => $city_state,
-        'country' => $country,
-        'mode' => $mode,
-        'lang' => $lang,
-        'format' => $format,
-        'slogan' => $slogan,
-        'erp_h' => $erp_h,
-        'erp_v' => $erp_v,
-        'haat_h' => $haat_h,
-        'haat_v' => $haat_v,
-        'latitude' => $latitude,
-        'longitude' => $longitude,
-        'pi_code' => $pi_code,
-        'ps_info' => $ps_info,
-        'radiotext' => $radiotext,
-        'pty' => $pty,
-        'remarks' => $remarks,
-        'last_fcc_lookup' => $sql_now,
-      });
+      say "updating database for $row{callsign}" if $opt_d;
+      $fcc_row->update(\%row);
     }
   }
 }
