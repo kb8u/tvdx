@@ -23,7 +23,7 @@ my $fm_fcc_rs = tvdx::Model::DB->new()->resultset('FmFcc');
 my $sql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
 
 my $site = 'https://db.wtfda.org';
-my $ua = Mojo::UserAgent->new;
+my $ua = Mojo::UserAgent->new->inactivity_timeout(90);
 
 my $res = $ua->get($site)->result;
 my $csrftoken;
@@ -60,11 +60,12 @@ $res = $ua->post($site => $header => form => $form)->result;
 
 my $last_page = 0;
 if ($res) {
-  process_res($res);
   my $page_str = $res->dom->find('h3+div')->first->text;
   if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
     $last_page = $1;
     say "last page number $last_page" if $opt_d;
+    say "processing page 1" if $opt_d;
+    process_res($res);
   }
   else {
     say "Can't find last page number" if $opt_d;
@@ -75,8 +76,6 @@ else {
   say "no result from first post" if $opt_d;
   exit 1;
 }
-
-
 
 PAGE: for (my $page=2; $page <= $last_page ; $page++) {
   say "processing page $page" if $opt_d;
@@ -91,24 +90,13 @@ PAGE: for (my $page=2; $page <= $last_page ; $page++) {
       next RETRY;
     };
     if ($res) {
-      my $page_str = $res->dom->find('h3+div')->first->text;
-      if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
-        $last_page = $1;
-        say "last page number $last_page" if $opt_d;
-      }
-      else {
-        say "Can't find last page number" if $opt_d;
-        exit;
-      }
       process_res($res);
-      last PAGE if $page == $last_page;
     }
     next PAGE;
   }
   exit 1;
 }
   
-
 
 sub process_res {
   my ($res) = @_;
