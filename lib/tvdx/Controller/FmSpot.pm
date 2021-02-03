@@ -106,6 +106,34 @@ sub fm_spot_POST :Global {
   $c->response->status(202);
 }
 
+
+=head2 fm_map_data
+
+Arguments are tuner_key that sent the reception reports to fm_spot and a
+string for time period; 'ever' gets all data ever, otherwise just the last
+24 hours. Returns JSON data for display by page created by sub fm_one_tuner_map
+
+=cut
+
+
+sub fm_map_data :Global {
+  my ($self, $c, $tuner_key, $period) = @_;
+
+  # error if tuner is not in d.b.
+  unless (defined $tuner_key {
+    $c->response->body("FAIL: missing tuner_key");
+    $c->response->status(403);
+    $c->detach();
+  }
+  if (! $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key})) {
+    $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
+    $c->response->status(403);
+    $c->detach();
+  }
+
+}
+
+
 =head1 AUTHOR
 
 Russell J Dwarshuis
