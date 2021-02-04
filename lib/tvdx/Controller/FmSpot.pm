@@ -4,9 +4,11 @@ use namespace::autoclean;
 use DateTime;
 use DateTime::Format::MySQL;
 use DateTime::Format::HTTP;
-use LWP::Simple;
-use Mojo::DOM;
-use List::Util 'all';
+use Math::Round 'nearest';
+# leaks memory, have to use Geo::Calc even though it's much slower
+#use Geo::Calc::XS;
+use Geo::Calc;
+use GIS::Distance;
 use Data::Dumper;
 use Compress::Bzip2 ':utilities';
 use JSON::XS;
@@ -120,17 +122,82 @@ sub fm_map_data :Global {
   my ($self, $c, $tuner_key, $period) = @_;
 
   # error if tuner is not in d.b.
-  unless (defined $tuner_key {
+  unless (defined $tuner_key) {
     $c->response->body("FAIL: missing tuner_key");
     $c->response->status(403);
     $c->detach();
   }
-  if (! $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key})) {
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
+  if (! $tuner) {
     $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
     $c->response->status(403);
     $c->detach();
   }
 
+  my $rs;
+  if (defined $period && $period eq 'ever') {
+    $rs = $c->model('DB::FmSignalReport')->search({'tuner_key' => $tuner_key,
+                                             'signal_key' => { '!=', undef}});
+  }
+  else {
+    my $now = DateTime->now;
+    my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
+
+    # get a ResultSet of signals
+    $rs = $c->model('DB::FmSignalReport')
+             ->tuner_date_range($tuner_key,$last_24_hr,$now)
+             ->most_recent;
+  }
+
+  # build data structure that will be sent out at JSON
+  my @markers;
+
+  while(my $signal = $rs->next) {
+    next unless defined $signal->fcc_key;
+    my %station;
+    my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
+                                   lon => $tuner->longitude,
+                                   units => 'mi');
+    # Geo::Calc distance_to gives wrong distance!!
+    my $gis = GIS::Distance->new();
+    $gis->formula('Vincenty');
+    next unless ($signal->fcc_key->latitude && $signal->fcc_key->longitude);
+    my $km = $gis->distance($tuner->latitude,
+                            $tuner->longitude =>
+                            $signal->fcc_key->latitude,
+                            $signal->fcc_key->longitude)->kilometers();
+    $km = nearest(.1, $km); # to nearest 1/10 km
+    my $azimuth = int($gc_tuner->bearing_to({lat => $signal->fcc_key->latitude,
+                                       lon => $signal->fcc_key->longitude},
+                                       -1));
+
+    my $sdt = DateTime::Format::MySQL->parse_datetime($signal->rx_date);
+
+    my $call = $signal->fcc_key->callsign;
+    $station{callsign} = $call;  # can't use key 'call', it trashes javascript
+    $station{strength} = $signal->strength;
+    $station{latitude} = $signal->fcc_key->latitude+0;
+    $station{longitude} = $signal->fcc_key->longitude+0;
+    $station{frequency} = $signal->fcc_key->frequency;
+    $station{city_state} = $signal->fcc_key->city_state;
+    $station{erp_h} = ($signal->fcc_key->erp_h+0)*1000;
+    $station{erp_v} = ($signal->fcc_key->erp_v+0)*1000;
+    $station{haat_h} = $signal->fcc_key->haat_h+0;
+    $station{haat_v} = $signal->fcc_key->haat_v+0;
+    $station{last_in} = DateTime::Format::HTTP->format_datetime($sdt);
+    $station{azimuth} = $azimuth;
+    $station{km} = $km;
+
+    push @markers, \%station;
+  }
+
+  $c->stash('tuner_key' => $tuner_key);
+  $c->stash('tuner_longitude' => $tuner->longitude+0);
+  $c->stash('tuner_latitude' => $tuner->latitude+0);
+  $c->stash('markers' => \@markers);
+  $c->res->header('Access-Control-Allow-Origin'=>'https://www.rabbitears.info',
+                  'Access-Control-Allow-Methods'=>'GET');
+  $c->detach( $c->view('JSON') );
 }
 
 

@@ -42,5 +42,6 @@ ok($last_24 =$schema->resultset('FmSignalReport')->all_last_24, 'found all last 
 ok($last_24->count > 0, 'more than 0 in last 24 hours');
 ok($last_24->first->fcc_key->callsign =~ /[A-Z]+/, 'first of last_24 has a callsign');
 ok($last_24->first->tuner_key->description eq '820T2 cheap dongle', 'and a tuner description');
+diag('user name: '.$last_24->first->tuner_key->user_key->user);
 
 done_testing(13);
