@@ -59,7 +59,7 @@ sub fm_spot_POST :Global {
   }
 
   # log if tuner is in tuner_debug table
-  if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_key})) {
+  if ($c->model('DB::TunerDebug')->find({'tuner_key'=>$tuner_key})) {
     {
       local $Data::Dumper::Indent = 1;
       $c->log->info("$tuner_key in tuner_debug table:",Dumper($json));
@@ -121,18 +121,7 @@ string for time period; 'ever' gets all data ever, otherwise just the last
 sub fm_map_data :Global {
   my ($self, $c, $tuner_key, $period) = @_;
 
-  # error if tuner is not in d.b.
-  unless (defined $tuner_key) {
-    $c->response->body("FAIL: missing tuner_key");
-    $c->response->status(403);
-    $c->detach();
-  }
-  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
-  if (! $tuner) {
-    $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
-    $c->response->status(403);
-    $c->detach();
-  }
+  $self->_check_tuner($c,$tuner_key);
 
   my $rs;
   if (defined $period && $period eq 'ever') {
@@ -151,6 +140,8 @@ sub fm_map_data :Global {
 
   # build data structure that will be sent out at JSON
   my @markers;
+
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
 
   while(my $signal = $rs->next) {
     next unless defined $signal->fcc_key;
@@ -199,6 +190,55 @@ sub fm_map_data :Global {
                   'Access-Control-Allow-Methods'=>'GET');
   $c->detach( $c->view('JSON') );
 }
+
+
+=head2 one_tuner_map
+
+Display a map for just one tuner.  Argument is tuner that sent the
+reception reports to automated_spot
+
+Loads basic map which then periodically uses javascript to get JSON data
+from this program using sub fm_map_data.
+
+Basic map has template to get tuner location, handle, etc.
+
+=cut
+
+sub one_tuner_map :Global {
+  my ($self, $c, $tuner_key) = @_;
+
+  # check if tuner is known
+  $self->_check_tuner($c,$tuner_key);
+
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
+
+  $c->stash(tuner        => $tuner);
+  $c->stash(root_url     => $c->config->{root_url});
+  $c->stash(static_url   => $c->config->{static_url});
+  $c->stash(template     => 'Root/fm_one_tuner_map.tt');
+  $c->stash(current_view => 'HTML');
+
+  return;
+}
+
+
+sub _check_tuner {
+  my ($self,$c,$tuner_key) = @_;
+
+  # error if tuner is not in d.b.
+  unless (defined $tuner_key) {
+    $c->response->body("FAIL: missing tuner_key");
+    $c->response->status(403);
+    $c->detach();
+  }
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
+  if (! $tuner) {
+    $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
+    $c->response->status(403);
+    $c->detach();
+  }
+}
+
 
 
 =head1 AUTHOR
