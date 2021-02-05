@@ -15,7 +15,9 @@ use Data::Dumper;
 my $ua = LWP::UserAgent->new;
 #my $spot_url = 'http://www.rabbitears.info/tvdx/fm_spot';
 my $spot_url = 'http://www.rabbitears.info:3000/fm_spot';
-my $cmd = '/home/pi/fmdx/client/rds_for.sh';
+#my $scan_prog = '/home/pi/fmdx/client/rds_for.sh';
+my $scan_prog = './rds_for.sh';
+my $reset_prog = './reset.sh';
 
 our ($opt_d,$opt_h,$opt_s,$opt_t);
 getopts('dst:h');
@@ -26,46 +28,43 @@ my $debug = $opt_d;
 
 do {
   my $scan = {'tuner_key' => $opt_t};
-  for (my $freq = 87.9; $freq <= 107.9; $freq += .2) {
-
-    my $freq_str = sprintf('%.1f', $freq);
-
+  for (my $freq = 87900000; $freq <= 107900000; $freq += 200000) {
     if ($opt_s) {
-      my $lbound = sprintf('%.1fM', $freq - .1);
-      my $ubound = sprintf('%.1fM', $freq + .1);
+      my $lbound = $freq - 100000;
+      my $ubound = $freq + 100000;
       my ($stdout, $stderr, $exit) = capture {
         system(qq!/usr/bin/rtl_power -1 -i 6 -g 40.2 -f $lbound:$ubound:.1K!);
       };
       my @powers = split ', ', $stdout;
       @powers = splice @powers,6;
       my $power = scalar @powers ? sum(@powers)/@powers : undef;
-      say "$freq_str $power" if $debug;
-      $scan->{signal}->{$freq_str}->{s} = $power;
+      say "$freq $power" if $debug;
+      $scan->{signal}->{$freq}->{s} = $power;
 
       # let the tuner finish clean-up, otherwise it may not tune properly
       sleep 2;
     }
 
-    print "scanning $freq_str ... " if $debug;
+    print "scanning $freq ... " if $debug;
     my ($stdout, $stderr, $exit) = capture {
-      system( $cmd, $freq_str );
+      system( $scan_prog, $freq );
     };
     $stdout =~ s/"//g;
     my @line = split /\n/, $stdout;
     if (scalar @line > 3 && (all {$_ eq $line[0]} (@line))) {
-      my $pi = hex $line[0];
-      say "decoded pi $pi $line[0]" if $debug;
-      $scan->{signal}->{$freq_str}->{pi} = hex $line[0] if $pi;
+      my $pi_code = hex $line[0];
+      say "decoded pi_code $pi_code $line[0]" if $debug;
+      $scan->{signal}->{$freq}->{pi_code} = hex $line[0] if $pi_code;
     }
-    elsif ($debug) { say "no pi decoded." }
+    elsif ($debug) { say "no pi_code decoded." }
     
     # let the tuner finish clean-up, otherwise it may not tune properly
     sleep 2;
   }
 
   if (!exists $scan->{signal}) {
-    say "No signals detected" if $debug;
-    next;
+    say "No signals detected, resetting" if $debug;
+    system($reset_prog);
   }
   else {
     my $j = JSON->new->allow_nonref;
@@ -92,7 +91,8 @@ do {
       }
     }
   }
-} while !$debug;
+}while 1;
+#} while !$debug;
 
 sub help {
  print <<'EOHELP';
