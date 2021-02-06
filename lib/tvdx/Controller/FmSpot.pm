@@ -59,7 +59,7 @@ sub fm_spot_POST :Global {
   }
 
   # log if tuner is in tuner_debug table
-  if ($c->model('DB::TunerDebug')->find({'tuner_key'=>$tuner_key})) {
+  if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_key})) {
     {
       local $Data::Dumper::Indent = 1;
       $c->log->info("$tuner_key in tuner_debug table:",Dumper($json));
@@ -192,7 +192,7 @@ sub fm_map_data :Global {
 }
 
 
-=head2 one_tuner_map
+=head2 fm_one_tuner_map
 
 Display a map for just one tuner.  Argument is tuner that sent the
 reception reports to automated_spot
@@ -204,7 +204,7 @@ Basic map has template to get tuner location, handle, etc.
 
 =cut
 
-sub one_tuner_map :Global {
+sub fm_one_tuner_map :Global {
   my ($self, $c, $tuner_key) = @_;
 
   # check if tuner is known
