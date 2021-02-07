@@ -16,6 +16,12 @@ use JSON::XS;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
+#
+# Sets the actions in this controller to be registered with no prefix
+# so they function identically to actions created in tvdx.pm
+#
+__PACKAGE__->config(namespace => '');
+
 =head1 NAME
 
 tvdx::Controller::FmSpot - Catalyst Controller for FM DX
