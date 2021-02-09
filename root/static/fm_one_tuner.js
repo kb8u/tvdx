@@ -247,7 +247,6 @@ function set_units(units) {
   });
   function change_units(str,units) {
     "use strict";
-return(str);
     if (units === 'km') {
       var arr, dx_miles, miles_str, miles, km, dx_km, rc_ft, ft_str, ft, m;
       arr = /Distance (.*?) miles/.exec(str);
@@ -388,10 +387,10 @@ function fill_sidebar(sortby) {
   });
 }
 function ucm_24 () {
-  update_call_markers(root_url + "/fm_map_data/" + tuner_id + '/24hrs');
+  update_call_markers(root_url + "/fm_map_data/" + tuner_key + '/24hrs');
 }
 function ucm_ever () {
-  update_call_markers(root_url + "/fm_map_data/" + tuner_id + '/ever');
+  update_call_markers(root_url + "/fm_map_data/" + tuner_key + '/ever');
 }
 
 
