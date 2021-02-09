@@ -45,7 +45,7 @@
             <input type="radio"> Distance
           </label>
           <label class="btn btn-primary" value="frequency">
-            <input type="radio"> Frequency
+            <input type="radio"> MHz
           </label>
           <label class="btn btn-primary" value="time-received">
             <input type="radio"> Time
@@ -102,14 +102,14 @@
     </div> <!-- end of controls -->
     <div class="col-xs-9 boxit" id="right-side">
       <div id="map-legend">
-        Strength indications not yet implemented.
+        Click on a callsign for more information
       </div> <!-- end of map-legend -->
       <div id="stations-map">
       </div><!-- end of stations-map -->
     </div> <!-- end of righ-side -->
 
 
-  <!--pass tuner_id and tuner_number to javascript from template toolkit-->
+  <!--pass tuner_id to javascript from template toolkit-->
   <script type="text/javascript">
 var tuner_key="[% tuner.tuner_key %]";
 var root_url = '[% root_url %]'

@@ -245,7 +245,13 @@ sub _check_tuner {
   }
 }
 
+=head2 end
 
+Attempt to render a view, if needed.
+
+=cut
+
+sub end : ActionClass('RenderView') {}
 
 =head1 AUTHOR
 
