@@ -180,11 +180,11 @@ function update_call_markers(url) {
         for(var i=0; i<json.markers.length; i++) {
           var m = json.markers[i];
           var mhz = m.frequency.toString();
-          mhz = mhz.replace('000000','');
+          mhz = mhz.replace('00000','');
           var hkhz = mhz.slice(-1);
           mhz = mhz.substr(0,mhz.length-1);
           mhz = mhz + '.' + hkhz;
-          var call_mhz = m.callsign.replace(/-.*$/,"") + mhz;
+          var call_mhz = m.callsign.replace(/-.*$/,"") + ' ' + mhz;
           m.color = 'black';
           station_ll[i] = new L.LatLng(m.latitude,m.longitude);
           var popup_text = m.callsign + '<br>' +
