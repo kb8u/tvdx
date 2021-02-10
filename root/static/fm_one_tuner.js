@@ -321,7 +321,7 @@ function set_units(units) {
 
 function update_sidebar(markers) {
   "use strict";
-  update_text('distance',markers.sort(sort_by('miles', false, parseFloat)));
+  update_text('distance',markers.sort(sort_by('km', false, parseFloat)));
   update_text('frequency',markers.sort(sort_by('frequency', true, parseInt)));
   update_text('time-received',markers.sort(sort_by('last_in', false, Date)));
   update_text('azimuth',markers.sort(sort_by('azimuth', true, parseInt)));
