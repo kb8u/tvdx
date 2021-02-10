@@ -186,12 +186,42 @@ function update_call_markers(url) {
           mhz = mhz + '.' + hkhz;
           var call_mhz = m.callsign.replace(/-.*$/,"") + ' ' + mhz;
           m.color = 'black';
+
+          var haat;
+          if (typeof(m.haat_h) === 'number' && typeof(m.haat_v) === 'number') {
+            haat = (m.haat_h > m.haat_v) ? m.haat_h : m.haat_v;
+            haat = haat;
+          }
+          else if (typeof(m.haat_h) === 'number') {
+            haat = m.haat_h;
+          }
+          else if (typeof(m.haat_v) === 'number') {
+            haat = m.haat_v;
+          }
+          else {
+            haat = 'unknown';
+          }
+
+          var erp;
+          if (typeof(m.erp_h) === 'number' && typeof(m.erp_v) === 'number') {
+            erp = (m.erp_h > m.erp_v) ? m.erp_h : m.erp_v;
+            erp = erp;
+          }
+          else if (typeof(m.erp_h) === 'number') {
+            erp = m.erp_h;
+          }
+          else if (typeof(m.erp_v) === 'number') {
+            erp = m.erp_v;
+          } else {
+            erp = 'unknown';
+          }
+
           station_ll[i] = new L.LatLng(m.latitude,m.longitude);
           var popup_text = m.callsign + '<br>' +
-                      'Frequency ' + mhz + '<br>' +
+                      'Frequency ' + mhz + ' Mhz<br>' +
                       m.city_state + '<br>' +
-                      'HAAT-V ' + m.haat_v + ' m<br>' + 
-                      'HAAT-H ' + m.haat_h + ' m<br>' + 
+                      'HAAT ' + haat + ' m.<br>' + 
+                      'ERP ' + erp + ' W<br>' +
                       'Azimuth ' + m.azimuth + '&deg<br>' +
                       'Distance ' + m.km + ' km<br>';
           markers[call_mhz] = L.marker(station_ll[i], {icon: onepixel })
@@ -257,11 +287,11 @@ function set_units(units) {
         dx_km = 'Distance ' + km;
         str = str.replace(new RegExp(dx_miles,'g'),dx_km);
       }
-      arr = /RCAMSL (.*) ft\./.exec(str);
+      arr = /HAAT (.*) ft\./.exec(str);
       if (arr !== null) {
         [rc_ft,ft_str] = arr;
         ft = parseFloat(ft_str);
-        m = 'RCAMSL ' + parseInt(ft * .3048 *10, 10) /10 + ' m.'
+        m = 'HAAT ' + parseInt(ft * .3048 *10, 10) /10 + ' m.'
         str = str.replace(rc_ft,m);
       }
     }
@@ -275,12 +305,12 @@ function set_units(units) {
         dx_miles = 'Distance ' + miles;
         str = str.replace(new RegExp(dx_km,'g'),dx_miles);
       }
-      arr = /RCAMSL (.*) m\./.exec(str);
+      arr = /HAAT (.*) m\./.exec(str);
       if (arr !== null) {
         [rc_m,m_str] = arr;
         meters = parseInt(m_str);
         feet = parseInt(parseFloat(meters * 3.2808, 10));
-        rc_ft = 'RCAMSL ' + feet + ' ft.';
+        rc_ft = 'HAAT ' + feet + ' ft.';
         str = str.replace(rc_m,rc_ft);
       }
     }
@@ -317,21 +347,43 @@ function update_sidebar(markers) {
   }
   function update_text(field,arr) {
     "use strict";
-    var dx, height_h, height_v, t, time, sort_summary;
+    var mhz, dx, haat, erp, t, time, sort_summary;
     sidebar[field] = [];
     arr.forEach(function (val) {
       var glyph_color_class = 'glyph-black';
+      mhz = val.frequency.toString();
+      mhz = mhz.replace('00000','');
+      var hkhz = mhz.slice(-1);
+      mhz = mhz.substr(0,mhz.length-1);
+      mhz = mhz + '.' + hkhz;
       dx = val.km + ' km';
-      if (typeof(val.haat_h) === 'number' && val.haat_h > 0) {
-        height = val.haat_h.toString() + ' m.';
-      } else {
-        height_h = 'unknown';
+      if (typeof(val.haat_h) === 'number' && typeof(val.haat_v) === 'number') {
+        haat = (val.haat_h > val.haat_v) ? val.haat_h : val.haat_v;
+        haat = haat;
       }
-      if (typeof(val.haat_v) === 'number' && val.haat_v > 0) {
-        height = val.haat_v.toString() + ' m.';
-      } else {
-        height_v = 'unknown';
+      else if (typeof(val.haat_h) === 'number') {
+        haat = val.haat_h;
       }
+      else if (typeof(val.haat_v) === 'number') {
+        haat = val.haat_v;
+      }
+      else {
+        haat = 'unknown';
+      }
+
+     if (typeof(val.erp_h) === 'number' && typeof(val.erp_v) === 'number') {
+        erp = (val.erp_h > val.erp_v) ? val.erp_h : val.erp_v;
+        erp = erp;
+      }
+      else if (typeof(val.erp_h) === 'number') {
+        erp = val.erp_h;
+      }
+      else if (typeof(val.erp_v) === 'number') {
+        erp = val.erp_v;
+      } else {
+        erp = 'unknown';
+      }
+
 
       t = new Date(val.last_in);
       if ($('#time-frame .active').attr('value') === 'ever') {
@@ -349,11 +401,9 @@ function update_sidebar(markers) {
        + val.city_state + '<br>'
        + '<div class="hidden-lg hidden-md">' + sort_summary + '</div>'
        + '<div class="hidden-xs hidden-sm">'
-       + 'Frequency ' + val.frequency + '<br>'
-       + 'ERP H' + val.erp_h + '<br>'
-       + 'ERP V' + val.erp_v + '<br>'
-       + 'HAAT H ' + height_h + '<br>'
-       + 'HAAT V ' + height_v + '<br>'
+       + 'Frequency ' + mhz + ' MHz<br>'
+       + 'ERP ' + erp + ' W<br>'
+       + 'HAAT ' + haat + ' m.<br>'
        + 'Azimuth ' + val.azimuth + '&deg;<br>'
        + 'Distance ' + dx + '<br>'
        + time + '<br>'
