@@ -266,12 +266,12 @@ sub fm_all_tuner_data :Global {
   $rs = $c->model('DB::FmSignalReport')->all_last_24();
   while(my $signal = $rs->next) {
     my $callsign = $signal->fcc_key->callsign;
-    my $callsign_longitude = $signal->fm_fcc->longitude;
-    my $callsign_latitude = $signal->fm_fcc->latitude;
-    my $tuner_longitude = $signal->tuner_key->longitude;
-    my $tuner_latitude = $signal->tuner_key->latitude;
+    my $callsign_longitude = 0+$signal->fcc_key->longitude;
+    my $callsign_latitude = 0+$signal->fcc_key->latitude;
+    my $tuner_longitude = 0+$signal->tuner_key->longitude;
+    my $tuner_latitude = 0+$signal->tuner_key->latitude;
     my $frequency = $signal->frequency;
-    my $tuner_key = $signal->tuner_key;
+    my $tuner_key = $signal->tuner_key->tuner_key;
     my $user_key = $signal->tuner_key->user_key;
     my $city_state = $signal->fcc_key->city_state;
     push @{$json{paths}{features}},
@@ -293,13 +293,11 @@ sub fm_all_tuner_data :Global {
 
     # update %stations
     unless (exists $stations{$callsign}) {
-      my $haat = ($signal->fcc_key->haat_h > $signal->fcc_key->haat_v)
-               ? $signal->fcc_key->haat_h : $signal->fcc_key->haat_v;
-      $haat = 'unknown' if (undef $haat || $haat == 0);
+      my $haat = (0+$signal->fcc_key->haat_h > 0+$signal->fcc_key->haat_v)
+               ? 0+$signal->fcc_key->haat_h : 0+$signal->fcc_key->haat_v;
 
-      my $erp = ($signal->fcc_key->erp_h > $signal->fcc_key->erp_v)
-              ? $signal->fcc_key->erp_h : $signal->fcc_key->erp_v;
-      $erp = 'unknown' if (undef $erp || $erp == 0);
+      my $erp = (0+$signal->fcc_key->erp_h > 0+$signal->fcc_key->erp_v)
+              ? 0+$signal->fcc_key->erp_h : 0+$signal->fcc_key->erp_v;
 
       $stations{$callsign} = {
         frequency  => $frequency,
@@ -310,7 +308,7 @@ sub fm_all_tuner_data :Global {
       }
     }
 
-    # update %tuners and json if necessary
+    # update %tuners
     unless (exists $tuners{$tuner_key}) {
       my $description = $signal->tuner_key->user_key->description . ' ' 
                       . $signal->tuner_key->description;
@@ -324,7 +322,7 @@ sub fm_all_tuner_data :Global {
     push @{$json{tuners}{features}}, {
         'type' => "Feature",
         'geometry' => { 'type' => 'Point', 'coordinates' => $tuners{$tuner_key}{longlat} },
-        'properties' => { 'description' => $tuners{$tuner_key}{longlat} }
+        'properties' => { 'description' => $tuners{$tuner_key}{descr} }
     }
   }
   
@@ -335,7 +333,7 @@ sub fm_all_tuner_data :Global {
           'geometry' => { 'type' => 'Point', 'coordinates' => $fcc->{longlat}},
           'properties' => { 'callsign'  => $callsign,
                             'frequency' => $fcc->{frequency},
-                            'erp'       => $fcc->{erp_kw},
+                            'erp'       => $fcc->{erp},
                             'haat'      => $fcc->{haat}, }
         }
   }
