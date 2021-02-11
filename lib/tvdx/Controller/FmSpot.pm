@@ -245,6 +245,107 @@ sub _check_tuner {
   }
 }
 
+=head2 fm_all_tuner_data
+
+JSON data for all stations received by anyone in the last 24 hours
+
+=cut
+
+sub fm_all_tuner_data :Global {
+  my ($self, $c) = @_;
+
+  my %json;
+  $json{tuners} = { 'type' => 'FeatureCollection', 'features' => []};
+  $json{stations} = { 'type' => 'FeatureCollection', 'features' => []};
+  $json{paths} = { 'type' => 'FeatureCollection', 'features' => []};
+  my %tuners;
+  my %stations;
+
+  my $rs;
+  # get a ResultSet of signals
+  $rs = $c->model('DB::FmSignalReport')->all_last_24();
+  while(my $signal = $rs->next) {
+    my $callsign = $signal->fcc_key->callsign;
+    my $callsign_longitude = $signal->fm_fcc->longitude;
+    my $callsign_latitude = $signal->fm_fcc->latitude;
+    my $tuner_longitude = $signal->tuner_key->longitude;
+    my $tuner_latitude = $signal->tuner_key->latitude;
+    my $frequency = $signal->frequency;
+    my $tuner_key = $signal->tuner_key;
+    my $user_key = $signal->tuner_key->user_key;
+    my $city_state = $signal->fcc_key->city_state;
+    push @{$json{paths}{features}},
+      { 'type' => "Feature",
+        'geometry' => { 'type' => 'LineString',
+                        'coordinates' => [[$callsign_longitude,
+                                           $callsign_latitude],
+                                          [$tuner_longitude,
+                                           $tuner_latitude]]
+                      },
+        'properties' => { 'rx_date' => DateTime::Format::HTTP->format_datetime(DateTime::Format::MySQL->parse_datetime($signal->rx_date)),
+                          'frequency' => $frequency,
+                          'tuner_key ' => $tuner_key,
+                          'callsign' => $callsign,
+                          'color' => 'black',
+                          'description' => $user_key->description . " to $callsign ($city_state)",
+                        }
+      };
+
+    # update %stations
+    unless (exists $stations{$callsign}) {
+      my $haat = ($signal->fcc_key->haat_h > $signal->fcc_key->haat_v)
+               ? $signal->fcc_key->haat_h : $signal->fcc_key->haat_v;
+      $haat = 'unknown' if (undef $haat || $haat == 0);
+
+      my $erp = ($signal->fcc_key->erp_h > $signal->fcc_key->erp_v)
+              ? $signal->fcc_key->erp_h : $signal->fcc_key->erp_v;
+      $erp = 'unknown' if (undef $erp || $erp == 0);
+
+      $stations{$callsign} = {
+        frequency  => $frequency,
+        longlat    => [$callsign_longitude, $callsign_latitude],
+        city_state => $city_state,
+        erp        => $erp,
+        haat       => $haat,
+      }
+    }
+
+    # update %tuners and json if necessary
+    unless (exists $tuners{$tuner_key}) {
+      my $description = $signal->tuner_key->user_key->description . ' ' 
+                      . $signal->tuner_key->description;
+      $tuners{$tuner_key}{descr} = $description;
+      $tuners{$tuner_key}{longlat} = [$tuner_longitude,$tuner_latitude];
+    }
+  }
+
+  # populate $json{tuners} from %tuners
+  foreach my $tuner_key (keys %tuners) {
+    push @{$json{tuners}{features}}, {
+        'type' => "Feature",
+        'geometry' => { 'type' => 'Point', 'coordinates' => $tuners{$tuner_key}{longlat} },
+        'properties' => { 'description' => $tuners{$tuner_key}{longlat} }
+    }
+  }
+  
+  #populate $json{stations} from %stations
+  while (my ($callsign,$fcc) = each %stations) {
+    push @{$json{stations}{features}},
+        { 'type' => "Feature",
+          'geometry' => { 'type' => 'Point', 'coordinates' => $fcc->{longlat}},
+          'properties' => { 'callsign'  => $callsign,
+                            'frequency' => $fcc->{frequency},
+                            'erp'       => $fcc->{erp_kw},
+                            'haat'      => $fcc->{haat}, }
+        }
+  }
+  $c->stash('json' => \%json);
+  $c->res->header('Access-Control-Allow-Origin'=>'https://rabbitears.info',
+                  'Access-Control-Allow-Methods'=>'GET');
+  $c->detach( $c->view('JSON') );
+}
+
+
 =head2 end
 
 Attempt to render a view, if needed.
@@ -252,6 +353,7 @@ Attempt to render a view, if needed.
 =cut
 
 sub end : ActionClass('RenderView') {}
+
 
 =head1 AUTHOR
 
