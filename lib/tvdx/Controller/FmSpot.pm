@@ -77,6 +77,7 @@ sub fm_spot_POST :Global {
            ? $json->{signal}{$frequency}{pi_code}
            : undef;
     next unless $pi_code;
+    next if $pi_code = 65535; # almost certainly invalid
 
     my $s = defined $json->{signal}{$frequency}{s}
            ? $json->{signal}{$frequency}{s}
