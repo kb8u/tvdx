@@ -18,6 +18,19 @@ is($call, 'WEMU', "callsign test");
 my $signalreport = $schema->resultset('FmSignalReport')->find(25);
 ok($signalreport, 'signal_report key 25 exists');
 
+my $now = DateTime->now;
+my $mysql_now = DateTime::Format::MySQL->format_datetime($now);
+
+my $signal_insert = $schema->resultset('FmSignalReport')->create({
+  'rx_date' => $mysql_now,
+  'first_rx_date' => $mysql_now,
+  'frequency' => 89100000,
+  'tuner_key' => 1,
+  'fcc_key' => 21760
+});
+ok($signal_insert,"created signal report of WEMU at $now");
+
+
 
 my $start = DateTime->new(year => 2021, month => 1, day => 1, hour => 5, minute => 24);
 my $end   = DateTime->new(year => 2021, month => 2, day => 2, hour => 5, minute => 25);
@@ -54,4 +67,4 @@ ok(looks_like_number($last_24->first->fcc_key->erp_h), 'erp_h is a number');
 ok(looks_like_number($last_24->first->fcc_key->haat_h), 'haat_h is a number');
 ok(looks_like_number($last_24->first->frequency), 'frequency is a number');
 
-done_testing(19);
+done_testing(20);
