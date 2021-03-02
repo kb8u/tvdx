@@ -49,9 +49,6 @@ sub fm_spot_POST :Global {
   my ( $self, $c ) = @_;
   # the current time formatted to mysql format (UTC time zone)
   my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
-  my $now_epoch = time;
-  # 24 hours ago
-  my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
   # json with information from (client) scanlog.pl
   my $json = ($c->req->headers->content_type eq 'application/octet-stream')
            ? decode_json(memBunzip($c->req->body_data))
@@ -79,20 +76,23 @@ sub fm_spot_POST :Global {
                 ? $json->{signal}{$frequency}{pi_code}
                 : undef;
     next unless $pi_code;
-    next if $pi_code == 65535; # almost certainly invalid
+    next if $pi_code == 65535; # FFFF is invalid but some stations use it anyway
 
     my $s = defined $json->{signal}{$frequency}{s}
           ? $json->{signal}{$frequency}{s}
           : undef;
 
-    my $timestamp;
+    my $time;
     try {
-     $timestamp = defined $json->{signal}{$frequency}{timestamp}
-                ? DateTime::Format::MySQL->format_datetime(DateTime::Format::ISO8601->parse_datetime($json->{signal}{$frequency}{timestamp}))
+     # DateTime::Format::MySQL is timezone agnostic so coerce it to UTC
+     $time = defined $json->{signal}{$frequency}{time}
+                ? DateTime::Format::MySQL->format_datetime(
+                    DateTime::Format::ISO8601->parse_datetime(
+                      $json->{signal}{$frequency}{time}
+                    )->set_time_zone('UTC')
+                  )
                 : $mysql_now;
-    } catch { $timestamp = $mysql_now };
-
-# TODO: check is $timestamp has sane timezone by comparing to $mysql_now
+    } catch { $time = $mysql_now };
 
     my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
                                                   'pi_code' => $pi_code,
@@ -109,8 +109,8 @@ sub fm_spot_POST :Global {
                                                'fcc_key' => $fcc_row->fcc_key});
     if (!defined $entry || $entry == 0) {
       $c->model('DB::FmSignalReport')
-        ->create({'rx_date' => $timestamp,
-                  'first_rx_date' => $timestamp,
+        ->create({'rx_date' => $time,
+                  'first_rx_date' => $time,
                   'frequency' => $frequency,
                   'tuner_key' =>$json->{tuner_key},
                   'fcc_key' => $fcc_row->fcc_key},
@@ -118,7 +118,7 @@ sub fm_spot_POST :Global {
       next;
     }
     else {
-      $entry->update({'rx_date' => $timestamp, 'strength' => $s});
+      $entry->update({'rx_date' => $time, 'strength' => $s});
     }
   }
 
@@ -148,7 +148,7 @@ sub fm_map_data :Global {
   }
   else {
     my $now = DateTime->now;
-    my $last_24_hr = DateTime->from_epoch( epoch => time-86400 );
+    my $last_24_hr = $now->subtract(days => 1);
 
     # get a ResultSet of signals
     $rs = $c->model('DB::FmSignalReport')
