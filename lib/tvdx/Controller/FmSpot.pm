@@ -3,6 +3,7 @@ use Moose;
 use namespace::autoclean;
 use DateTime;
 use DateTime::Format::MySQL;
+use DateTime::Format::ISO8601;
 use DateTime::Format::HTTP;
 use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
@@ -12,6 +13,7 @@ use GIS::Distance;
 use Data::Dumper;
 use Compress::Bzip2 ':utilities';
 use JSON::XS;
+use Try::Tiny;
 
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -74,14 +76,23 @@ sub fm_spot_POST :Global {
 
   foreach my $frequency (keys %{$json->{signal}}) {
     my $pi_code = defined $json->{signal}{$frequency}{pi_code}
-           ? $json->{signal}{$frequency}{pi_code}
-           : undef;
+                ? $json->{signal}{$frequency}{pi_code}
+                : undef;
     next unless $pi_code;
     next if $pi_code == 65535; # almost certainly invalid
 
     my $s = defined $json->{signal}{$frequency}{s}
-           ? $json->{signal}{$frequency}{s}
-           : undef;
+          ? $json->{signal}{$frequency}{s}
+          : undef;
+
+    my $timestamp;
+    try {
+     $timestamp = defined $json->{signal}{$frequency}{timestamp}
+                ? DateTime::Format::MySQL->format_datetime(DateTime::Format::ISO8601->parse_datetime($json->{signal}{$frequency}{timestamp}))
+                : $mysql_now;
+    } catch { $timestamp = $mysql_now };
+
+# TODO: check is $timestamp has sane timezone by comparing to $mysql_now
 
     my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
                                                   'pi_code' => $pi_code,
@@ -98,8 +109,8 @@ sub fm_spot_POST :Global {
                                                'fcc_key' => $fcc_row->fcc_key});
     if (!defined $entry || $entry == 0) {
       $c->model('DB::FmSignalReport')
-        ->create({'rx_date' => $mysql_now,
-                  'first_rx_date' => $mysql_now,
+        ->create({'rx_date' => $timestamp,
+                  'first_rx_date' => $timestamp,
                   'frequency' => $frequency,
                   'tuner_key' =>$json->{tuner_key},
                   'fcc_key' => $fcc_row->fcc_key},
@@ -107,7 +118,7 @@ sub fm_spot_POST :Global {
       next;
     }
     else {
-      $entry->update({'rx_date' => $mysql_now, 'strength' => $s});
+      $entry->update({'rx_date' => $timestamp, 'strength' => $s});
     }
   }
 
