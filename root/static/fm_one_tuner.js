@@ -185,7 +185,6 @@ function update_call_markers(url) {
           mhz = mhz.substr(0,mhz.length-1);
           mhz = mhz + '.' + hkhz;
           var call_mhz = m.callsign.replace(/-.*$/,"") + ' ' + mhz;
-          m.color = 'black';
 
           var haat;
           if (typeof(m.haat_h) === 'number' && typeof(m.haat_v) === 'number') {
