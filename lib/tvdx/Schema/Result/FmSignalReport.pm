@@ -182,4 +182,21 @@ sub http_time {
          );
 }
 
+=head2 color
+
+Return the popup color for a station based on receive time
+
+=cut
+
+sub color {
+  my ($self) = @_;
+
+  my $now = DateTime->now();
+  my $r_dt = DateTime::Format::MySQL->parse_datetime($self->rx_date);
+
+  return 'darkgray'  if $r_dt >= $now->subtract(minutes => 15);
+  return 'dimgray' if $r_dt >= $now->subtract(minutes => 30);
+  return 'black';
+}
+
 1;

@@ -192,6 +192,7 @@ sub fm_map_data :Global {
     $station{haat_h} = $signal->fcc_key->haat_h+0;
     $station{haat_v} = $signal->fcc_key->haat_v+0;
     $station{last_in} = $signal->http_time;
+    $station{color} = $signal->color;
     $station{azimuth} = $azimuth;
     $station{km} = $km;
 
@@ -296,7 +297,7 @@ sub fm_all_tuner_data :Global {
                           'frequency' => $frequency,
                           'tuner_key ' => $tuner_key,
                           'callsign' => $callsign,
-                          'color' => 'black',
+                          'color' => $signal->color,
                           'description' => $user_key->description . " to $callsign ($city_state)",
                         }
       };
