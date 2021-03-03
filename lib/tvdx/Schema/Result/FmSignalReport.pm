@@ -1,4 +1,7 @@
 use utf8;
+use DateTime::Format::MySQL;
+use DateTime::Format::HTTP;
+
 package tvdx::Schema::Result::FmSignalReport;
 
 # Created by DBIx::Class::Schema::Loader
@@ -162,4 +165,21 @@ __PACKAGE__->belongs_to(
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
+
+
+=head2 http_time
+
+Return the time in HTTP format
+
+=cut
+
+sub http_time {
+  my ($self) = @_;
+
+  return DateTime::Format::HTTP->format_datetime(
+           DateTime::Format::MySQL->parse_datetime($self->rx_date)
+             ->set_time_zone('UTC')
+         );
+}
+
 1;

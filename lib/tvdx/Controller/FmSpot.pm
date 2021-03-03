@@ -4,7 +4,6 @@ use namespace::autoclean;
 use DateTime;
 use DateTime::Format::MySQL;
 use DateTime::Format::ISO8601;
-use DateTime::Format::HTTP;
 use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
@@ -141,13 +140,14 @@ sub fm_map_data :Global {
 
   $self->_check_tuner($c,$tuner_key);
 
+  my $now = DateTime->now;
+
   my $rs;
   if (defined $period && $period eq 'ever') {
     $rs = $c->model('DB::FmSignalReport')->search({'tuner_key' => $tuner_key,
                                              'signal_key' => { '!=', undef}});
   }
   else {
-    my $now = DateTime->now;
     my $last_24_hr = $now->subtract(days => 1);
 
     # get a ResultSet of signals
@@ -180,8 +180,6 @@ sub fm_map_data :Global {
                                        lon => $signal->fcc_key->longitude},
                                        -1));
 
-    my $sdt = DateTime::Format::MySQL->parse_datetime($signal->rx_date);
-
     my $call = $signal->fcc_key->callsign;
     $station{callsign} = $call;  # can't use key 'call', it trashes javascript
     $station{strength} = $signal->strength;
@@ -193,7 +191,7 @@ sub fm_map_data :Global {
     $station{erp_v} = ($signal->fcc_key->erp_v+0)*1000;
     $station{haat_h} = $signal->fcc_key->haat_h+0;
     $station{haat_v} = $signal->fcc_key->haat_v+0;
-    $station{last_in} = DateTime::Format::HTTP->format_datetime($sdt);
+    $station{last_in} = $signal->http_time;
     $station{azimuth} = $azimuth;
     $station{km} = $km;
 
@@ -294,7 +292,7 @@ sub fm_all_tuner_data :Global {
                                           [$tuner_longitude,
                                            $tuner_latitude]]
                       },
-        'properties' => { 'rx_date' => DateTime::Format::HTTP->format_datetime(DateTime::Format::MySQL->parse_datetime($signal->rx_date)),
+        'properties' => { 'rx_date' => $signal->http_time,
                           'frequency' => $frequency,
                           'tuner_key ' => $tuner_key,
                           'callsign' => $callsign,
