@@ -194,9 +194,9 @@ sub color {
   my $now = DateTime->now();
   my $r_dt = DateTime::Format::MySQL->parse_datetime($self->rx_date);
 
-  return 'darkgray'  if $r_dt >= $now->subtract(minutes => 15);
+  return 'black' if $r_dt >= $now->subtract(minutes => 15);
   return 'dimgray' if $r_dt >= $now->subtract(minutes => 30);
-  return 'black';
+  return 'darkgray';
 }
 
 1;
