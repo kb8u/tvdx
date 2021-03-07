@@ -102,7 +102,10 @@
     </div> <!-- end of controls -->
     <div class="col-xs-9 boxit" id="right-side">
       <div id="map-legend">
-        Click on a callsign for more information.  Black: heard within last 15 minutes.  Dark Gray: Heard within last 30 minutes.  Light Gray: Heard more than 30 minutes ago.
+        <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Heard within last 15 minutes
+        <img src="[% static_url %]/images/darkgray_dot.png" width='15' height='15' />Heard within last 30 minutes
+        <img src="[% static_url %]/images/lightgray_dot.png" width='15' height='15' /><span id="black-text">Heard more than 30 minutes ago</span>
+
       </div> <!-- end of map-legend -->
       <div id="stations-map">
       </div><!-- end of stations-map -->
