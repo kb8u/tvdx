@@ -12,7 +12,7 @@ use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
-use GIS::Distance;
+use GIS::Distance::Fast;
 use GD;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -412,8 +412,8 @@ sub tuner_map_data :Global {
                                    lon => $tuner->longitude,
                                    units => 'mi');
     # Geo::Calc distance_to gives wrong distance!!
-    my $gis = GIS::Distance->new(); 
-    $gis->formula('Vincenty');
+    my $gis = GIS::Distance->new('Vincenty'); 
+
     next unless ($signal->callsign->latitude && $signal->callsign->longitude);
     my $miles = $gis->distance($tuner->latitude,
                                $tuner->longitude =>

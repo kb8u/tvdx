@@ -8,7 +8,7 @@ use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
-use GIS::Distance;
+use GIS::Distance::Fast;
 use Data::Dumper;
 use Compress::Bzip2 ':utilities';
 use JSON::XS;
@@ -168,13 +168,13 @@ sub fm_map_data :Global {
                                    lon => $tuner->longitude,
                                    units => 'mi');
     # Geo::Calc distance_to gives wrong distance!!
-    my $gis = GIS::Distance->new();
-    $gis->formula('Vincenty');
+    my $gis = GIS::Distance->new('Vincenty');
+
     next unless ($signal->fcc_key->latitude && $signal->fcc_key->longitude);
-    my $km = $gis->distance($tuner->latitude,
-                            $tuner->longitude =>
-                            $signal->fcc_key->latitude,
-                            $signal->fcc_key->longitude)->kilometers();
+    my $km = $gis->distance_metal($tuner->latitude,
+                                  $tuner->longitude =>
+                                  $signal->fcc_key->latitude,
+                                  $signal->fcc_key->longitude);
     $km = nearest(.1, $km); # to nearest 1/10 km
     my $azimuth = int($gc_tuner->bearing_to({lat => $signal->fcc_key->latitude,
                                        lon => $signal->fcc_key->longitude},
