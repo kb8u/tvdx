@@ -12,6 +12,7 @@ use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
+use GIS::Distance;
 use GIS::Distance::Fast;
 use GD;
 
