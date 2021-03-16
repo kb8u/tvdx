@@ -51,7 +51,7 @@ my $ev = EV::timer(0, $interval, sub {
   my $tz_offset = DateTime::TimeZone->offset_as_string($dt_tz->offset_for_datetime($dt_now));
   $tz_offset =~ s/00$/:00/;
   my $today_file = "$file_path/$file_prefix" . $dt_now->ymd . '.csv';
-  my $yesterday_file = $file_prefix . $dt_now->subtract(days=>1)->ymd . '.csv';
+  my $yesterday_file = "$file_path/$file_prefix" . $dt_now->subtract(days=>1)->ymd . '.csv';
 
   # slurp yesterday and today file into one
   try { @line = read_file($yesterday_file); }
