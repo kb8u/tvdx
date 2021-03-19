@@ -356,6 +356,22 @@ sub fm_all_tuner_data :Global {
 }
 
 
+
+=head2 fm_admin_form
+
+Display form to create or update user account for FM tuners
+
+=cut
+
+sub fm_admin_form :Chained('/') :PathPart('fm_admin_form') :Args(0) {
+  my ($self, $c) = @_;
+
+  $c->stash->{template} = 'Root/fm_admin_from.tt';
+  $c->stash(current_view => 'HTML');
+}
+
+
+
 =head2 end
 
 Attempt to render a view, if needed.

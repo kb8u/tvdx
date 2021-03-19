@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
+    <title>Create or update an FM scan user</title>
+    </script>
+  </head>
+  <body>
+    <form method="post" action="[% c.uri_for('form_create_do') %]">
+      <table>
+         <tr><td>User ID:</dt><td><input type="text" name="user_key"></td></tr>
+         <tr><td>User:</td><td><input type="text" name="user"></td></tr>
+         <tr><td>Password:</td><td><input type="text" name="password"></td></tr>
+         <tr><td>Email:</td><td><input type="text" name="email"></td></tr>
+         <tr><td>User location:</td><td><input type="text" name="user_description"></td></tr>
+         <tr><td>Tuner ID:</td><td><input type="text" name="ture_key"></td></tr>
+         <tr><td>Tuner Description:</td><td><input type="text" name="tuner_description"></td></tr>
+         <tr><td>Latitude:</td><td><input type="text" name="latitude"></td></tr>
+         <tr><td>Longitude:</td><td><input type="text" name="longitude"></td></tr>
+      </table>
+      <input type="submit" name="Submit" value="Submit">
+    </form>
+  </body>
+</html>
+
