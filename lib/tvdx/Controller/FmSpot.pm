@@ -129,7 +129,7 @@ sub fm_spot_POST :Global {
 
 =head2 fm_spot_delete
 
-Delete a spot from the database
+Delete a spot from the database.  Args are tuner_key, callsign, frequency
 
 =cut
 
