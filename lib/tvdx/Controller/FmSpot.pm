@@ -37,7 +37,7 @@ Functions for FM DX
 =cut
 
 
-=head2 fm_spot
+=head2 fm_spot_POST
 
 Accept compressed spots from client and adds entries to database
 
@@ -122,6 +122,33 @@ sub fm_spot_POST :Global {
     }
   }
 
+  $c->response->body('OK');
+  $c->response->status(202);
+}
+
+
+=head2 fm_spot_delete
+
+Delete a spot from the database
+
+=cut
+
+sub fm_spot_DELETE :Global {
+  my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
+
+  $self->_check_tuner($c,$tuner_key);
+  my $rs = $c->model('DB::FmSignalReport')->search(
+             {'tuner_key' => $tuner_key,
+              'me.frequency' => $frequency,
+              'fcc_key.callsign' => $callsign},
+             {join => 'fcc_key'});
+  if ($rs->count == 0) {
+    $c->response->body('NOT FOUND');
+    $c->response->status(404);
+    return;
+  }
+
+  $rs->delete;
   $c->response->body('OK');
   $c->response->status(202);
 }
