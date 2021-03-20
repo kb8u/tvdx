@@ -222,7 +222,10 @@ function update_call_markers(url) {
                       'HAAT ' + haat + ' m.<br>' + 
                       'ERP ' + erp + ' W<br>' +
                       'Azimuth ' + m.azimuth + '&deg<br>' +
-                      'Distance ' + m.km + ' km<br>';
+                      'Distance ' + m.km + ' km<br>' +
+                      '<a href="../delete/' +
+                      json.tuner_key + '/' + m.callsign + '/' + 
+                      m.frequency.toString() + '">Delete</a><br>';
           markers[call_mhz] = L.marker(station_ll[i], {icon: onepixel })
                            .bindTooltip(call_mhz,
                                         { interactive: true,

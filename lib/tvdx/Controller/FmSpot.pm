@@ -154,6 +154,35 @@ sub fm_spot_DELETE :Global {
 }
 
 
+=head2 delete
+
+Delete a spot from the database with http get.  Args are tuner_key, callsign
+and frequency
+
+=cut
+
+sub delete :Global {
+  my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
+
+  $self->_check_tuner($c,$tuner_key);
+  my $rs = $c->model('DB::FmSignalReport')->search(
+             {'tuner_key' => $tuner_key,
+              'me.frequency' => $frequency,
+              'fcc_key.callsign' => $callsign},
+             {join => 'fcc_key'});
+  if ($rs->count == 0) {
+    $c->response->body('NOT FOUND');
+    $c->response->status(404);
+    return;
+  }
+  $rs->delete;
+  $c->stash(tuner_key    => $tuner_key);
+  $c->stash(root_url     => $c->config->{root_url});
+  $c->stash(template     => 'Root/fm_delete.tt');
+  $c->stash(current_view => 'HTML');
+}
+
+
 =head2 fm_map_data
 
 Arguments are tuner_key that sent the reception reports to fm_spot and a
