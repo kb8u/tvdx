@@ -215,14 +215,25 @@ function update_call_markers(url) {
             erp = 'unknown';
           }
 
+          var t = new Date(m.last_in);
+          var time;
+          if ($('#time-frame .active').attr('value') === 'ever') {
+            time = t.getMonth() + 1 + '/' + t.getDate() + '/' + t.getFullYear();
+          }
+          else {
+            time = t.getMonth() + 1 + '/' + t.getDate();
+          }
+          time = time + ' ' + t.toLocaleTimeString();
+
           station_ll[i] = new L.LatLng(m.latitude,m.longitude);
           var popup_text = m.callsign + '<br>' +
+                      'Distance ' + m.km + ' km<br>' +
+                      time + '<br>' +
                       'Frequency ' + mhz + ' Mhz<br>' +
                       m.city_state + '<br>' +
                       'HAAT ' + haat + ' m.<br>' + 
                       'ERP ' + erp + ' W<br>' +
                       'Azimuth ' + m.azimuth + '&deg<br>' +
-                      'Distance ' + m.km + ' km<br>' +
                       '<a href="../delete/' +
                       json.tuner_key + '/' + m.callsign + '/' + 
                       m.frequency.toString() + '">Delete</a><br>';
