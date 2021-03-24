@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
+  <title>FM reception map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.css" integrity="sha384-eS4bw6aEvhCSXWGP85ANR/N8isWKzT7P36NvcuTJGkrj6wsbxLVpXslrNXYHyseD" crossorigin="anonymous"> 
+  <link href="[% static_url %]/many_tuner.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <div id="time-and-legend">
+    <!-- Current time and date gets set by javascript -->
+    <div><h1 id="lastUpdateTime">Map loading....</h1></div>
+    <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Heard within last 15 minutes
+    <img src="[% static_url %]/images/darkgray_dot.png" width='15' height='15' />Heard within last 30 minutes
+    <img src="[% static_url %]/images/lightgray_dot.png" width='15' height='15' />Heard more than 30 minutes ago<br>
+    This page updates every five minutes. Click on a path for more information. 
+    Alt-click on reception location at right to zoom there.
+  </div> <!-- end of timeAndLegend -->
+  <div id="map-and-sidebar">
+    <div id="stations-map">
+    </div>
+    <div id="sidebar-label-container">
+      <div id="sidebar-label">
+        <h4>Reception locations</h4><h4>(east to west)</h4>
+      </div>
+      <div id="sidebar">
+        <ul id="sidebar-list">
+          <li>Map loading...
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js" integrity="sha384-aBL3Lzi6c9LNDGvpHkZrrm3ZVsIwohDD7CDozL0pk8FwCrfmV7H9w8j3L7ikEv6h" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" integrity="sha384-tSi+YsgNwyohDGfW/VhY51IK3RKAPYDcj1sNXJ16oRAyDP++K0NCzSCUW78EMFmf" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prototype/1.7.3/prototype.min.js" integrity="sha384-HqaJW3qHmTPuOE4Iz+OGNDeE2ge5Uj2X4gRJ5QZuzTMNVVqTzRNJ6OB6ET541QUx" crossorigin="anonymous"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/leaflet.js" integrity="sha384-wKOriz2x8/bF1D9t6PuKhSpxfhHeVi9huvyuxJrrShSJpi5+rmRIsM90UuWbdAYJ" crossorigin="anonymous"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/esri-leaflet/2.3.3/esri-leaflet.js" integrity="sha384-DRU87xAC2xuTFiLGPiPBXyEf7OPF7QcpaWUC10Z0GIImVUAUgVwxAPvY9uYVWxpj" crossorigin="anonymous"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.geodesic@2.5.2/dist/leaflet.geodesic.umd.min.js" integrity="sha384-vGLMDCLYo4BKNB1JZYvqPs5vOLVcV4/IUkgy33FkcZkAjBnbF4yxIlUrWRXlPgwr" crossorigin="anonymous"></script> 
+  <script type="text/javascript">
+// pass paths, tuner_id and tuner_number to javascript from template toolkit
+var root_url = '[% root_url %]'
+var static_url = '[% static_url %]'
+  </script>
+  <script src="[% static_url %]/fm_mt.js"></script>
+</body>
+</html>
