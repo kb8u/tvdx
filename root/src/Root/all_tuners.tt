@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="shortcut icon" href="https://rabbitears.info/tvdx/root/static/favicon.ico">
+  <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
   <title>TV reception map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="utf-8">
@@ -12,10 +12,10 @@
   <div id="time-and-legend">
     <!-- Current time and date gets set by javascript -->
     <div><h1 id="lastUpdateTime">Map loading....</h1></div>
-    <img src="https://rabbitears.info/tvdx/root/static/images/green_dot.png" width='15' height='15' />Strong signal
-    <img src="https://rabbitears.info/tvdx/root/static/images/yellow_dot.png" width='15' height='15' />Medium signal
-    <img src="https://rabbitears.info/tvdx/root/static/images/red_dot.png" width='15' height='15' />Weak signal
-    <img src="https://rabbitears.info/tvdx/root/static/images/black_dot.png" width='15' height='15' />Detected in last 24 hours, but not currently (hideable in layer control)<br>
+    <img src="[% static_url %]/images/green_dot.png" width='15' height='15' />Strong signal
+    <img src="[% static_url %]/images/yellow_dot.png" width='15' height='15' />Medium signal
+    <img src="[% static_url %]/images/red_dot.png" width='15' height='15' />Weak signal
+    <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Detected in last 24 hours, but not currently (hideable in layer control)<br>
     This page updates every five minutes. Click on a path for more information. 
     Alt-click on reception location at right to zoom there.
   </div> <!-- end of timeAndLegend -->
