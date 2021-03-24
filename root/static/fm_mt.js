@@ -265,9 +265,9 @@ function init() {
   });
 
   // requires esri-leaflet.js and ESRI could change the terms of service anytime
-  var streets = L.esri.basemapLayer('Streets',{ attribution:attribution, maxZoom:15, minZoom:3 });
-  var topo = L.esri.basemapLayer('Topographic',{ attribution:attribution, maxZoom:15, minZoom:3 });
-  var photo = L.esri.basemapLayer('Imagery',{ attribution:attribution, maxZoom:15, minZoom:3 });
+  var streets = L.esri.basemapLayer('Streets',{ maxZoom:15, minZoom:3 });
+  var topo = L.esri.basemapLayer('Topographic',{ maxZoom:15, minZoom:3 });
+  var photo = L.esri.basemapLayer('Imagery',{ maxZoom:15, minZoom:3 });
   lines = L.layerGroup();
   stations = L.layerGroup();
   on_top = L.layerGroup();

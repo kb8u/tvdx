@@ -413,6 +413,21 @@ sub fm_all_tuner_data :Global {
 }
 
 
+=head2 fm_all_tuners
+
+Display map showing all tuners
+
+=cut
+
+sub fm_all_tuners :Global {
+  my ($self, $c) = @_;
+
+  $c->stash(root_url     => $c->config->{root_url});
+  $c->stash(static_url   => $c->config->{static_url});
+  $c->stash(template     => 'Root/fm_all_tuners.tt');
+  $c->stash(current_view => 'HTML');
+}
+
 
 =head2 fm_admin_form
 
