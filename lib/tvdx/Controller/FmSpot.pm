@@ -390,7 +390,8 @@ sub fm_all_tuner_data :Global {
     push @{$json{tuners}{features}}, {
         'type' => "Feature",
         'geometry' => { 'type' => 'Point', 'coordinates' => $tuners{$tuner_key}{longlat} },
-        'properties' => { 'description' => $tuners{$tuner_key}{descr} }
+        'properties' => { 'description' => $tuners{$tuner_key}{descr},
+                          'tuner_key' => $tuner_key }
     }
   }
   
