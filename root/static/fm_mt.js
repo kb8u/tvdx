@@ -214,7 +214,7 @@ function update() {
                  ? station_props[p.callsign]['haat'] + ' meters'
                  : Math.round(station_props[p.callsign]['haat']*3.28084)+ ' feet';
 
-          var mhz = p.properties.frequency.toString();
+          var mhz = p.frequency.toString();
           mhz = mhz.replace('00000','');
           var hkhz = mhz.slice(-1);
           mhz = mhz.substr(0,mhz.length-1);
@@ -225,7 +225,7 @@ function update() {
            'Frequency: '+ mhz + '<br>' +
            'HAAT: ' + height + '<br>' +
            'ERP: ' + station_props[p.callsign]['erp'] + ' kW<br>' +
-           '<a href="'+root_url+'/fm_one_tuner_map/'+p.tuner_key+'">Single Location Map</a><br>' +
+           '<a href="'+root_url+'/fm_one_tuner_map/'+p.tuner_key+'">Single Location Map</a><br>';
           line.bindPopup(popup_text, { pane: 'topPopup' });
 
           line.callsign = p.callsign;
