@@ -220,9 +220,13 @@ function update() {
           mhz = mhz.substr(0,mhz.length-1);
           mhz = mhz + '.' + hkhz;
 
+          var t = new Date(p.rx_date);
+          var time = t.getMonth() + 1 + '/' + t.getDate() + ' ' + t.toLocaleTimeString();
+
           var popup_text = p.description + '<br>' +
            'Distance: ' + dx + '<br>'+
-           'Frequency: '+ mhz + '<br>' +
+           'Frequency: '+ mhz + ' MHz<br>' +
+           'Time received: ' + time + '<br>' +
            'HAAT: ' + height + '<br>' +
            'ERP: ' + station_props[p.callsign]['erp'] + ' kW<br>' +
            '<a href="'+root_url+'/fm_one_tuner_map/'+p.tuner_key+'">Single Location Map</a><br>';
