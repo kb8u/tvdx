@@ -14,6 +14,8 @@ use Data::Dumper;
 use Compress::Bzip2 ':utilities';
 use JSON::XS;
 use Try::Tiny;
+use Email::Address;
+use Regexp::Common;
 
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -427,21 +429,6 @@ sub fm_all_tuners :Global {
   $c->stash(template     => 'Root/fm_all_tuners.tt');
   $c->stash(current_view => 'HTML');
 }
-
-
-=head2 fm_admin_form
-
-Display form to create or update user account for FM tuners
-
-=cut
-
-sub fm_admin_form :Chained('/') :PathPart('fm_admin_form') :Args(0) {
-  my ($self, $c) = @_;
-
-  $c->stash->{template} = 'Root/fm_admin_from.tt';
-  $c->stash(current_view => 'HTML');
-}
-
 
 
 =head2 end
