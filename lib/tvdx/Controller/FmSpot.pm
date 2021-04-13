@@ -77,12 +77,16 @@ sub fm_spot_POST :Global {
     my $pi_code = defined $json->{signal}{$frequency}{pi_code}
                 ? $json->{signal}{$frequency}{pi_code}
                 : undef;
-    next unless $pi_code;
-    next if $pi_code == 65535; # FFFF is invalid but some stations use it anyway
+    next unless $pi_code =~ /^\d{1,5}$/;
+    # 0 and FFFF are invalid but some stations use it anyway
+    next if ($pi_code == 65535 || $pi_code == 0);
+$c->log->debug("freq $frequency pi $pi_code");
 
     my $s = defined $json->{signal}{$frequency}{s}
           ? $json->{signal}{$frequency}{s}
           : undef;
+    my $re_num_real = $RE{num}{real};
+    next unless $s =~ /^$re_num_real$/;
 
     my $time;
     try {
