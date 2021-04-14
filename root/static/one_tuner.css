@@ -111,6 +111,32 @@ body {
 .leaflet-tooltip-top.marker_black::before {
   border-top-color: black;
 }
+.marker_dimgray {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: white;
+  background-color: dimgray;
+  border-color: white;
+}
+.leaflet-tooltip-top.marker_dimgray::before {
+  border-top-color: black;
+}
+.marker_darkgray {
+  font-weight: bold;
+  line-height: 1.2;
+  font-style: italic;
+  font-size: 15px;
+  border-radius: 10px;
+  color: white;
+  background-color: darkgray;
+  border-color: black;
+}
+.leaflet-tooltip-top.marker_darkgray::before {
+  border-top-color: black;
+}
 .marker_red {
   font-weight: bold;
   line-height: 1.2;

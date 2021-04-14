@@ -2,6 +2,7 @@
 *.rrd
 *.db
 *.png
+*.exe
 tvdx.conf
 lib/tvdx/Model/DB.pm
 client/win32/bzip2/scan_tuner.exe

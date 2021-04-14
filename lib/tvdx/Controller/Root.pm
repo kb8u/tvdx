@@ -13,6 +13,7 @@ use Math::Round 'nearest';
 #use Geo::Calc::XS;
 use Geo::Calc;
 use GIS::Distance;
+use GIS::Distance::Fast;
 use GD;
 
 BEGIN { extends 'Catalyst::Controller' }

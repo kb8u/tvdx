@@ -41,7 +41,7 @@ __PACKAGE__->config(
     data_handlers => {'application/octet-stream' =>sub {local $/; return <$_>}},
     'View::JSON' => {
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
-                           reception_locations markers json) ] }
+                           reception_locations markers json tuner_key) ] }
 
 );
 
