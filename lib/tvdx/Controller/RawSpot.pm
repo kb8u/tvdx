@@ -179,10 +179,12 @@ sub _find_call {
   # use channel number if there are no virtuals
   my $fcc_virt = $args->{channel};
   if (%{$ch->{virtual}}) {
-    # any subchannel will do, just choose a random one
-    my ($some_key) = keys %{$ch->{virtual}}; 
-    if (exists $ch->{virtual}{$some_key}{channel}) {
-      ($fcc_virt) = split /\./,$ch->{virtual}{$some_key}{channel};
+    # use lowest program number
+    my ($lowest_pn) = sort { my (undef,$c) = split '.', $a;
+                             my (undef,$d) = split '.', $b;
+                             $c <=> $d } (keys %{$ch->{virtual}});
+    if (exists $ch->{virtual}{$lowest_pn}{channel}) {
+      ($fcc_virt) = split /\./,$ch->{virtual}{$lowest_pn}{channel};
     }
   }
 
