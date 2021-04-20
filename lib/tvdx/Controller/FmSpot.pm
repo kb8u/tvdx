@@ -85,7 +85,7 @@ sub fm_spot_POST :Global {
           ? $json->{signal}{$frequency}{s}
           : undef;
     my $re_num_real = $RE{num}{real};
-    next unless $s && $s =~ /^$re_num_real$/;
+    next if $s && $s !~ /^$re_num_real$/;
 
     my $time;
     try {
@@ -357,7 +357,7 @@ sub fm_all_tuner_data :Global {
                       },
         'properties' => { 'rx_date' => $signal->http_time,
                           'frequency' => $frequency,
-                          'tuner_key ' => $tuner_key,
+                          'tuner_key' => $tuner_key,
                           'callsign' => $callsign,
                           'color' => $signal->color,
                           'description' => $user_key->description . " to $callsign ($city_state)",
