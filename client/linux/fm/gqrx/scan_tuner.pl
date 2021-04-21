@@ -17,6 +17,7 @@ use GQRX::Remote;
 
 my $ua = LWP::UserAgent->new;
 my $spot_url = 'http://rabbitears.info/tvdx/fm_spot';
+#my $spot_url = 'http://www.rabbitears.info:3000/fm_spot';
 
 our ($opt_d,$opt_h,$opt_s,$opt_t);
 getopts('dst:h');
@@ -32,7 +33,7 @@ remote_error() unless $remote->set_dsp_status(1);
 
 do {
   my $scan = {'tuner_key' => $opt_t};
-  for (my $freq = 87900000; $freq <= 107900000; $freq += 200000) {
+  for (my $freq = 88100000; $freq <= 107900000; $freq += 200000) {
     print "scanning $freq ... " if $debug;
     remote_error() unless $remote->set_frequency($freq);
     # clear RDS decoder out.
@@ -40,7 +41,7 @@ do {
     remote_error() unless $remote->set_rds_status(0);
     sleep(1);
     remote_error() unless $remote->set_rds_status(1);
-    sleep(9);
+    sleep(10);
     my $pi = $remote->get_rds_pi;
     remote_error() unless $pi;
 
@@ -55,7 +56,7 @@ do {
     $scan->{signal}->{$freq}->{s} = $strength;
     $scan->{signal}->{$freq}->{pi_code} = hex $pi;
 
-    if (scalar %{$scan->{signal}} >=10) {
+    if (scalar %{$scan->{signal}} >=11) {
       spot($scan);
       $scan = {'tuner_key' => $opt_t};
     }
