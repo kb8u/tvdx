@@ -96,7 +96,7 @@ password => $password, email => $email, description => $user_description });
      latitude => $latitude,
      longitude => $longitude });
 
-  my $new_user_key = $user_db->user_key;
+  my $new_user_key = $tuner_db->tuner_key;
   my $new_user_url = $c->config->{root_url} . "/fm_one_tuner_map/$new_user_key";  my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
   my $text = <<"EOTEXT";
 New user $user, password $password created.
