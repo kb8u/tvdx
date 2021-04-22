@@ -1,18 +1,24 @@
 You have installed a program to read the log files of the SDR# plugin called
-FM DX RDS Data Logger.  This program scans the log files of tha plugin and
-displays the stations dected at
-https://rabbitears.info/fm_all_tuners where maps are available to show what
-FM transmitters were detected by all participants.  You must email
-webmaster@rabbitears.info with a description for the map, latitude, and
+FM DX RDS Data Logger.  See SDR_SHARP_README.txt for more information on
+installing and configuring that plugin.
+
+This program scans the log files of that plugin and displays the stations
+dected at https://rabbitears.info/fm_all_tuners where maps are available
+to show what FM transmitters were detected by all participants.  You must
+email webmaster@rabbitears.info with a description for the map, latitude, and
 longitude so that the site will accept your data and show your location.
 You will get a numeric ID back that will be used to create a map specific
 to your location.
 
-The program that does the scanning is normally installed to
+This program is normally installed to
 c:\FMDX\fm_dx_reporter.exe  Also, a scheduled task has been configured so that
 the program starts automatically after installation and after each computer
 restart.  SDR# will not be started automatically, you'll need to do that.
 If SDR# is not started, this program will do nothing.
+
+Windows Defender may issue a security warning 'Win32/Execution.ST!ml' flagging
+this program.  It is because the installer ran a program to schedule the task
+so the warning may be disregarded.
 
 If you want to stop the scheduled task, that can be accomplished graphically
 through the windows task scheduler or running a command (Windows key + r):
@@ -22,7 +28,8 @@ schtasks /end /tn "FMDX reporter"
 run with administrator priviliges.  To run the command as administrator, type
 control-shift-return instead of just return in the run command dialog.
 
-Similarly, to restart the scheduled task, run schtasks /run /tn "FMDX reporter"
+Similarly, to restart the scheduled task, run
+schtasks /run /tn "FMDX reporter"
 and if you want to delete the scheduled task, run
 schtasks /delete /f /tn "FMDX reporter"
 (both as administrator.)

@@ -55,6 +55,7 @@ OutputBaseFilename=fmdx_install
 ; fm_dx_reporter.exe was created with 'pp -o fm_dx_reporter.exe report_file.pl
 Source: "C:\fmdx_src\fm_dx_reporter.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\fmdx_src\README.TXT"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\fmdx_src\SDR_SHARP_README.TXT"; DestDir: "{app}";
 
 [Run]
 Filename: "schtasks"; \
