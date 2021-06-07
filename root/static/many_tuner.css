@@ -17,6 +17,13 @@ body {
   font: bold 18px Helvetica, sans-serif;
 }
 
+#time-and-legend b {
+  text-align: right;
+  float: right;
+  color: red;
+  font-style: italic;
+}
+
 #stations-map {
   display: inline-block;
   float: left;

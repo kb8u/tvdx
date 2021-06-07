@@ -63,7 +63,7 @@ function update_time_str() {
   var year = curDateTime.getYear();
   month = month + 1;
   if(year<1000) year+=1900;
-  return('TV stations receieved as of ' + curTime + " " + month + "/" + date + "/" + year);
+  return('FM stations receieved as of ' + curTime + " " + month + "/" + date + "/" + year);
 }
 
 
