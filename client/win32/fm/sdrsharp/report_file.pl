@@ -105,7 +105,7 @@ sub report {
   print "JSON:\n$json" if $debug;
   my $bzipped = memBzip($json);
 
-  print "Sending results to $spot_url\n" if $debug;
+  say "Sending results to $spot_url" if $debug;
   my $req = HTTP::Request->new(POST => $spot_url);
   $req->content_type('application/octet-stream');
   $req->content_charset('binary');
@@ -114,14 +114,13 @@ sub report {
   my $res = LWP::UserAgent->new->request($req);
 
   if ($debug) {
-    print scalar localtime, "\n";
-    print "Checking if web page got results ok\n";
+    say scalar localtime;
+    say "Checking if web page got results ok";
     if ($res->is_success) {
-      print $res->content;
-      print "\n";
+      say $res->content;
     }
     else {
-      print $res->status_line, "\n";
+      say $res->status_line;
     }
   }
 }
