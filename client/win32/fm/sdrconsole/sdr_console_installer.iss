@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 [Messages]
-UserInfoDesc=Please enter your user ID and the serial port configured in SDR Console.  Organization can be anything (it is not used).
+UserInfoDesc=Please enter your user ID and the serial port configured in SDR Console.  Organization is not used.
 UserInfoSerial=&Numeric user ID
-UserInfoName=&Serial port name like COM4
+UserInfoName=&SDR Console serial port name like COM4
 
 [Code]
 function IsSDRConsoleInstalled: Boolean;
@@ -49,6 +49,8 @@ AppName=fm_sdrconsole_reporter
 AppVersion=1.0
 WizardStyle=modern
 UserInfoPage=yes
+DefaultUserInfoName=COM4
+DefaultUserInfoOrg=FM Live Bandscan participant
 DisableDirPage=no
 DefaultDirName={sd}\FM_SDRCONSOLE
 DefaultGroupName=FM_SDRCONSOLE
@@ -68,12 +70,12 @@ OutputBaseFilename=fm_sdrconsole_install
 [Files]
 ; report_sqlite.exe was created with 'pp -o report_sqlite.exe report_sqlite.pl
 Source: "C:\fmdx_src\sdr_console\report_sqlite.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\fmdx_src\sdr_console\README.TXT"; DestDir: "{app}"; Flags: isreadme
-Source: "C:\fmdx_src\sdr_console\SDR_CONSOLE_README.TXT"; DestDir: "{app}";
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrconsole\README.TXT"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrconsole\SDR_CONSOLE_README.TXT"; DestDir: "{app}";
 
 [Run]
 Filename: "schtasks"; \
-    Parameters: "/Create /F /SC ONSTART /TN ""FM SDR Console reporter"" /RU ""NT AUTHORITY\NETWORK SERVICE"" /TR ""'{app}\report_sqlite.exe' -t {userinfoserial} -c {userinfoname}"""; \
+    Parameters: "/Create /F /SC ONSTART /TN ""FM SDR Console reporter"" /RU SYSTEM /TR ""'{app}\report_sqlite.exe' -t {userinfoserial} -c {userinfoname} -p '{userappdata}\SDR-RADIO.com (V3)'"""; \
     Flags: runhidden; \
     StatusMsg: "Running schtasks to run report_sqlite on start up"
 ; schtasks does not have certain switches so change it with powershell

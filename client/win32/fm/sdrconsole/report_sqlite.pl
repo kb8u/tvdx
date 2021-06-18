@@ -20,7 +20,7 @@ use EV;
 our ($opt_c,$opt_d,$opt_h,$opt_p,$opt_P,$opt_s,$opt_t,$opt_T,$opt_u);
 getopts('c:dhp:P:s:t:T:u:');
 
-my $file_path = $opt_p ? $opt_p : "$ENV{APPDATA}/SDR-RADIO.com (V3)";
+my $file_path = $opt_p ? $opt_p : "$ENV{APPDATA}\\SDR-RADIO.com (V3)";
 my $file_name = $opt_P ? $opt_P : 'RDSDatabase.sqlite';
 my $port = $opt_c ? $opt_c : 'COM4';
 my $scan_interval = $opt_s ? $opt_s : 8;
