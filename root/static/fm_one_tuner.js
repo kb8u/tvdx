@@ -263,12 +263,12 @@ function update_call_markers(url) {
                            color: m.color,
                            steps: 4 }));
         }
-        set_units($('#distance-units .active').attr('value'));
         station_ll.push(tuner_ll);
         map.fitBounds(station_ll);
         map.addLayer(station_m);
         map.addLayer(station_l);
         update_sidebar(json.markers);
+        set_units($('#distance-units .active').attr('value'));
       }
     }
   );
