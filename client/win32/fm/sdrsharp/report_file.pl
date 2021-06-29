@@ -4,6 +4,9 @@
 use strict 'vars';
 use feature 'say';
 use Getopt::Std;
+use FindBin '$Bin';
+use List::Util 'none';
+use Data::Dumper;
 use Win32;
 use LWP;
 use DateTime;
@@ -16,12 +19,14 @@ use File::Slurp;
 use Try::Tiny;
 use EV;
 
-our ($opt_d,$opt_h,$opt_p,$opt_P,$opt_t,$opt_T,$opt_u);
-getopts('dhp:P:t:T:u:');
+our ($opt_d,$opt_h,$opt_i,$opt_p,$opt_P,$opt_t,$opt_T,$opt_u);
+getopts('dhi:p:P:t:T:u:');
 
 help() if $opt_t =~ /\D/;
 help() if $opt_h;
 help() unless $opt_t;
+my @ignore = split ',', $opt_i;
+help() if ((scalar @ignore) % 2);
 my $debug = $opt_d;
 my $file_path = $opt_p ? $opt_p : 'C:/SDRSharp/RDSDataLogger';
 my $file_prefix = $opt_P ? $opt_P : 'RDSDataLogger-';
@@ -34,15 +39,35 @@ my $spot_url = $opt_u ? $opt_u : 'http://rabbitears.info/tvdx/fm_spot';
 Win32::SetChildShowWindow(0);
 
 
-# default so first loop will work correctly.
-my $last_report_dt =  DateTime->now(time_zone => DateTime::TimeZone->new(name=>'local'))->subtract(seconds => $interval);
-my $last_report_freq = 0;
-my $latest_line_dt = undef;
-my $latest_line_freq = 0;
-
 my $scan = { signal => {}, tuner_key => 0+$opt_t };
+my $newest_reported_line;
 
 my $ev = EV::timer(0, $interval, sub { 
+  my %ignore; # like $ignore{899000000} = [45573] for 89.9,B205
+  if ($opt_i) {
+    my @ignore = split ',', $opt_i;
+    for (my $i = 0;$i <= $#ignore; $i+=2) {
+      $ignore[$i] = $ignore[$i] * 1e6;
+      $ignore[$i+1] = hex $ignore[$i+1];
+      $ignore{$ignore[$i]} = [] unless exists $ignore{$ignore[$i]};
+      push @{$ignore{$ignore[$i]}}, $ignore[$i+1];
+    }
+  }
+  my $ignore_file = "$Bin/ignore_pi.txt";
+  my @ignore_file;
+  try { @ignore_file = read_file($ignore_file); }
+  catch { say "couldn't open $ignore_file: $_" if $debug; };
+  chomp @ignore_file;
+  @ignore_file = grep(/^\d{2,3}\.\d,[0-9a-f]{4}$/i,@ignore_file);
+  foreach (@ignore_file) {
+    my ($freq,$pi) = split ',',$_;
+    $freq *= 1e6;
+    $ignore{$freq} = [] unless exists $ignore{$freq};
+    push @{$ignore{$freq}}, hex $pi;
+  }
+  print Dumper \%ignore if $debug;
+
+  my $fifteen_ago_dt =  DateTime->now(time_zone => DateTime::TimeZone->new(name=>'local'))->subtract(minutes => 15);
   say (scalar localtime, " Looking for log files") if $debug;
   my @line;
   # generate today's and yesterday's file names
@@ -59,9 +84,27 @@ my $ev = EV::timer(0, $interval, sub {
   try { push @line, (read_file($today_file)); }
   catch { say "couldn't open $today_file: $_" if $debug; };
 
-  return unless @line;
+  unless (@line) {
+    say 'no stations in log file' if $debug;
+    return;
+  }
+  if ($debug) { 
+    say "lines read:";
+    foreach (@line) { print }
+  }
 
   for (my $i = $#line; $i >= 0; $i--) {
+    if ($line[$i] eq $newest_reported_line) {
+      if ($i == $#line) {
+        say 'no new stations' if $debug;
+	return;
+      }
+      say "saw last reported line, sending report" if $debug;
+      report($scan);
+      $scan = { signal => {}, tuner_key => 0+$opt_t };
+      $newest_reported_line = $line[$#line];
+      return;
+    }
     my ($time,$frequency,$pi) = split ',', $line[$i]; 
     unless ($time && $frequency && $pi) {
       say "invalid line: $line[$i]" if $debug;
@@ -73,26 +116,26 @@ my $ev = EV::timer(0, $interval, sub {
     $time =~ s/ /T/;
     $time .= ':00' . $tz_offset;
     my $line_dt = DateTime::Format::ISO8601->parse_datetime($time);
-    $latest_line_dt = $line_dt unless $latest_line_dt;
-    $latest_line_freq = $frequency unless $latest_line_freq;
+    say "line_dt: $line_dt fifteen_ago_dt: $fifteen_ago_dt" if $debug;;
 
-    if ($line_dt < $last_report_dt || ($line_dt == $last_report_dt && $frequency <= $last_report_freq)) {
+    if ($line_dt < $fifteen_ago_dt) {
       # send scan
       report($scan);
-      $last_report_dt = $latest_line_dt;
-      $last_report_freq = $latest_line_freq;
-      $latest_line_dt = undef;
-      $latest_line_freq = 0;
       $scan = { signal => {}, tuner_key => 0+$opt_t };
+      $newest_reported_line = $line[$#line];
       return;
     }
     else {
-      $scan->{signal}->{$frequency} = {pi_code => hex $pi, time => $time};
+      if (none { hex $pi == $_ } @{$ignore{$frequency}}) {
+        $scan->{signal}->{$frequency} = {pi_code => hex $pi, time => $time};
+      }
+      else { say "$frequency $pi is in ignore list" if $debug }
     }
   }
 
   # first time run if files have all been read
-  report($scan) if (%{$scan->{signal}});
+  $newest_reported_line = $line[$#line];
+  report($scan);
 });
 
 EV::run;
@@ -100,6 +143,11 @@ EV::run;
 
 sub report {
   my ($scan) = @_;
+
+  unless (%{$scan->{signal}}) {
+    say 'nothing to report' if $debug;
+    return;
+  }
   my $j = JSON->new->allow_nonref;
   my $json = $debug ? $j->pretty->encode($scan) : $j->encode($scan);
   print "JSON:\n$json" if $debug;
@@ -136,6 +184,9 @@ results can be viewed on a map.
 Program options:
 -d Print debugging information.
 -h Print help (you're reading it)
+-i Frequency/PI code combinations to ignore like 89.9,B205,103.7,83BC
+   Also reads input from file ignore_pi.txt in installation directory,
+   one entry per line, like 89.9,B205
 -p RDS scan file path.  Defaults to C:/SDRSharp/RDSDataLogger
    use / instead of \ in path names.
 -P RDS file prefix.  Defaults to RDSDataLogger-
