@@ -41,6 +41,9 @@ added to the scheduled task.  The program accepts the following options:
 
 -d Print debugging information.
 -h Print help
+-i Frequency/PI code combinations to ignore like 89.9,B205,103.7,83BC
+   Also reads input from file ignore_pi.txt in installation directory,
+   one entry per line, like 89.9,B205
 -p RDS scan file path.  Defaults to C:/SDRSharp/RDSDataLogger
    use / instead of \ in the path name.
 -P RDS Ffile prefix.  Deafualts to RDSDataLogger-
