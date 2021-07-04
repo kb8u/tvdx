@@ -32,7 +32,7 @@ end;
 
 [Setup]
 AppName=fm_sdrsharp_reporter
-AppVersion=1.0
+AppVersion=2.0
 WizardStyle=modern
 UserInfoPage=yes
 DisableDirPage=no
