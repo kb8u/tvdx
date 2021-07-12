@@ -34,9 +34,9 @@ window.onerror = function(m,u,l) {
 
 // for searching the paths layer group
 L.LayerGroup.include({
-  gettvdxLayer: function (callsign,tuner) {
+  gettvdxLayer: function (callsign,tuner_key) {
     for (var i in this._layers) {
-      if (this._layers[i].callsign === callsign && this._layers[i].tuner === tuner) {
+      if (this._layers[i].callsign === callsign && this._layers[i].tuner_key === tuner_key) {
         return this._layers[i];
       }
     }
@@ -72,11 +72,12 @@ function update_tuners_list() {
   by_longitude = json.json.tuners.features.map(function(t,index){
      return {'description' : t.properties.description,
              'longitude'   : t.geometry.coordinates[0],
-             'url'         : root_url+'/fm_one_tuner_map/' + t.properties.tuner_key };
+             'url'         : root_url+'/fm_one_tuner_map/' + t.properties.tuner_key,
+             'tuner_key'   : t.properties.tuner_key };
   });
   by_longitude.sort(function(a,b){return b.longitude-a.longitude}).forEach(
     function(t) {
-      var a = '<li><a href="'+t.url+'" url_path="'+t.url_path+'">'
+      var a = '<li><a href="'+t.url+'" url_path="'+t.tuner_key+'">'
             + t.description+'</a></li>';
       $('#sidebar-list').append(a);
     });
@@ -115,20 +116,20 @@ function update() {
         var i;
         for(i=0; i< json.json.tuners.features.length; i++) {
           var t=json.json.tuners.features[i];
-          tuner_longlat[t.properties.url_path] = t.geometry.coordinates;
-          if (!(t.properties.url_path in tuner_mt)) {
+          tuner_longlat[t.properties.tuner_key] = t.geometry.coordinates;
+          if (!(t.properties.tuner_key in tuner_mt)) {
             // geojson is long-lat
             var ll = new L.LatLng(t.geometry.coordinates[1],t.geometry.coordinates[0]);
             var tmarker = L.marker(ll, {icon: onepixel}).bindTooltip(
               t.properties.description,
               { interactive: true, permanent: true, direction: 'top' }
             );
-            tuner_mt[t.properties.url_path] = tmarker;
+            tuner_mt[t.properties.tuner_key] = tmarker;
             tmarker = L.marker(ll, {icon: onepixel}).bindTooltip(
               t.properties.description,
               { interactive: true, permanent: true, direction: 'bottom' }
             );
-            tuner_mb[t.properties.url_path] = tmarker;
+            tuner_mb[t.properties.tuner_key] = tmarker;
           }
         }
         for(i=0; i< json.json.stations.features.length; i++) {
@@ -188,19 +189,19 @@ function update() {
                              },
                            click:
                              function(e) {
-                               var line = lines.gettvdxLayer(e.target.callsign,e.target.tuner);
+                               var line = lines.gettvdxLayer(e.target.callsign,e.target.tuner_key);
                                line.openPopup();
                              }
                           });
                     nm.callsign = m.callsign;
-                    nm.tuner = m.tuner; 
+                    nm.tuner_key = m.tuner_key; 
                     on_top.addLayer(nm);
                     // Choose layers so tooltips can't be on top of each other.
-                    if (tuner_mt[e.target.tuner].getLatLng().lat > station_mt[e.target.callsign].getLatLng().lat) {
-                      stations.addLayer(tuner_mt[e.target.tuner]);
+                    if (tuner_mt[e.target.tuner_key].getLatLng().lat > station_mt[e.target.callsign].getLatLng().lat) {
+                      stations.addLayer(tuner_mt[e.target.tuner_key]);
                       stations.addLayer(station_mb[e.target.callsign]);
                     } else {
-                      stations.addLayer(tuner_mb[e.target.tuner]);
+                      stations.addLayer(tuner_mb[e.target.tuner_key]);
                       stations.addLayer(station_mt[e.target.callsign]);
                     }
                   }
@@ -233,7 +234,7 @@ function update() {
           line.bindPopup(popup_text, { pane: 'topPopup' });
 
           line.callsign = p.callsign;
-          line.tuner = p.tuner_key;
+          line.tuner_key = p.tuner_key.toString();
           lines.addLayer(line);
 
           extent.n = (c[0][1] > extent.n) ? c[0][1] : extent.n;
