@@ -1,0 +1,7 @@
+# Example ignore file.  Format is frequency,PI code (no spaces at beginning or end of line).
+# Lines incorrectly formatted are ignored silently. One entry per line.
+# Here, if the # was removed from each line, both PI codes D12E and A32C would be ignored on 101.1 MHz
+#101.1,D12E
+#101.1,A32C
+# Here, if the # was removed from the next line, 72AA would be ignored on 91.7 MHz
+#91.7,72AA

@@ -46,7 +46,7 @@ end;
 
 [Setup]
 AppName=fm_sdrconsole_reporter
-AppVersion=1.0
+AppVersion=2.0
 WizardStyle=modern
 UserInfoPage=yes
 DefaultUserInfoName=COM4
@@ -72,6 +72,7 @@ OutputBaseFilename=fm_sdrconsole_install
 Source: "C:\fmdx_src\sdr_console\report_sqlite.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrconsole\README.TXT"; DestDir: "{app}"; Flags: isreadme
 Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrconsole\SDR_CONSOLE_README.TXT"; DestDir: "{app}";
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrsharp\ignore_pi.txt"; DestDir: "{app}";
 
 [Run]
 Filename: "schtasks"; \

@@ -32,7 +32,7 @@ end;
 
 [Setup]
 AppName=fm_sdrsharp_reporter
-AppVersion=1.0
+AppVersion=2.0
 WizardStyle=modern
 UserInfoPage=yes
 DisableDirPage=no
@@ -54,8 +54,9 @@ OutputBaseFilename=fm_sdrsharp_install
 [Files]
 ; report_file.exe was created with 'pp -o report_file.exe report_file.pl
 Source: "C:\fmdx_src\sdr_sharp\report_file.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\fmdx_src\sdr_sharp\README.TXT"; DestDir: "{app}"; Flags: isreadme
-Source: "C:\fmdx_src\sdr_sharp\SDR_SHARP_README.TXT"; DestDir: "{app}";
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrsharp\README.TXT"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrsharp\SDR_SHARP_README.TXT"; DestDir: "{app}";
+Source: "C:\tvdx_src\tvdx\client\win32\fm\sdrsharp\ignore_pi.txt"; DestDir: "{app}";
 
 [Run]
 Filename: "schtasks"; \

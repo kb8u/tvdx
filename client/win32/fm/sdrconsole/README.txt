@@ -43,6 +43,9 @@ added to the scheduled task.  The program accepts the following options:
 -c COM port that SDR Console is on.  Defaults to COM4
 -d Print debugging information.
 -h Print help (you're reading it)
+-i Frequency/PI code combinations to ignore like 89.9,B205,103.7,83BC
+   Also reads input from file ignore_pi.txt in installation directory,
+   one entry per line, like 89.9,B205
 -p SDR Console database path.  use / instead of \ in path names.
 -P SDR Console database file name.  Defaults to RDSDatabase.sqlite
 -s Change frequency every this many seconds.  Default is 8 seconds
