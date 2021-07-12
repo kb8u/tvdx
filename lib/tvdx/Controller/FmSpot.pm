@@ -58,12 +58,14 @@ sub fm_spot_POST :Global {
   my $tuner_key = $json->{'tuner_key'};
 
   # log if tuner isn't found
-  if (! $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key})) {
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
+  if (! $tuner) {
     $c->log->info("tuner_key $tuner_key is not registered with site");
     $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
     $c->response->status(403);
     return;
   }
+  my $gis = GIS::Distance->new('Vincenty');
 
   # log if tuner is in tuner_debug table
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_key})) {
@@ -99,10 +101,22 @@ sub fm_spot_POST :Global {
                 : $mysql_now;
     } catch { $time = $mysql_now };
 
-    my ($fcc_row) = $c->model('DB::FmFcc')->find({'frequency' => $frequency,
-                                                  'pi_code' => $pi_code,
-                                                  'end_date' => undef});
-    unless (defined $fcc_row && $fcc_row) {
+    my $fcc_key;
+    my $distance = 1e6; # an arbitary impossibly large number
+    # assume the closest station is the one received (hopefully there's just 1)
+    my $rs = $c->model('DB::FmFcc')->search({'frequency' => $frequency,
+                                             'pi_code' => $pi_code,
+                                             'end_date' => undef});
+    while (my $fcc_row = $rs->next) {
+      next unless ($fcc_row->latitude && $fcc_row->longitude);
+      my $km = $gis->distance_metal($tuner->latitude, $tuner->longitude,
+                                    $fcc_row->latitude, $fcc_row->longitude);
+      if ($km < $distance) {
+        $fcc_key = $fcc_row->fcc_key;
+        $distance = $km;
+      }
+    }
+    unless (defined $fcc_key) {
       $c->log->warn("Couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
       next;
     }
@@ -111,14 +125,14 @@ sub fm_spot_POST :Global {
     my $entry =
       $c->model('DB::FmSignalReport')->search({'tuner_key' =>$json->{tuner_key},
                                                'frequency' => $frequency,
-                                               'fcc_key' => $fcc_row->fcc_key});
+                                               'fcc_key' => $fcc_key});
     if (!defined $entry || $entry == 0) {
       $c->model('DB::FmSignalReport')
         ->create({'rx_date' => $time,
                   'first_rx_date' => $time,
                   'frequency' => $frequency,
                   'tuner_key' =>$json->{tuner_key},
-                  'fcc_key' => $fcc_row->fcc_key},
+                  'fcc_key' => $fcc_key},
                   'strength' => $s);
       next;
     }
@@ -234,7 +248,7 @@ sub fm_map_data :Global {
 
     next unless ($signal->fcc_key->latitude && $signal->fcc_key->longitude);
     my $km = $gis->distance_metal($tuner->latitude,
-                                  $tuner->longitude =>
+                                  $tuner->longitude,
                                   $signal->fcc_key->latitude,
                                   $signal->fcc_key->longitude);
     $km = nearest(.1, $km); # to nearest 1/10 km
