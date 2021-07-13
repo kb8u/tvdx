@@ -1,4 +1,5 @@
 package tvdx::Controller::RawSpot;
+use List::MoreUtils 'all_u';
 use Moose;
 use namespace::autoclean;
 use DateTime;
@@ -178,7 +179,7 @@ sub _find_call {
   # determine virtual channel for fcc table
   # use channel number if there are no virtuals
   my $fcc_virt = $args->{channel};
-  if (%{$ch->{virtual}}) {
+  if (%{$ch->{virtual}} && all_u { $_ =~ /^\d+\.\d+$/ } (keys %{$ch->{virtual}})) {
     # use lowest program number
     my ($lowest_pn) = sort { my (undef,$c) = split '.', $a;
                              my (undef,$d) = split '.', $b;

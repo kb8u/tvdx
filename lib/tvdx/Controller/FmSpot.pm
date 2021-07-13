@@ -380,11 +380,13 @@ sub fm_all_tuner_data :Global {
 
     # update %stations
     unless (exists $stations{$callsign}) {
-      my $haat = (0+$signal->fcc_key->haat_h > 0+$signal->fcc_key->haat_v)
-               ? 0+$signal->fcc_key->haat_h : 0+$signal->fcc_key->haat_v;
+      my $hh = $signal->fcc_key->haat_h // 0;
+      my $hv = $signal->fcc_key->haat_v // 0;
+      my $haat = $hh > $hv ? $hh : $hv;
 
-      my $erp = (0+$signal->fcc_key->erp_h > 0+$signal->fcc_key->erp_v)
-              ? 0+$signal->fcc_key->erp_h : 0+$signal->fcc_key->erp_v;
+      my $eh = $signal->fcc_key->erp_h // 0;
+      my $ev = $signal->fcc_key->erp_v // 0;
+      my $erp = $eh > $ev ? $eh : $ev;
 
       $stations{$callsign} = {
         frequency  => $frequency,
