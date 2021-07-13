@@ -5,7 +5,8 @@ var station_mt = {};  //station markers with tooltip on top
 var station_mb = {};  //station markers with tooltip on bottom
 var tuner_mt = {};    //tuner markers with tooltip on top
 var tuner_mb = {};    //tuner markers with tooltip on bottom
-var lines;   // layerGroup of colored lines between receiver and transmitter
+var lines;   // layerGroup of recent lines between receiver and transmitter
+var darkgray_lines;// layerGroup of older lines between receiver and transmitter
 var stations; // layerGroup of station markers show on both ends of a path
 var on_top;  // used by tuners list mouseover and lines on mouseover
 var onepixel;
@@ -110,6 +111,7 @@ function update() {
         json = responseJSON.responseText.evalJSON();
         update_tuners_list();
         lines.clearLayers();
+        darkgray_lines.clearLayers();
         stations.clearLayers();
         on_top.clearLayers();
         extent = {n:0, s:90, e:-179.9, w:0};
@@ -159,8 +161,8 @@ function update() {
         for(i=0; i< json.json.paths.features.length; i++) {
           var p = json.json.paths.features[i].properties;
           var c = json.json.paths.features[i].geometry.coordinates;
-          // zindexoffset.  Put black lines on bottom
-          var z = p.color === 'black' ? 0 : -500;
+          // zIndexOffset.  Put darkgray lines on bottom
+          var z = p.color === 'darkgray' ? -1000 : 0;
           // on mouseover, create duplicate (but thicker) line on top.
           // on mouseout on new line, clear the top layer.
           var line = 
@@ -173,6 +175,9 @@ function update() {
                     on_top.clearLayers();
                     stations.clearLayers();
                     var m = lines.getLayer(e.target._leaflet_id);
+                    if (m === undefined) {
+                        m = darkgray_lines.getLayer(e.target._leaflet_id);
+                    }
                     var ll = m.getLatLngs();
                     var options = {};
                     options['weight'] = 6;
@@ -190,6 +195,9 @@ function update() {
                            click:
                              function(e) {
                                var line = lines.gettvdxLayer(e.target.callsign,e.target.tuner_key);
+                               if (line === undefined) {
+                                   line = darkgray_lines.gettvdxLayer(e.target.callsign,e.target.tuner_key);
+                               }
                                line.openPopup();
                              }
                           });
@@ -235,7 +243,11 @@ function update() {
 
           line.callsign = p.callsign;
           line.tuner_key = p.tuner_key.toString();
-          lines.addLayer(line);
+          if (p.color === 'darkgray') {
+              darkgray_lines.addLayer(line);
+          } else {
+              lines.addLayer(line);
+          }
 
           extent.n = (c[0][1] > extent.n) ? c[0][1] : extent.n;
           extent.n = (c[1][1] > extent.n) ? c[1][1] : extent.n;
@@ -274,15 +286,17 @@ function init() {
   var topo = L.esri.basemapLayer('Topographic',{ maxZoom:15, minZoom:3 });
   var photo = L.esri.basemapLayer('Imagery',{ maxZoom:15, minZoom:3 });
   lines = L.layerGroup();
+  darkgray_lines = L.layerGroup();
   stations = L.layerGroup();
   on_top = L.layerGroup();
-  map = L.map('stations-map', { layers: [streets] });
+  map = L.map('stations-map', { layers: [streets,darkgray_lines] });
   map.on('zoomend moveend', function(e) {
     $.cookie('bounds', map.getBounds().toBBoxString(), { expires : 365, path: "/;SameSite=Strict", secure: true}); 
   });
   L.control.layers({ 'Streets' : streets,
                      'Topographic' : topo,
-                     'Imagery' : photo }).addTo(map);
+                     'Imagery' : photo },
+                   { 'Old reports' : darkgray_lines}).addTo(map);
 
   onepixel = L.icon({
     iconUrl: static_url + '/images/1x1.png',
