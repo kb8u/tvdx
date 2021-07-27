@@ -263,10 +263,10 @@ sub fm_map_data :Global {
     $station{longitude} = $signal->fcc_key->longitude+0;
     $station{frequency} = $signal->fcc_key->frequency;
     $station{city_state} = $signal->fcc_key->city_state;
-    $station{erp_h} = ($signal->fcc_key->erp_h+0)*1000;
-    $station{erp_v} = ($signal->fcc_key->erp_v+0)*1000;
-    $station{haat_h} = $signal->fcc_key->haat_h+0;
-    $station{haat_v} = $signal->fcc_key->haat_v+0;
+    $station{erp_h} = ($signal->fcc_key->erp_h // 0)*1000;
+    $station{erp_v} = ($signal->fcc_key->erp_v // 0)*1000;
+    $station{haat_h} = ($signal->fcc_key->haat_h // 0)+0;
+    $station{haat_v} = ($signal->fcc_key->haat_v // 0)+0;
     $station{last_in} = $signal->http_time;
     $station{color} = $signal->color;
     $station{azimuth} = $azimuth;
