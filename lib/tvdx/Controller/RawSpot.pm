@@ -1,5 +1,4 @@
 package tvdx::Controller::RawSpot;
-use List::MoreUtils 'all_u';
 use Moose;
 use namespace::autoclean;
 use DateTime;
@@ -179,14 +178,13 @@ sub _find_call {
   # determine virtual channel for fcc table
   # use channel number if there are no virtuals
   my $fcc_virt = $args->{channel};
-  if (%{$ch->{virtual}} && all_u { $_ =~ /^\d+\.\d+$/ } (keys %{$ch->{virtual}})) {
-    # use lowest program number
-    my ($lowest_pn) = sort { my (undef,$c) = split '.', $a;
-                             my (undef,$d) = split '.', $b;
-                             $c <=> $d } (keys %{$ch->{virtual}});
-    if (exists $ch->{virtual}{$lowest_pn}{channel}) {
-      ($fcc_virt) = split /\./,$ch->{virtual}{$lowest_pn}{channel};
-    }
+  if (%{$ch->{virtual}}
+      && all { exists $ch->{virtual}{$_}{channel}
+               && $ch->{virtual}{$_}{channel} =~ /^\d+\.\d+$/i
+             } (keys %{$ch->{virtual}})) {
+    # use channel of lowest program number
+    my ($lowest_pn) = sort { $a <=> $b } (keys %{$ch->{virtual}});
+    ($fcc_virt) = split /\./,$ch->{virtual}{$lowest_pn}{channel};
   }
 
   # transmitter power, location, etc.  Order is from rabbitears.info lookup
