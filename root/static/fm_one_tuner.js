@@ -34,20 +34,13 @@ function restore_radio_button(category, default_value) {
   "use strict";
   if ($.cookie(category) === undefined) {
     $('#' + category + ' [value="' + default_value + '"]').button('toggle');
+    $.cookie(category, default_value, { expires : 365, path: "/;SameSite=Strict", secure: true});
   } else {
     $("#" + category + " .btn").each(function () {
       if ($(this).attr('value') === $.cookie(category)) {
         $(this).button('toggle');
       }
     });
-  }
-}
-
-
-function restore_checkbox(category, value) {
-  "use strict";
-  if ($.cookie(value) === undefined || $.cookie(value) === 'true') {
-    $('#' + category + ' [value="' + value + '"]').button('toggle');
   }
 }
 
