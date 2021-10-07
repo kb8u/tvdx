@@ -449,10 +449,11 @@ sub _signalreport_update {
       return 0
     }
   }
-  $entry->update({'rx_date'    => $args->{mysql_now},
-                  'rf_channel' => $args->{channel},
-                  'strength'   => $ch->{strength},
-                  'sig_noise'  => $ch->{sig_noise}});
+  $entry->update({'rx_date'         => $args->{mysql_now},
+                  'rf_channel'      => $args->{channel},
+                  'virtual_channel' => $virtual_channel,
+                  'strength'        => $ch->{strength},
+                  'sig_noise'       => $ch->{sig_noise}});
   return 1;
 }
 
