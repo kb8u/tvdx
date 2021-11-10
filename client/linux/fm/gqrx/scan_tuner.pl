@@ -2,29 +2,55 @@
 
 use strict 'vars';
 use feature 'say';
+use Time::HiRes 'usleep';
 use Getopt::Std;
+use FindBin '$Bin';
+use List::Util 'none';
 use LWP;
 use JSON;
 use LWP::Simple;
 use Compress::Bzip2 ':utilities';
-use List::Util qw(sum all);
-use List::MoreUtils 'uniq';
 use DateTime;
 use DateTime::TimeZone;
 use DateTime::Format::ISO8601;
-use Data::Dumper;
+use File::Slurp;
+use Try::Tiny;
 use GQRX::Remote;
 
 my $ua = LWP::UserAgent->new;
 my $spot_url = 'http://rabbitears.info/tvdx/fm_spot';
 #my $spot_url = 'http://www.rabbitears.info:3000/fm_spot';
 
-our ($opt_d,$opt_h,$opt_s,$opt_t);
-getopts('dst:h');
+our ($opt_d,$opt_h,$opt_i,$opt_s,$opt_t);
+getopts('dst:hi:');
 
 help() if $opt_h;
 help() unless $opt_t;
+
 my $debug = $opt_d;
+
+my %ignore; # like $ignore{899000000} = [45573] for 89.9,B205
+if ($opt_i) {
+  my @ignore = split ',', $opt_i;
+  for (my $i = 0;$i <= $#ignore; $i+=2) {
+    $ignore[$i] = $ignore[$i] * 1e6;
+    $ignore[$i+1] = hex $ignore[$i+1];
+    $ignore{$ignore[$i]} = [] unless exists $ignore{$ignore[$i]};
+    push @{$ignore{$ignore[$i]}}, $ignore[$i+1];
+  }
+}
+my $ignore_file = "$Bin/ignore_pi.txt";
+my @ignore_file;
+try { @ignore_file = read_file($ignore_file); }
+catch { say "couldn't open $ignore_file: $_" if $debug; };
+chomp @ignore_file;
+@ignore_file = grep(/^\d{2,3}\.\d,[0-9a-f]{4}$/i,@ignore_file);
+foreach (@ignore_file) {
+  my ($freq,$pi) = split ',',$_;
+  $freq *= 1e6;
+  $ignore{$freq} = [] unless exists $ignore{$freq};
+  push @{$ignore{$freq}}, hex $pi;
+}
 
 my $remote = GQRX::Remote->new();
 remote_error() unless $remote->connect;
@@ -33,15 +59,15 @@ remote_error() unless $remote->set_dsp_status(1);
 
 do {
   my $scan = {'tuner_key' => $opt_t};
-  for (my $freq = 88100000; $freq <= 107900000; $freq += 200000) {
+  for (my $freq = 881e5; $freq <= 1079e5; $freq += 2e5) {
     print "scanning $freq ... " if $debug;
     remote_error() unless $remote->set_frequency($freq);
-    # clear RDS decoder out.
-    sleep(1);
+    # clear RDS decoder out by turning it off and on again
+    usleep(3e5);
     remote_error() unless $remote->set_rds_status(0);
-    sleep(1);
+    usleep(3e5);
     remote_error() unless $remote->set_rds_status(1);
-    sleep(10);
+    sleep(6);
     my $pi = $remote->get_rds_pi;
     remote_error() unless $pi;
 
@@ -52,16 +78,19 @@ do {
          DateTime->now(time_zone => DateTime::TimeZone->new(name=>'UTC'))).'Z';
 
     say "$iso_now strength $strength pi $pi" if $debug;
-    $scan->{signal}->{$freq}->{time} = $iso_now;
-    $scan->{signal}->{$freq}->{s} = $strength;
-    $scan->{signal}->{$freq}->{pi_code} = hex $pi;
+    if (none { hex $pi == $_ } @{$ignore{$freq}}) {
+      $scan->{signal}->{$freq}->{time} = $iso_now;
+      $scan->{signal}->{$freq}->{s} = $strength;
+      $scan->{signal}->{$freq}->{pi_code} = hex $pi;
+    }
+    else {say "$freq $pi is in ignore list" if $debug }
 
-    if (scalar %{$scan->{signal}} >=11) {
+    # channel scan takes about 9 seconds, send reports every 5 minutes or so
+    if (scalar %{$scan->{signal}} >=32) {
       spot($scan);
       $scan = {'tuner_key' => $opt_t};
     }
   }
-  spot($scan);
 } while (1);
 
 
@@ -115,6 +144,9 @@ results can be viewed on a map.
 
 Program options:
 -h Print help (you're reading it)
+-i Frequency/PI code combinations to ignore like 89.9,B205,103.7,83BC
+   Also reads input from file ignore_pi.txt in installation directory,
+   one entry per line, like 89.9,B205
 -t Mandatory ID so web site can know what tuner is where.  Contact
      kb8u_vhf@hotmail.com for an ID number.
 -d Run only one band scan and print debugging information.
