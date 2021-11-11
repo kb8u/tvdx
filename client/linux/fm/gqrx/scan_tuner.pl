@@ -58,8 +58,8 @@ remote_error() unless $remote->set_demodulator_mode('WFM');
 remote_error() unless $remote->set_squelch_threshold(-150);
 remote_error() unless $remote->set_dsp_status(1);
 
+my $scan = {'tuner_key' => $opt_t};
 do {
-  my $scan = {'tuner_key' => $opt_t};
   for (my $freq = 881e5; $freq <= 1079e5; $freq += 2e5) {
     print "scanning $freq ... " if $debug;
     remote_error() unless $remote->set_frequency($freq);
