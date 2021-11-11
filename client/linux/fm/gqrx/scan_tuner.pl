@@ -55,6 +55,7 @@ foreach (@ignore_file) {
 my $remote = GQRX::Remote->new();
 remote_error() unless $remote->connect;
 remote_error() unless $remote->set_demodulator_mode('WFM');
+remote_error() unless $remote->set_squelch_threshold(-150);
 remote_error() unless $remote->set_dsp_status(1);
 
 do {
@@ -67,7 +68,7 @@ do {
     remote_error() unless $remote->set_rds_status(0);
     usleep(3e5);
     remote_error() unless $remote->set_rds_status(1);
-    sleep(6);
+    sleep(10);
     my $pi = $remote->get_rds_pi;
     remote_error() unless $pi;
 
@@ -86,7 +87,7 @@ do {
     else {say "$freq $pi is in ignore list" if $debug }
 
     # channel scan takes about 9 seconds, send reports every 5 minutes or so
-    if (scalar %{$scan->{signal}} >=32) {
+    if (scalar %{$scan->{signal}} >=26) {
       spot($scan);
       $scan = {'tuner_key' => $opt_t};
     }
