@@ -10,7 +10,8 @@ use DateTime;
 use DateTime::Format::MySQL;
 use List::Util 'all';
 
-use lib './lib';
+use FindBin;
+use lib "$FindBin::Bin/lib";
 use tvdx::Model::DB;
 
 
@@ -22,13 +23,17 @@ my $fm_fcc_rs = tvdx::Model::DB->new()->resultset('FmFcc');
 
 my $sql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
 
+open my $wtfda_errors, '>', "$FindBin::Bin/root/static/wtfda_errors.html";
+print $wtfda_errors "<HTML><BODY>$sql_now<br>";
+
 my $site = 'https://db.wtfda.org';
 my $ua = Mojo::UserAgent->new->inactivity_timeout(90);
 
 my $res = $ua->get($site)->result;
 my $csrftoken;
 
-if ($res->is_error)    {
+if ($res->is_error) {
+  print $wtfda_errors $res->message,'<br>';
   say $res->message if $opt_d;
   exit 1;
 }
@@ -41,6 +46,7 @@ if ($res->is_success)  {
   }
 }
 else {
+  print $wtfda_errors "No response from $site",'<br>';
   say "not successsful" if $opt_d;
   exit 1;
 }
@@ -68,11 +74,13 @@ if ($res) {
     process_res($res);
   }
   else {
+    print $wtfda_errors "Can't find last page number<br>";
     say "Can't find last page number" if $opt_d;
     exit;
   }
 }
 else {
+  print $wtfda_errors "no result from first post<br>";
   say "no result from first post" if $opt_d;
   exit 1;
 }
@@ -94,8 +102,13 @@ PAGE: for (my $page=2; $page <= $last_page ; $page++) {
     }
     next PAGE;
   }
+  say "Failed 5 times to get $page" if $opt_d;
+  print $wtfda_errors "Failed 5 times to get $page", '<br>';
   exit 1;
 }
+
+say $wtfda_errors 'Finished reading wtfda site.<br></BODY></HTML>';
+close $wtfda_errors;
   
 
 sub process_res {
@@ -128,6 +141,10 @@ sub process_res {
     $row{remarks} = $td->[20]->text;
 
     $row{callsign} =~ s/\s+//g;
+    if ($row{callsign} =~ /.*\-FM\d+$/) {
+      say "skipping repeater $row{callsign}" if $opt_d;
+      next;
+    }
     $row{frequency} =~ s/\.//;
     $row{frequency} .= '00000';
     $row{city_state} = "$city, $s_p";
@@ -152,7 +169,9 @@ sub process_res {
         || $row{pi_code} < 0 || $row{pi_code} > 65535
         || (length($row{callsign}) < 3) || (length($row{callsign}) > 10)
     ) {
-      say "bad data read for $row{callsign}" if $opt_d;
+      my $err = "bad data read for $row{callsign}";
+      print $wtfda_errors $err,'<br>';
+      say $err if $opt_d;
       next;
     }
 
@@ -164,14 +183,18 @@ sub process_res {
                                       'end_date' => undef});
     if (!defined $fcc_row || $fcc_row == 0) {
       unless (all {defined $_} (@row{qw(pi_code callsign latitude longitude last_fcc_lookup city_state country)})) {
-        say ("Missing or bad data in row: ",join ' ',@row{qw(pi_code callsign latitude longitude sql_now city_state country)}) if $opt_d;
+        my $err = join ' ', 'Missing or bad data in row:', @row{qw(pi_code callsign latitude longitude sql_now city_state country)};
+        print $wtfda_errors $err,'<br>';
+        say $err if $opt_d;
         next;
       }
       say "creating row for $row{callsign}" if $opt_d;
       $row{start_date} = $sql_now;
       my $entry = $fm_fcc_rs->create(\%row);
       if (!$entry) {
-        say ("Couldn't create new fm_fcc row with: ",join ' ',@row{qw(pi_code callsign latitude longitude last_fcc_lookup start_date city_state country)}) if $opt_d;
+        my $err = join ' ',"Couldn't create new fm_fcc row with:", ,@row{qw(pi_code callsign latitude longitude last_fcc_lookup start_date city_state country)};
+        print $wtfda_errors $err,'<br>';
+        say $err if $opt_d;
         next;
       }
     }
