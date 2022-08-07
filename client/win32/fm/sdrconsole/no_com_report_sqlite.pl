@@ -19,25 +19,27 @@ use EV;
 our ($opt_d,$opt_f,$opt_h,$opt_s,$opt_t,$opt_T,$opt_u);
 getopts('dhp:P:s:t:T:u:');
 
-my $sqlite_file = $opt_f ? $opt_f : "$ENV{APPDATA}\\SDR-RADIO.com (V3)\RDSDatabase.sqlite";
+my $sqlite_file = $opt_f ? $opt_f : "$ENV{APPDATA}\\SDR-RADIO.com (V3)\\RDSDatabase.sqlite";
 my $report_interval = $opt_T ? $opt_T : 5*60;
 my $spot_url = $opt_u ? $opt_u : 'http://rabbitears.info/tvdx/fm_spot';
 help() if $opt_t =~ /\D/;
 help() if $opt_h;
 help() unless $opt_t;
-my $debug = $opt_d;
+our $debug = $opt_d;
 help() if $report_interval < 300;
 
 # prevent child processes from opening a console window
 Win32::SetChildShowWindow(0);
 
-EV::timer(0, $report_interval, sub {
+my $ev = EV::timer(0, $report_interval, sub {
   my $scan = { signal => {}, tuner_key => 0+$opt_t };
   my $end_epoch = time;
   my $start_epoch = $end_epoch - $report_interval;
   
+  say "Opening $sqlite_file" if $debug;
   my $dbh = DBI->connect("dbi:SQLite:dbname=$sqlite_file",
                          undef,undef,{sqlite_open_flags => SQLITE_OPEN_READONLY});
+  die "can't open $sqlite_file" unless $dbh;
   
   my $sql = "select TimeUTC, Frequency, PICode, PICount from RDSStations where TimeUTC between $start_epoch and $end_epoch;";
   my $sth = $dbh->prepare($sql);
