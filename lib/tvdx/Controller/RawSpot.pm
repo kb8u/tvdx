@@ -234,22 +234,8 @@ sub _find_call {
         }
       }
 
-      # check if one observed tsid matches
-      {
-        my @match;
-        for(my $i=0;$i<=$#rlu;$i++) {
-          if ($rlu[$i]->{observed_tsid} == $ch->{tsid}) {
-            push @match,$i;
-          }
-        }
-        if (scalar @match == 1) {
-          %transmitter = %{$rlu[$match[0]]};
-          $transmitter{fcc_virt} = $fcc_virt;
-        }
-      }
-
       # check if one digital_tsid matches
-      unless (%transmitter) {
+      {
         my @match;
         for(my $i=0;$i<=$#rlu;$i++) {
           if($rlu[$i]->{digital_tsid} == $ch->{tsid}) {
@@ -280,6 +266,20 @@ sub _find_call {
             $transmitter{fcc_virt} = $fcc_virt;
             last;
           }
+        }
+      }
+
+      # check if one observed tsid matches
+      unless (%transmitter) {
+        my @match;
+        for(my $i=0;$i<=$#rlu;$i++) {
+          if ($rlu[$i]->{observed_tsid} == $ch->{tsid}) {
+            push @match,$i;
+          }
+        }
+        if (scalar @match == 1) {
+          %transmitter = %{$rlu[$match[0]]};
+          $transmitter{fcc_virt} = $fcc_virt;
         }
       }
     }
