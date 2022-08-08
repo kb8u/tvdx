@@ -234,16 +234,46 @@ sub _find_call {
         }
       }
 
+      # check if one observed tsid matches
+      {
+        my @match;
+        for(my $i=0;$i<=$#rlu;$i++) {
+          if ($rlu[$i]->{observed_tsid} == $ch->{tsid}) {
+            push @match,$i;
+          }
+        }
+        if (scalar @match == 1) {
+          %transmitter = %{$rlu[$match[0]]};
+          $transmitter{fcc_virt} = $fcc_virt;
+        }
+      }
+
+      # check if one digital_tsid matches
+      unless (%transmitter) {
+        my @match;
+        for(my $i=0;$i<=$#rlu;$i++) {
+          if($rlu[$i]->{digital_tsid} == $ch->{tsid}) {
+            push @match,$i;
+          }
+        }
+        if (scalar @match == 1) {
+          %transmitter = %{$rlu[$match[0]]};
+          $transmitter{fcc_virt} = $fcc_virt;
+        }
+      }
+
       # use last line if all the calls are the same
-      @rlu = ($rlu[$#rlu]) if all { $_->{call} eq $rlu[0]->{call} } @rlu;
-      # use match if it's the only one
-      if (scalar @rlu == 1 && defined $rlu[0]) {
-        %transmitter = %{$rlu[0]};
-        $transmitter{fcc_virt} = $fcc_virt;
+      unless (%transmitter) {
+        @rlu = ($rlu[$#rlu]) if all { $_->{call} eq $rlu[0]->{call} } @rlu;
+        # use match if it's the only one
+        if (scalar @rlu == 1 && defined $rlu[0]) {
+          %transmitter = %{$rlu[0]};
+          $transmitter{fcc_virt} = $fcc_virt;
+        }
       }
 
       # try reporter_callsign if there's more than one
-      if (scalar @rlu > 1 && $ch->{reporter_callsign}) {
+      if (!%transmitter && scalar @rlu > 1 && $ch->{reporter_callsign}) {
         foreach my $h (@rlu) {
           if ($ch->{reporter_callsign} eq $h->{call}) {
             %transmitter = %{$h};
