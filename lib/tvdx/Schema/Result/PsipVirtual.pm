@@ -50,6 +50,11 @@ __PACKAGE__->table("psip_virtual");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
+=head2 program
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =head2 name
 
   data_type: 'tinyblob'
@@ -79,6 +84,8 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
+  "program",
+  { data_type => "integer", is_nullable => 1 },
   "name",
   { data_type => "tinyblob", is_nullable => 0 },
   "channel",
@@ -117,8 +124,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-20 09:59:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ncMb+AvNxr5kTgkRnXwxIA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-10 16:58:37
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:puPT5wqmCK7teTLH9YCMVg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
