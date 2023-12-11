@@ -148,13 +148,11 @@ __PACKAGE__->add_columns(
 
 =item * L</callsign>
 
-=item * L</rf_channel>
-
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("callsign", "rf_channel");
+__PACKAGE__->set_primary_key("callsign");
 
 =head1 RELATIONS
 
@@ -204,8 +202,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-19 14:05:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Ku194K8upMvspBt1+P2wzQ
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-10 21:48:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:X2wVFxljnV0HQWwvVe8wVQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
