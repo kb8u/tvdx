@@ -511,6 +511,7 @@ sub _virtual_current {
     my $v_row =
       $args->{c}->model('DB::PsipVirtual')->search(
         {'callsign' => $args->{callsign},
+         'program'  => $program+0,
          'name'     => $ch->{virtual}{$program}{name},
          'channel'  => $ch->{virtual}{$program}{channel}});
 
@@ -518,6 +519,7 @@ sub _virtual_current {
     if ((!defined $v_row) || $v_row == 0) {
       $args->{c}->model('DB::PsipVirtual')->create({
         'rx_date'  => $args->{mysql_now},
+        'program'  => $program+0,
         'name'     => $ch->{virtual}{$program}{name},
         'channel'  => $ch->{virtual}{$program}{channel},
         'callsign' => $args->{callsign}});
