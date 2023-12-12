@@ -77,6 +77,7 @@ CREATE TABLE signal_report (
   rx_date DATETIME NOT NULL,
   first_rx_date DATETIME NOT NULL,
   rf_channel INTEGER NOT NULL,
+  modulation VARCHAR(255) NOT NULL,
   strength FLOAT(11,8) NOT NULL,
   sig_noise FLOAT(11,8) NOT NULL,
   tuner_id VARCHAR(255) NOT NULL,

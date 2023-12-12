@@ -454,13 +454,16 @@ sub _signalreport_update {
   my $ch = $args->{channel_details};
   my $callsign = $args->{callsign} ? $args->{callsign} : undef;
   my $virtual_channel = $args->{fcc_virtual} ? $args->{fcc_virtual} : undef;
+  # use NULL in database for no modulation ("none" from tuners)
+  my $modulation = $ch->{'modulation'} eq 'none' ? undef : $ch->{'modulation'};
 
   # update SignalReport with or without callsign
-  # Create new callsign record?  Station moving to new channel qualifies
+  # Create new callsign (or station moving to new channel or modulation)?
   my $entry = $args->{c}->model('DB::SignalReport')
                         ->search({'tuner_id' => $args->{tuner_id},
                                   'tuner_number' => $args->{tuner_number},
                                   'rf_channel' => $args->{channel},
+                                  'modulation' => $modulation,
                                   'callsign' => $callsign,})->first;
   # test $entry as scalar (ResultSet boolean is always true)
   if ((!defined $entry) || $entry == 0) {
@@ -468,6 +471,7 @@ sub _signalreport_update {
       'rx_date'         => $args->{mysql_now},
       'first_rx_date'   => $args->{mysql_now},
       'rf_channel'      => $args->{channel},
+      'modulation'      => $modulation,
       'strength'        => $ch->{'strength'},
       'sig_noise'       => $ch->{'sig_noise'},
       'tuner_id'        => $args->{tuner_id},
@@ -482,6 +486,7 @@ sub _signalreport_update {
   $entry->update({'rx_date'         => $args->{mysql_now},
                   'rf_channel'      => $args->{channel},
                   'virtual_channel' => $virtual_channel,
+                  'modulation'      => $modulation,
                   'strength'        => $ch->{strength},
                   'sig_noise'       => $ch->{sig_noise}});
   return 1;

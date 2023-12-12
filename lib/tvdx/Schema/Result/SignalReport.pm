@@ -61,6 +61,12 @@ __PACKAGE__->table("signal_report");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 modulation
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 255
+
 =head2 strength
 
   data_type: 'float'
@@ -118,6 +124,8 @@ __PACKAGE__->add_columns(
   },
   "rf_channel",
   { data_type => "integer", is_nullable => 0 },
+  "modulation",
+  { data_type => "varchar", is_nullable => 1, size => 255 },
   "strength",
   { data_type => "float", is_nullable => 0, size => [11, 8] },
   "sig_noise",
@@ -182,8 +190,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-08-05 20:13:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MpE3eRZruGWB3f8KpxMHIA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-11 20:47:22
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:60w5lMxi6cllm2o+JJyDag
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
