@@ -1,7 +1,4 @@
 use utf8;
-use DateTime::Format::MySQL;
-use DateTime::Format::HTTP;
-
 package tvdx::Schema::Result::FmSignalReport;
 
 # Created by DBIx::Class::Schema::Loader
@@ -159,9 +156,15 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2021-01-24 20:50:07
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZOgSl6khInPzBS/4Ck+YtQ
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-11 20:09:01
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:88oGch4ZjYRe+DUF6uyr+w
 
+
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->meta->make_immutable;
+
+use DateTime::Format::MySQL;
+use DateTime::Format::HTTP;
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
