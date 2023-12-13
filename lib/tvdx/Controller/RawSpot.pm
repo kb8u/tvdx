@@ -182,8 +182,8 @@ sub _find_call {
       && all { exists $ch->{virtual}{$_}{channel}
                && $ch->{virtual}{$_}{channel} =~ /^\d+\.\d+$/i
              } (keys %{$ch->{virtual}})) {
-    # use channel of lowest program number
-    my ($lowest_pn) = sort { $a <=> $b } (keys %{$ch->{virtual}});
+    # use channel of lowest program number (ignore non-numeric)
+    my ($lowest_pn) = sort {$a <=> $b} grep /^\d+$/, keys %{$ch->{virtual}};
     ($fcc_virt) = split /\./,$ch->{virtual}{$lowest_pn}{channel};
   }
 
