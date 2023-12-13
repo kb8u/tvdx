@@ -270,10 +270,11 @@ sub _find_call {
       }
 
       # check if one observed tsid matches
-      unless (%transmitter) {
+      if (!%transmitter && @rlu) {
         my @match;
         for(my $i=0;$i<=$#rlu;$i++) {
-          if ($rlu[$i]->{observed_tsid} == $ch->{tsid}) {
+          if (   $rlu[$i]->{observed_tsid} && $ch->{tsid}
+              && $rlu[$i]->{observed_tsid} == $ch->{tsid}) {
             push @match,$i;
           }
         }
