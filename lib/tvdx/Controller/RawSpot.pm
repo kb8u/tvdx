@@ -502,6 +502,7 @@ sub _virtual_current {
 
   # process each virtual channel
   for my $program (keys %{$ch->{virtual}}) {
+    next if $program eq "";
     # skip if missing name or channel
     next unless $ch->{virtual}{$program}{name};
     next unless $ch->{virtual}{$program}{channel};
