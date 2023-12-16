@@ -434,7 +434,9 @@ sub _rrd_update {
     }
   }
 
-  if (_rrd_not_pending($rrd_file) && $args->{now_epoch}-600 > RRDs::last($rrd_file)) {
+  my $rrd_last = RRDs::last($rrd_file);
+  $rrd_last = $rrd_last ? $rrd_last : 0;
+  if (_rrd_not_pending($rrd_file) && $args->{now_epoch}-600 > $rrd_last) {
     for (my $i = 3; $i > 0; $i--) {
       my $te = $args->{now_epoch} - 60*$i;
       RRDs::update( $rrd_file, '--daemon', $args->{c}->config->{socket},
