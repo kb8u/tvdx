@@ -61,12 +61,12 @@ my $form = { csrfmiddlewaretoken => $csrftoken,
              callsign => '',
              frequency => '', city => '', state => '', fac_country => '',
              prl => '', format => '', slogan => '', language => '',
-             picode => '', numperpage => 3000 };
+             picode => '', id => '', numperpage => 3000 };
 $res = $ua->post($site => $header => form => $form)->result;
 
 my $last_page = 0;
 if ($res) {
-  my $page_str = $res->dom->find('h3+div')->first->text;
+  my $page_str = $res->dom->find('h3+div.page')->first->text;
   if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
     $last_page = $1;
     say "last page number $last_page" if $opt_d;
@@ -124,21 +124,22 @@ sub process_res {
     my $city = $td->[3]->text;
     my $s_p = $td->[4]->text;
     $row{country} = $td->[5]->text;
-    $row{mode} = $td->[6]->text;
-    $row{lang} = $td->[7]->text;
-    $row{format} = $td->[8]->text;
-    $row{slogan} = $td->[9]->text;
-    $row{erp_h} = $td->[10]->text;
-    $row{erp_v} = $td->[11]->text;
-    $row{haat_h} = $td->[12]->text;
-    $row{haat_v} = $td->[13]->text;
-    my $lat = $td->[14]->text;
-    my $lon = $td->[15]->text;
-    $row{pi_code} = $td->[16]->text;
-    $row{ps_info} = $td->[17]->text; 
-    $row{radiotext} = $td->[18]->text;
-    $row{pty} = $td->[19]->text;
+    $row{erp_h} = $td->[6]->text;
+    $row{erp_v} = $td->[7]->text;
+    $row{haat_h} = $td->[8]->text;
+    $row{haat_v} = $td->[9]->text;
+    my $lat = $td->[10]->text;
+    my $lon = $td->[11]->text;
+    $row{lang} = $td->[12]->text;
+    $row{mode} = $td->[13]->text;
+    $row{pi_code} = $td->[14]->text;
+    $row{ps_info} = $td->[15]->text; 
+    $row{radiotext} = $td->[16]->text;
+    $row{pty} = $td->[17]->text;
+    $row{format} = $td->[18]->text;
+    $row{slogan} = $td->[19]->text;
     $row{remarks} = $td->[20]->text;
+#    $row{id} = $td->[21]->text;
 
     $row{callsign} =~ s/\s+//g;
     if ($row{callsign} =~ /.*\-FM\d+$/) {
@@ -166,7 +167,9 @@ sub process_res {
         || $row{haat_v} < -1000 || $row{haat_v} > 2000
         || $row{latitude} < -90 || $row{latitude} > 90
         || $row{longitude} < -180 || $row{longitude} > 180
+        || ($row{latitude} == 0 && $row{longitude} == 0)
         || $row{pi_code} < 0 || $row{pi_code} > 65535
+        || $row{callsign} eq 'NEW' || $row{callsign} =~ /\?/
         || (length($row{callsign}) < 3) || (length($row{callsign}) > 10)
     ) {
       my $err = "bad data read for $row{callsign}";
