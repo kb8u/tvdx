@@ -61,12 +61,12 @@ my $form = { csrfmiddlewaretoken => $csrftoken,
              callsign => '',
              frequency => '', city => '', state => '', fac_country => '',
              prl => '', format => '', slogan => '', language => '',
-             picode => '', id => '', numperpage => 3000 };
+             picode => '', id => '', mode => '', numperpage => 3000 };
 $res = $ua->post($site => $header => form => $form)->result;
 
 my $last_page = 0;
 if ($res) {
-  my $page_str = $res->dom->find('h3+div.page')->first->text;
+  my $page_str = $res->dom->find('#search~div.page')->first->text;
   if ($page_str =~ /page:\s+\d+\s+of\s+(\d+)/i) {
     $last_page = $1;
     say "last page number $last_page" if $opt_d;
