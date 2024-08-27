@@ -4,6 +4,7 @@ use namespace::autoclean;
 use DateTime;
 use DateTime::Format::MySQL;
 use DateTime::Format::ISO8601;
+use DateTime::Duration;
 use Math::Round 'nearest';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
@@ -50,7 +51,10 @@ sub fm_spot :Global :ActionClass('REST') {}
 sub fm_spot_POST :Global {
   my ( $self, $c ) = @_;
   # the current time formatted to mysql format (UTC time zone)
-  my $mysql_now = DateTime::Format::MySQL->format_datetime(DateTime->now);
+  my $dt_now = DateTime->now;
+  my $mysql_now = DateTime::Format::MySQL->format_datetime($dt_now);
+  $dt_now->set_time_zone('UTC');
+  my $dt_30min = DateTime::Duration->new(minutes=>30);
   # json with information from (client) scanlog.pl
   my $json = ($c->req->headers->content_type eq 'application/octet-stream')
            ? decode_json(memBunzip($c->req->body_data))
@@ -90,16 +94,23 @@ sub fm_spot_POST :Global {
     next if $s && $s !~ /^$re_num_real$/;
 
     my $time;
-    try {
-     # DateTime::Format::MySQL is timezone agnostic so coerce it to UTC
-     $time = defined $json->{signal}{$frequency}{time}
-                ? DateTime::Format::MySQL->format_datetime(
-                    DateTime::Format::ISO8601->parse_datetime(
-                      $json->{signal}{$frequency}{time}
-                    )->set_time_zone('UTC')
-                  )
-                : $mysql_now;
-    } catch { $time = $mysql_now };
+    if (defined $json->{signal}{$frequency}{time}) {
+      try {
+        my $sig_dt = DateTime::Format::ISO8601->parse_datetime($json->{signal}{$frequency}{time});
+        # DateTime::Format::MySQL is timezone agnostic so coerce it to UTC
+        $sig_dt->set_time_zone('UTC');
+        if ($sig_dt < $dt_now-$dt_30min || $sig_dt > $dt_now) {
+          $time = $mysql_now;
+        } else {
+          $time = DateTime::Format::MySQL->format_datetime($sig_dt);
+        }
+      }
+      catch {
+        $time = $mysql_now
+      };
+    } else {
+       $time = $mysql_now;
+    }
 
     my $fcc_key;
     my $distance = 1e6; # an arbitary impossibly large number
