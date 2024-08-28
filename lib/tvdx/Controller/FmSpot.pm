@@ -50,6 +50,7 @@ sub fm_spot :Global :ActionClass('REST') {}
 
 sub fm_spot_POST :Global {
   my ( $self, $c ) = @_;
+
   # the current time formatted to mysql format (UTC time zone)
   my $dt_now = DateTime->now;
   my $mysql_now = DateTime::Format::MySQL->format_datetime($dt_now);
@@ -61,14 +62,20 @@ sub fm_spot_POST :Global {
            : $c->req->data;
   my $tuner_key = $json->{'tuner_key'};
 
-  # log if tuner isn't found
-  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
-  if (! $tuner) {
-    $c->log->info("tuner_key $tuner_key is not registered with site");
-    $c->response->body("FAIL: Tuner $tuner_key is not registered with site");
-    $c->response->status(403);
-    return;
+  my $tuner = $self->_get_tuner($c,$tuner_key);
+
+  unless ($c->req->headers->content_type eq 'application/octet-stream') {
+    if (!exists $json->{'password'} || $tuner->user_key->password ne $json->{'password'}) {
+      my $pw_error = exists $json->{'password'}
+                   ? "has bad password ".$json->{'password'}
+                   : "missing password in JSON";
+      $c->log->info("tuner_key $tuner_key $pw_error");
+      $c->response->body("invalid password");
+      $c->response->status(403);
+      return;
+    }
   }
+
   my $gis = GIS::Distance->new('Vincenty');
 
   # log if tuner is in tuner_debug table
@@ -166,7 +173,8 @@ Delete a spot from the database.  Args are tuner_key, callsign, frequency
 sub fm_spot_DELETE :Global {
   my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
 
-  $self->_check_tuner($c,$tuner_key);
+  # errors if $tuner_key dosen't exist
+  $self->_get_tuner($c,$tuner_key);
   my $rs = $c->model('DB::FmSignalReport')->search(
              {'tuner_key' => $tuner_key,
               'me.frequency' => $frequency,
@@ -194,7 +202,8 @@ and frequency
 sub delete :Global {
   my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
 
-  $self->_check_tuner($c,$tuner_key);
+  # errors if $tuner_key dosen't exist
+  $self->_get_tuner($c,$tuner_key);
   my $rs = $c->model('DB::FmSignalReport')->search(
              {'tuner_key' => $tuner_key,
               'me.frequency' => $frequency,
@@ -225,7 +234,7 @@ string for time period; 'ever' gets all data ever, otherwise just the last
 sub fm_map_data :Global {
   my ($self, $c, $tuner_key, $period) = @_;
 
-  $self->_check_tuner($c,$tuner_key);
+  my $tuner = $self->_get_tuner($c,$tuner_key);
 
   my $now = DateTime->now;
 
@@ -245,8 +254,6 @@ sub fm_map_data :Global {
 
   # build data structure that will be sent out at JSON
   my @markers;
-
-  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
 
   while(my $signal = $rs->next) {
     next unless defined $signal->fcc_key;
@@ -311,10 +318,7 @@ Basic map has template to get tuner location, handle, etc.
 sub fm_one_tuner_map :Global {
   my ($self, $c, $tuner_key) = @_;
 
-  # check if tuner is known
-  $self->_check_tuner($c,$tuner_key);
-
-  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$tuner_key});
+  my $tuner = $self->_get_tuner($c,$tuner_key);
 
   $c->stash(tuner        => $tuner);
   $c->stash(root_url     => $c->config->{root_url});
@@ -326,7 +330,8 @@ sub fm_one_tuner_map :Global {
 }
 
 
-sub _check_tuner {
+# errors if $tuner_key dosen't exist or return result set
+sub _get_tuner {
   my ($self,$c,$tuner_key) = @_;
 
   # error if tuner is not in d.b.
@@ -341,6 +346,7 @@ sub _check_tuner {
     $c->response->status(403);
     $c->detach();
   }
+  return $tuner;
 }
 
 =head2 fm_all_tuner_data
