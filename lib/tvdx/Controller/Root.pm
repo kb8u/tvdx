@@ -313,8 +313,9 @@ sub many_tuner_map :Global {
     my $tuner_number = shift @tuner_info_copy; 
 
     my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    my $tn =$c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
-                                                'tuner_number'=>$tuner_number});
+    my $tn =$c->model('DB::TunerNumber')
+              ->search({'tuner_id'=>$tuner_id, 'tuner_number'=>$tuner_number})
+              ->first();
     push @reception_locations,   $tuner->owner_id
                                . " "
                                . $tn->description
@@ -355,8 +356,9 @@ sub one_tuner_map :Global {
   $self->_check_tuners($c,$tuner_id, $tuner_number);
 
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-  my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
-                                               'tuner_number'=>$tuner_number});
+  my $tn = $c->model('DB::TunerNumber')
+             ->search({'tuner_id'=>$tuner_id, 'tuner_number'=>$tuner_number})
+             ->first();
 
   $c->stash(tuner        => $tuner);
   $c->stash(tuner_number => $tn);
@@ -561,8 +563,8 @@ sub all_tuner_data :Global {
             && exists $tuners{$tuner_id}{$tuner_number}) {
       $tuners{$tuner_id}{$tuner_number} = {};
       my $tn =$c->model('DB::TunerNumber')
-                ->find({'tuner_id'=>$tuner_id,
-                        'tuner_number'=>$tuner_number});
+                ->search({'tuner_id'=>$tuner_id, 'tuner_number'=>$tuner_number})
+                ->first();
       my $description = (defined $tn) ? $tn->description : '(no description)';
       my $t = $c->model('DB::Tuner')->find({'tuner_id' => $tuner_id});
       $tuners{$tuner_id}{$tuner_number}{descr} =
@@ -616,8 +618,9 @@ sub signal_graph  :Global {
   $self->_check_tuners($c,$tuner_id,$tuner_number);
 
   my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-  my $tn = $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
-                                               'tuner_number'=>$tuner_number});
+  my $tn = $c->model('DB::TunerNumber')
+             ->search({'tuner_id'=>$tuner_id, 'tuner_number'=>$tuner_number})
+             ->first();
 
   my $entry = $c->model('DB::SignalReport')
                 ->count({'tuner_id' => $tuner_id,
@@ -779,8 +782,8 @@ sub all_stations_ever_map :Global {
     my $tuner_id =     shift @tuner_info_copy;
     my $tuner_number = shift @tuner_info_copy; 
     my $tuner = $c->model('DB::Tuner')->find({'tuner_id'=>$tuner_id});
-    my $tn= $c->model('DB::TunerNumber')->find({'tuner_id'=>$tuner_id,
-                                                'tuner_number'=>$tuner_number});
+    my $tn= $c->model('DB::TunerNumber')
+              ->search({'tuner_id'=>$tuner_id, 'tuner_number'=>$tuner_number})->first();
     push @reception_locations, $tuner->owner_id . " " . $tn->description;
   }
 
@@ -860,8 +863,8 @@ sub _check_tuners {
       $c->response->status(403);
       $c->detach();
     }
-    if (! $c->model('DB::TunerNumber')->find({'tuner_number'=>$tuner_number,
-                                              'tuner_id'=>$tuner_id})) {
+    if (! $c->model('DB::TunerNumber')
+            ->count({'tuner_number'=>$tuner_number, 'tuner_id'=>$tuner_id})) {
       $c->response->body("FAIL: Tuner $tuner_id tuner number $tuner_number is not registered with site");
       $c->response->status(403);
       $c->detach();

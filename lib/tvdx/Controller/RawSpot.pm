@@ -120,8 +120,9 @@ sub raw_spot_POST :Global {
 sub _lu_call {
   my ($args,$possible_call) = @_;
   # update or create rabbitears_call if entry is old or missing
-  my ($re_call_find) = $args->{c}->model('DB::RabbitearsCall')
-                                 ->find({'callsign' => $possible_call});
+  my $re_call_find = $args->{c}->model('DB::RabbitearsCall')
+                               ->search({'callsign' => $possible_call})
+                               ->first();
   my $rlu;
   if (   (! $re_call_find)
       || (DateTime::Format::MySQL->parse_datetime(
@@ -197,8 +198,8 @@ sub _find_call {
   # try tsid (excepting 0, 1 and greater than 65535) and channel
   if ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) {
     # update or create rabbitears_tsid if entry is old or missing
-    my ($re_tsid_find) = $args->{c}->model('DB::RabbitearsTsid')
-                                   ->find({'tsid'=>$ch->{tsid}});
+    my $re_tsid_find = $args->{c}->model('DB::RabbitearsTsid')
+                                 ->search({'tsid'=>$ch->{tsid}})->first();
     my $rlu;
     if (   (! $re_tsid_find)
         || (DateTime::Format::MySQL->parse_datetime(
