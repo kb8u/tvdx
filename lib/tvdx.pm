@@ -56,7 +56,7 @@ our $socket_io = IO::Socket::UNIX->new(
 
 # Start the application
 __PACKAGE__->setup();
-#__PACKAGE__->log->disable('debug','info');
+__PACKAGE__->log->disable('debug','info');
 
 
 =head1 NAME
