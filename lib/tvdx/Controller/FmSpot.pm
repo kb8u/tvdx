@@ -69,7 +69,7 @@ sub fm_spot_POST :Global {
       my $pw_error = exists $json->{'password'}
                    ? "has bad password ".$json->{'password'}
                    : "missing password in JSON";
-      $c->log->info("tuner_key $tuner_key $pw_error");
+      $c->log->warn("tuner_key $tuner_key $pw_error");
       $c->response->body("invalid password");
       $c->response->status(403);
       return;
@@ -82,7 +82,7 @@ sub fm_spot_POST :Global {
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_key})) {
     {
       local $Data::Dumper::Indent = 1;
-      $c->log->info("$tuner_key in tuner_debug table:",Dumper($json));
+      $c->log->warn("$tuner_key in tuner_debug table:",Dumper($json));
     }
   }
 

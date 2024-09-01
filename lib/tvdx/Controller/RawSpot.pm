@@ -64,7 +64,7 @@ sub raw_spot_POST :Global {
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_id})) {
     {
       local $Data::Dumper::Indent = 1;
-      $c->log->info("$tuner_id $tuner_number in tuner_debug table:",Dumper($json));
+      $c->log->warn("$tuner_id $tuner_number in tuner_debug table:",Dumper($json));
     }
   }
 
