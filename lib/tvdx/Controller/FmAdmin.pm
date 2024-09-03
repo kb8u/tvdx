@@ -66,7 +66,7 @@ sub fm_admin_form_do :Global {
   my @fail_reason;
   push @fail_reason, 'email' if ($email !~ /^$Email::Address::addr_spec$/);
   push @fail_reason, 'user name' if ($user !~ /^[a-zA-Z0-9]{1,255}$/);
-  push @fail_reason, 'password' if ($password !~ /^.{1,255}$/);
+  push @fail_reason, 'password' if ($password !~ /^.{1,8}$/);
   push @fail_reason, 'user description' if ($user_description !~ /^.{1,255}$/);
   push @fail_reason, 'latitude (need decimal degrees)' if ($latitude !~ /^$RE{num}{real}$/);
   push @fail_reason, 'latitude too large' if ($latitude && $latitude > 72);
@@ -97,9 +97,10 @@ password => $password, email => $email, description => $user_description });
      longitude => $longitude });
 
   my $new_user_key = $tuner_db->tuner_key;
-  my $new_user_url = $c->config->{root_url} . "/fm_one_tuner_map/$new_user_key";  my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
+  my $new_user_url = $c->config->{root_url} . "/fm_one_tuner_map/$new_user_key";
+  my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
   my $text = <<"EOTEXT";
-New user $user, password $password created.
+New user ID $new_user_key, password $password created.
 
 The windows installer is at <a href=\"$installer_url\">$installer_url</a>.  You
 will need to enter the user ID number $new_user_key when you install the program.
