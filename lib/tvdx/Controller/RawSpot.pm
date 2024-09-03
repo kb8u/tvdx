@@ -70,6 +70,8 @@ sub raw_spot_POST :Global {
 
   RAWSPOT: for my $channel (keys %{$json->{'rf_channel'}}) {
     my $channel_details = $json->{'rf_channel'}->{$channel};
+    # Bad TSID maps to Washington, DC for local station in CO
+    next if ($tuner_id eq '10152083' && $channel == 14);
 
     # need at least a strength to log
     next RAWSPOT unless $channel_details->{strength};
