@@ -135,7 +135,7 @@ sub fm_spot_POST :Global {
       }
     }
     unless (defined $fcc_key) {
-      $c->log->warn("Couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
+      $c->log->warn("Tuner $tuner_key couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
       next;
     }
 
