@@ -118,7 +118,7 @@ function init() {
   var streets = L.esri.basemapLayer('Streets',{ maxZoom:15, minZoom:3 });
   var topo = L.esri.basemapLayer('Topographic',{ maxZoom:15, minZoom:3 });
   var photo = L.esri.basemapLayer('Imagery',{ maxZoom:15, minZoom:3 });
-  map = L.map('stations-map', { layers: [streets] });
+  map = L.map('stations-map', { layers: [streets], touchZoom: true });
   L.control.layers({ 'Streets' : streets,
                      'Topographic' : topo,
                      'Imagery' : photo }).addTo(map);

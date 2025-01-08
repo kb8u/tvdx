@@ -290,7 +290,7 @@ function init() {
   black_lines = L.layerGroup();
   stations = L.layerGroup();
   on_top = L.layerGroup();
-  map = L.map('stations-map', { layers: [streets,black_lines] });
+  map = L.map('stations-map', { layers: [streets,black_lines], touchZoom: true });
   map.on('zoomend moveend', function(e) {
     $.cookie('bounds', map.getBounds().toBBoxString(), { expires : 365, path: "/;SameSite=Strict", secure: true}); 
   });
