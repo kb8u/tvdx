@@ -304,7 +304,8 @@ sub _find_call {
         foreach my $s (split /\n/, $rlu) {
           my %rlu_values;
           @rlu_values{@rabbitears_keys} = split /\s*\|/,$s;
-          if ($args->{channel} == $rlu_values{fcc_channel}) {
+          if (   exists $rlu_values{fcc_channel} && defined $rlu_values{fcc_channel}
+              && $args->{channel} == $rlu_values{fcc_channel}) {
             %transmitter = %rlu_values;
             $transmitter{fcc_virt} = $fcc_virt;
             last VIRT_CHAN;
