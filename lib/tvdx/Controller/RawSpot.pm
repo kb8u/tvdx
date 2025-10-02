@@ -10,6 +10,8 @@ use List::MoreUtils qw(all zip);
 use Data::Dumper;
 use Compress::Bzip2 ':utilities';
 use JSON::XS;
+use Try::Tiny;
+use Scalar::Util 'looks_like_number';
 
 # URL for looking up callsign, location, TSID, etc.
 my $RABBITEARS_TVQ = "http://www.rabbitears.info/rawlookup.php?";
@@ -37,6 +39,66 @@ Accept raw spots from client and convert into a data structure Perl can use.
 
 =cut
 
+sub _error {
+  my ($self,$c,$error) = (@_);
+  $c->log->info($error);
+  $c->response->body("FAIL: $error");
+  $c->response->status(400);
+  return undef;
+}
+
+sub _decode_json {
+  my ($self, $c) = @_;
+
+  my $json;
+  try {
+    $json = ($c->req->headers->content_type eq 'application/octet-stream')
+           ? decode_json(memBunzip($c->req->body_data))
+           : $c->req->data;
+  } catch {
+    return _error($self,$c,"couldn't decode JSON");
+  };
+
+  # check and clean up json
+  unless (exists $json->{'user_id'}) {
+    return _error($self,$c,'missing user_id') unless exists $json->{'user_id'};
+  }
+  return _error($self,$c,'malformed user_id') if $json->{'user_id'} !~ /^TunerID_[1GH]{1}[0-9A-F]{7}_tuner\d$/;
+  unless (exists $json->{'rf_channel'}) {
+     return _error($self,$c,"$json->{user_id} missing rf_channel key in json");
+  }
+
+  JCHANNEL: foreach my $channel (keys %{$json->{'rf_channel'}}) {
+    unless (looks_like_number($channel) && $channel >= 2 && $channel <= 69) {
+      return _error($self,$c,"$json->{user_id} Invalid channel number in JSON: $channel");
+    }
+    foreach my $key ('strength','sig_noise','symbol_err') {
+      unless (exists $json->{'rf_channel'}->{$channel}->{$key}) {
+        $c->log->debug("$json->{user_id} channel $channel missing $key attribute");
+      }
+      unless (looks_like_number $json->{'rf_channel'}->{$channel}->{$key}) {
+        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}->{$channel}->{$key}");
+        $json->{'rf_channel'}->{$channel}->{$key} = 0;
+      }
+      if (   $json->{'rf_channel'}->{$channel}->{$key} < 0
+          || $json->{'rf_channel'}->{$channel}->{$key} > 100) {
+        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}->{$channel}->{$key}");
+        $json->{'rf_channel'}->{$channel}->{$key} = 0;
+      }
+    }
+    unless (looks_like_number $json->{'rf_channel'}->{$channel}->{'tsid'}) {
+      $json->{'rf_channel'}->{$channel}->{'tsid'} = 0;
+    }
+    if (   $json->{'rf_channel'}->{$channel}->{'tsid'} < 0
+        || ($json->{'rf_channel'}->{$channel}->{'tsid'} > 65535) ) {
+      $c->log->debug("$json->{user_id} channel $channel has invalid TSID $json->{rf_channel}->{$channel}->{tsid}");
+      $json->{'rf_channel'}->{$channel}->{'tsid'} = 0;
+    }
+  }
+
+  return $json;
+}
+
 sub raw_spot :Global :ActionClass('REST') {}
 
 sub raw_spot_POST :Global {
@@ -47,9 +109,8 @@ sub raw_spot_POST :Global {
   # 24 hours ago
   my $yesterday = DateTime->from_epoch( 'epoch' => (time() - 86400) );
   # json with information from (client) scanlog.pl
-  my $json = ($c->req->headers->content_type eq 'application/octet-stream')
-           ? decode_json(memBunzip($c->req->body_data))
-           : $c->req->data;
+  my $json = _decode_json($self,$c);
+  return unless $json;
   my (undef,$tuner_id,$tuner_number) = split /_/, $json->{'user_id'};
 
   # log if tuner isn't found
@@ -75,9 +136,6 @@ sub raw_spot_POST :Global {
 
     # need at least a strength to log
     next RAWSPOT unless $channel_details->{strength};
-    # ignore bogus channel numbers
-    next RAWSPOT if ($channel !~ /^\d+$/);
-    next RAWSPOT if ($channel < 2 || $channel > 69);
 
     # arguments to subroutines
     my $args = { 'c' => $c,
