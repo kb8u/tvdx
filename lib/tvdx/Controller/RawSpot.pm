@@ -69,8 +69,10 @@ sub _decode_json {
   }
 
   JCHANNEL: foreach my $channel (keys %{$json->{'rf_channel'}}) {
-    unless (looks_like_number($channel) && $channel >= 2 && $channel <= 69) {
-      return _error($self,$c,"$json->{user_id} Invalid channel number in JSON: $channel");
+    unless (looks_like_number($channel) && int $channel == $channel && $channel >= 2 && $channel <= 69) {
+      $c->log->debug("$json->{user_id} has invalid channel $channel");
+      delete $json->{'rf_channel'}->{$channel};
+      next JCHANNEL;
     }
     foreach my $key ('strength','sig_noise','symbol_err') {
       unless (exists $json->{'rf_channel'}->{$channel}->{$key}) {
