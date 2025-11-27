@@ -14,6 +14,8 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
+    Authentication
+    Authorization::Roles
     ConfigLoader
     Static::Simple
     StackTrace
@@ -40,8 +42,14 @@ __PACKAGE__->config(
     data_handlers => {'application/octet-stream' =>sub {local $/; return <$_>}},
     'View::JSON' => {
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
-                           reception_locations markers json tuner_key) ] }
-
+                           reception_locations markers json tuner_key) ] },
+    'Plugin::Authentication' => {
+      default => {
+        class      => 'SimpleDB',
+        user_model => 'tvdx::Schema::Result::FmUser',
+        role_column => 'permissions'
+      }
+    }
 );
 
 # use the same rrdcached socket everywhere

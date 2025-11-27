@@ -124,7 +124,8 @@ create table fm_user (
   user varchar(255) NOT NULL,
   password varchar(255) NOT NULL,
   email varchar(255) NOT NULL,
-  description varchar(255)
+  description varchar(255),
+  permissions varchar(255) default 'view|add|delete'
 );
 
 create table fm_tuner (
