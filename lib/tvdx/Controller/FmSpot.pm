@@ -173,9 +173,6 @@ Delete a spot from the database.  Args are tuner_key, callsign, frequency
 sub fm_spot_DELETE :Global {
   my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
 # TODO: add code to ignore 108.239.138.173
-$c->response->body('Not implemented');
-$c->response->status(501);
-return;
 
   # errors if $tuner_key dosen't exist
   $self->_get_tuner($c,$tuner_key);
@@ -205,9 +202,6 @@ and frequency
 
 sub delete :Global {
   my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
-$c->response->body('Not implemented');
-$c->response->status(501);
-return;
 
   # errors if $tuner_key dosen't exist
   $self->_get_tuner($c,$tuner_key);
