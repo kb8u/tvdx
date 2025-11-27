@@ -63,6 +63,7 @@ sub fm_spot_POST :Global {
   my $tuner_key = $json->{'tuner_key'};
 
   my $tuner = $self->_get_tuner($c,$tuner_key);
+  $tuner->update({'ipaddress' => $c->request->address});
 
   unless ($c->req->headers->content_type eq 'application/octet-stream') {
     if (!exists $json->{'password'} || $tuner->user_key->password ne $json->{'password'}) {
@@ -204,7 +205,7 @@ sub delete :Global {
   my ( $self, $c, $tuner_key, $callsign, $frequency ) = @_;
 
   # errors if $tuner_key dosen't exist
-  $self->_get_tuner($c,$tuner_key);
+  my $tuner = $self->_get_tuner($c,$tuner_key);
   my $rs = $c->model('DB::FmSignalReport')->search(
              {'tuner_key' => $tuner_key,
               'me.frequency' => $frequency,
@@ -215,6 +216,12 @@ sub delete :Global {
     $c->response->status(404);
     return;
   }
+  if ($tuner->ipaddress ne $c->request->address) {
+    $c->response->body('Authorization missing');
+    $c->response->status(401);
+    return;
+  }
+
   $rs->delete;
   $c->stash(tuner_key    => $tuner_key);
   $c->stash(root_url     => $c->config->{root_url});

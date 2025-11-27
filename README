@@ -136,6 +136,7 @@ create table fm_tuner (
   end_date DATETIME,
   latitude DECIMAL(6,3) NOT NULL,
   longitude DECIMAL(6,3) NOT NULL,
+  ipaddress varchar(255),
   foreign key (user_key) references fm_user(user_key)
 );
 
