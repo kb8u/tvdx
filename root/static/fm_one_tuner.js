@@ -226,10 +226,13 @@ function update_call_markers(url) {
                       m.city_state + '<br>' +
                       'HAAT ' + haat + ' m.<br>' + 
                       'ERP ' + erp + ' W<br>' +
-                      'Azimuth ' + m.azimuth + '&deg<br>' +
+                      'Azimuth ' + m.azimuth + '&deg<br>';
+          if (delete_auth) {
+            popup_text += 
                       '<a href="../delete/' +
                       json.tuner_key + '/' + m.callsign + '/' + 
                       m.frequency.toString() + '">Delete</a><br>';
+          }
           markers[call_mhz] = L.marker(station_ll[i], {icon: onepixel })
                            .bindTooltip(call_mhz,
                                         { interactive: true,

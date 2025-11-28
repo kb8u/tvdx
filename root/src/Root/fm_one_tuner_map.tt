@@ -117,6 +117,11 @@
 var tuner_key="[% tuner.tuner_key %]";
 var root_url = '[% root_url %]'
 var static_url = '[% static_url %]'
+[% IF delete_auth %]
+var delete_auth = true;
+[% ELSE %]
+var delete_auth = false;
+[% END %]
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js" integrity="sha384-aBL3Lzi6c9LNDGvpHkZrrm3ZVsIwohDD7CDozL0pk8FwCrfmV7H9w8j3L7ikEv6h" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/js/bootstrap.min.js" integrity="sha384-DKoN2gpE9Yt/u0fuNvcJBn4n7wjnKFKjg4+Iz4ORs52lUc0Qp++smhHtWwHeapVW" crossorigin="anonymous"></script>

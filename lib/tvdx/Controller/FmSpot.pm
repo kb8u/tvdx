@@ -328,6 +328,12 @@ sub fm_one_tuner_map :Global {
 
   my $tuner = $self->_get_tuner($c,$tuner_key);
 
+  if ($tuner->ipaddress eq $c->request->address) {
+    $c->stash(delete_auth => 1);
+  } else {
+    $c->stash(delete_auth => 0);
+  }
+
   $c->stash(tuner        => $tuner);
   $c->stash(root_url     => $c->config->{root_url});
   $c->stash(static_url   => $c->config->{static_url});
