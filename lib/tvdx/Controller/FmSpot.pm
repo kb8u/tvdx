@@ -137,7 +137,7 @@ sub fm_spot_POST :Global {
       }
     }
     unless (defined $fcc_key) {
-      $c->log->warn("Tuner $tuner_key couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
+      $c->log->info("Tuner $tuner_key couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
       next;
     }
 
@@ -458,12 +458,12 @@ sub fm_all_tuners :Global {
 sub _check_delete {
   my ($c, $tuner, $tuner_key) = @_;
 
-  my @permissions = split /\|/, $c->user->permissions;
-
   if (defined $tuner->ipaddress && $tuner->ipaddress eq $c->request->address) {
     return 1;
   }
-  return 0 unless $tuner_key && $c->user->user_key;
+  return 0 unless $tuner_key && defined $c->user && $c->user->user_key;
+  return 0 unless defined $c->user->permissions;
+  my @permissions = split /\|/, $c->user->permissions;
   if ($c->user->user_key == $tuner_key && any {$_ eq 'delete'} @permissions) {
     return 1;
   }

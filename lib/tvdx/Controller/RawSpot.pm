@@ -301,7 +301,9 @@ sub _find_call {
       if (@rlu) {
         my @match;
         for(my $i=0;$i<=$#rlu;$i++) {
-          if($rlu[$i]->{digital_tsid} == $ch->{tsid}) {
+          if(   defined $rlu[$i]->{digital_tsid} && defined $ch->{tsid}
+             && $rlu[$i]->{digital_tsid} ne "" && $ch->{tsid} ne ""
+             && $rlu[$i]->{digital_tsid}+0 == $ch->{tsid}+0) {
             push @match,$i;
           }
         }
