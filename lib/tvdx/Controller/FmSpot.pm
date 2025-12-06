@@ -6,6 +6,7 @@ use DateTime::Format::MySQL;
 use DateTime::Format::ISO8601;
 use DateTime::Duration;
 use Math::Round 'nearest';
+use List::Util 'any';
 # leaks memory, have to use Geo::Calc even though it's much slower
 #use Geo::Calc::XS;
 use Geo::Calc;
@@ -187,8 +188,8 @@ sub delete :Global {
     $c->response->status(404);
     return;
   }
-  if ($tuner->ipaddress ne $c->request->address) {
-    $c->response->body('Authorization missing');
+  unless (_check_delete($c,$tuner,$tuner_key)) {
+    $c->response->body("You don't have delete permissions for this location. Contact the administrator if you need it.");
     $c->response->status(401);
     return;
   }
@@ -299,7 +300,7 @@ sub fm_one_tuner_map :Global {
 
   my $tuner = $self->_get_tuner($c,$tuner_key);
 
-  if ($tuner->ipaddress eq $c->request->address) {
+  if (_check_delete($c,$tuner,$tuner_key)) {
     $c->stash(delete_auth => 1);
   } else {
     $c->stash(delete_auth => 0);
@@ -449,6 +450,27 @@ sub fm_all_tuners :Global {
   $c->stash(static_url   => $c->config->{static_url});
   $c->stash(template     => 'Root/fm_all_tuners.tt');
   $c->stash(current_view => 'HTML');
+}
+
+# return 1 if delete is allowed, 0 if not
+# tried to use Catalyst::Plugin::Authorization::Roles 
+# check_any_user_role but couldn't get it to work
+sub _check_delete {
+  my ($c, $tuner, $tuner_key) = @_;
+
+  my @permissions = split /\|/, $c->user->permissions;
+
+  if (defined $tuner->ipaddress && $tuner->ipaddress eq $c->request->address) {
+    return 1;
+  }
+  return 0 unless $tuner_key && $c->user->user_key;
+  if ($c->user->user_key == $tuner_key && any {$_ eq 'delete'} @permissions) {
+    return 1;
+  }
+  if (any { $_ eq $tuner_key } @permissions) {
+    return 1;
+  }
+  return 0;
 }
 
 

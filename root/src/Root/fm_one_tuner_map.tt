@@ -105,7 +105,11 @@
         <img src="[% static_url %]/images/black_dot.png" width='15' height='15' />Heard within last 15 minutes
         <img src="[% static_url %]/images/darkgray_dot.png" width='15' height='15' />Heard within last 30 minutes
         <img src="[% static_url %]/images/lightgray_dot.png" width='15' height='15' /><span id="black-text">Heard more than 30 minutes ago</span>
-
+        <a id="btn-login" href="[% root_url %]/login_form">
+          <button type=button" class="btn btn-primary btn-sm">
+            Login to delete stations
+          </button>
+        </a>
       </div> <!-- end of map-legend -->
       <div id="stations-map">
       </div><!-- end of stations-map -->

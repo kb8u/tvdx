@@ -16,6 +16,9 @@ use Catalyst::Runtime 5.80;
 use Catalyst qw/
     Authentication
     Authorization::Roles
+    Session
+    Session::Store::FastMmap
+    Session::State::Cookie
     ConfigLoader
     Static::Simple
     StackTrace
@@ -44,11 +47,22 @@ __PACKAGE__->config(
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
                            reception_locations markers json tuner_key) ] },
     'Plugin::Authentication' => {
-      default => {
-        class      => 'SimpleDB',
-        user_model => 'tvdx::Schema::Result::FmUser',
-        role_column => 'permissions'
+      default_realm => 'mysql',
+      mysql => {
+        credential => {
+          class => 'Password',
+          password_field => 'password',
+          password_type => 'clear'
+        },
+        store => {
+          class      => 'DBIx::Class',
+          user_model => 'DB::FmUser',
+          role_column => 'permissions'
+        }
       }
+    },
+    'Plugin::Session' => {
+      expires => 1209600,
     }
 );
 

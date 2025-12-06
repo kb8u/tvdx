@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
+    <title>TVDX login</title>
+  </head>
+  <body>
+    <form method="post" action="[% c.uri_for('login') %]">
+      <table>
+         <tr><td>User number:</td><td><input type="text" name="user"></td></tr>
+         <tr><td>Password:</td><td><input type="text" name="password"></td></tr>
+      </table>
+      <input type="submit" name="Submit" value="Submit">
+    </form>
+  </body>
+</html>
+

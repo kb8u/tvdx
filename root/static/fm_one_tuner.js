@@ -165,6 +165,7 @@ function update_call_markers(url) {
         station_m.clearLayers();
         station_l.clearLayers();
         station_mt.clearLayers();
+        if (delete_auth) { $('#btn-login').hide(); }
         markers = {};
         json = responseJSON.responseText.evalJSON();
         var tuner_ll = new L.LatLng(json.tuner_latitude,json.tuner_longitude);

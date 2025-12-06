@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Value</th>
+      </tr>
+      <tr>
+        <td>Expires</td>
+        <td>[% expires %]</td>
+      </tr>
+      <tr>
+        <th>User</th>
+        <td>[% user %]</td>
+      </tr>
+      <tr>
+        <td>Permissions</td>
+        <td>[% permissions %]</td>
+      </tr>
+    </table>
+  </head>
+</html>

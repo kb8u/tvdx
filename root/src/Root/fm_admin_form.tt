@@ -3,7 +3,6 @@
   <head>
     <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
     <title>Create or update an FM scan user</title>
-    </script>
   </head>
   <body>
     <form method="post" action="[% c.uri_for('fm_admin_form_do') %]">
