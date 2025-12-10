@@ -116,6 +116,7 @@ sub process_res {
 
   for my $row ($res->dom->find('#content>table tr')->each) {
     my %row;
+    my $row_id;
     my $td = $row->find('td')->to_array;
     $row{callsign} = $td->[0]->text;
     next unless $row{callsign};  # column descriptions row?
@@ -126,7 +127,7 @@ sub process_res {
     $row{country} = $td->[5]->text;
     $row{format} = $td->[6]->text;
     $row{slogan} = $td->[7]->text;
-#    $row{id} = $td->[8]->text;
+    $row_id = $td->[8]->text;
     $row{erp_h} = $td->[9]->text;
     $row{erp_v} = $td->[10]->text;
     $row{haat_h} = $td->[11]->text;
@@ -143,7 +144,7 @@ sub process_res {
 
     $row{callsign} =~ s/\s+//g;
     if ($row{callsign} =~ /.*\-FM\d+$/) {
-      say "skipping repeater $row{callsign}" if $opt_d;
+      say "skipping repeater $row{callsign} on row ID $row_id" if $opt_d;
       next;
     }
     $row{frequency} =~ s/\.//;
@@ -172,7 +173,7 @@ sub process_res {
         || $row{callsign} eq 'NEW' || $row{callsign} =~ /\?/
         || (length($row{callsign}) < 3) || (length($row{callsign}) > 10)
     ) {
-      my $err = "bad data read for $row{callsign}";
+      my $err = "bad data read for row ID $row_id $row{callsign}";
       print $wtfda_errors $err,'<br>';
       say $err if $opt_d;
       next;
@@ -195,7 +196,7 @@ sub process_res {
       $row{start_date} = $sql_now;
       my $entry = $fm_fcc_rs->create(\%row);
       if (!$entry) {
-        my $err = join ' ',"Couldn't create new fm_fcc row with:", ,@row{qw(pi_code callsign latitude longitude last_fcc_lookup start_date city_state country)};
+        my $err = join ' ',"Couldn't create new fm_fcc row for row id $row_id with:", ,@row{qw(pi_code callsign latitude longitude last_fcc_lookup start_date city_state country)};
         print $wtfda_errors $err,'<br>';
         say $err if $opt_d;
         next;
