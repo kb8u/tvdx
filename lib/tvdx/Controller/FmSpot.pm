@@ -464,8 +464,11 @@ sub _check_delete {
   return 0 unless $tuner_key && defined $c->user && $c->user->user_key;
   return 0 unless defined $c->user->permissions;
   my @permissions = split /\|/, $c->user->permissions;
-  if ($c->user->user_key == $tuner_key && any {$_ eq 'delete'} @permissions) {
-    return 1;
+  my $rs = $c->model('DB::FmTuner')->search({'user_key'=>$c->user->user_key});
+  while (my $r = $rs->next) {
+    if ($r->tuner_key == $tuner_key && any {$_ eq 'delete'} @permissions) {
+      return 1;
+    }
   }
   if (any { $_ eq $tuner_key } @permissions) {
     return 1;

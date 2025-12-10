@@ -72,13 +72,21 @@ sub login : Local {
   my ($self, $c) = @_;
   my ($user, $password) = ($c->req->param('user'), $c->req->param('password'));
 
-  if ($c->authenticate({ user_key => $user, password => $password })) {
+  my $tuner = $c->model('DB::FmTuner')->find({'tuner_key'=>$user});
+  if (! $tuner) {
+    $c->response->body("FAIL: Tuner $user is not registered with site");
+    $c->response->status(403);
+    $c->detach();
+  }
+
+  if ($c->authenticate({ user_key => $tuner->user_key->user_key, password => $password })) {
     $c->log->debug("User $user authenticated");
     $c->response->redirect($c->uri_for("/fm_one_tuner_map/$user"));
   } else {
     $c->log->debug("User $user failed to authenticate");
-    $c->stash(error_message => 'Invalid credentials');
-    $c->forward('login_form'); # Forward to a template rendering the form
+    $c->response->body("FAIL: Tuner $user wrong password.  Go back and try again.");
+    $c->response->status(403);
+    $c->detach();
   }
 }
 
