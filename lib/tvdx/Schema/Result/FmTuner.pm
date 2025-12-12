@@ -86,6 +86,11 @@ __PACKAGE__->table("fm_tuner");
   is_nullable: 1
   size: 255
 
+=head2 latlon
+
+  data_type: 'point'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -113,6 +118,8 @@ __PACKAGE__->add_columns(
   { data_type => "decimal", is_nullable => 0, size => [6, 3] },
   "ipaddress",
   { data_type => "varchar", is_nullable => 1, size => 255 },
+  "latlon",
+  { data_type => "point", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -160,10 +167,18 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2025-11-27 15:37:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ae/yVIMVi9oK88b57cRclw
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2025-12-12 17:34:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cNvtiBM0z/JlTkxQeqvCOA
 
+__PACKAGE__->load_components("InflateColumn");
+__PACKAGE__->inflate_column('latlon', {
+    inflate => sub { 'not implemented' },
+    deflate => sub {
+  my ($point_data) = @_;
+  my $pf = "POINT($point_data->{longitude},$point_data->{latitude})";
+  return \$pf;
+  }
+});
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;
