@@ -180,6 +180,7 @@ sub process_res {
     }
 
     $row{last_fcc_lookup} = $sql_now;
+    $row{latlon} = { latitude => $row{latitude}, longitude => $row{longitude} };
     
     # create entry in fm_fcc?
     my ($fcc_row) = $fm_fcc_rs->find({'frequency' => $row{frequency},

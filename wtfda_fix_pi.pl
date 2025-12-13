@@ -88,6 +88,7 @@ for my $row ($res->dom->find('tr')->each) {
       'pi_code' => $pi_code,
       'start_date' => $sql_now,
       'last_fcc_lookup' => $sql_now,
+      'latlon' => { latitude => $latitude, longitude => $longitude }
     });
     if (!$entry) {
       my $err = "Couldn't create new fm_fcc row with $pi_code,$callsign,$latitude,$longitude,$sql_now,$city_state,$country";
