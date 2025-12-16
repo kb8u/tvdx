@@ -78,8 +78,6 @@ sub fm_spot_POST :Global {
     }
   }
 
-  my $gis = GIS::Distance->new('Vincenty');
-
   # log if tuner is in tuner_debug table
   if ($c->model('DB::TunerDebug')->find({'tuner_id'=>$tuner_key})) {
     {
@@ -89,18 +87,32 @@ sub fm_spot_POST :Global {
   }
 
   foreach my $frequency (keys %{$json->{signal}}) {
+    if ($frequency !~ /^\d{8,9}/ || $frequency % 200000) {
+      delete $json->{signal}{$frequency};
+      next;
+    }
+
     my $pi_code = defined $json->{signal}{$frequency}{pi_code}
                 ? $json->{signal}{$frequency}{pi_code}
                 : undef;
-    next unless $pi_code && $pi_code =~ /^\d{1,5}$/;
+    unless ($pi_code && $pi_code =~ /^\d{1,5}$/) {
+      delete $json->{signal}{$frequency};
+      next;
+    }
     # 0 and FFFF are invalid but some stations use it anyway
-    next if ($pi_code == 65535 || $pi_code == 0);
+    if ($pi_code == 65535 || $pi_code == 0) {
+      delete $json->{signal}{$frequency};
+      next;
+    }
 
     my $s = defined $json->{signal}{$frequency}{s}
           ? $json->{signal}{$frequency}{s}
           : undef;
     my $re_num_real = $RE{num}{real};
-    next if $s && $s !~ /^$re_num_real$/;
+    if ($s && $s !~ /^$re_num_real$/) {
+      delete $json->{signal}{$frequency};
+      next;
+    }
 
     my $time;
     if (defined $json->{signal}{$frequency}{time}) {
@@ -120,51 +132,45 @@ sub fm_spot_POST :Global {
     } else {
        $time = $mysql_now;
     }
-
-    my $fcc_key;
-    my $distance = 1e6; # an arbitary impossibly large number
-    # assume the closest station is the one received (hopefully there's just 1)
-    my $rs = $c->model('DB::FmFcc')->search({'frequency' => $frequency,
-                                             'pi_code' => $pi_code,
-                                             'end_date' => undef});
-    while (my $fcc_row = $rs->next) {
-      next unless ($fcc_row->latitude && $fcc_row->longitude);
-      my $km = $gis->distance_metal($tuner->latitude, $tuner->longitude,
-                                    $fcc_row->latitude, $fcc_row->longitude);
-      if ($km < $distance) {
-        $fcc_key = $fcc_row->fcc_key;
-        $distance = $km;
-      }
-    }
-    unless (defined $fcc_key) {
-      $c->log->info("Tuner $tuner_key couldn't find fm_fcc entry for frequency $frequency pi_code $pi_code");
-      next;
-    }
-
-    # create or update report
-    my $entry =
-      $c->model('DB::FmSignalReport')->search({'tuner_key' =>$json->{tuner_key},
-                                               'frequency' => $frequency,
-                                               'fcc_key' => $fcc_key});
-    if (!defined $entry || $entry == 0) {
-      $c->model('DB::FmSignalReport')
-        ->create({'rx_date' => $time,
-                  'first_rx_date' => $time,
-                  'frequency' => $frequency,
-                  'tuner_key' =>$json->{tuner_key},
-                  'fcc_key' => $fcc_key},
-                  'strength' => $s);
-      next;
-    }
-    else {
-      $entry->update({'rx_date' => $time, 'strength' => $s});
-    }
+    $json->{signal}{$frequency}{time} = $time;
   }
+
+  _upsert_all($self,$c,$json);
 
   $c->response->body('OK');
   $c->response->status(202);
 }
 
+
+sub _upsert_all {
+  my ($self, $c, $json) = @_;
+
+  my $storage = $c->model('DB')->storage();
+
+  my $sql = 'insert into fm_signal_report (first_rx_date,tuner_key,fcc_key) values'; 
+  # loop over json and append to $sql
+  foreach my $frequency (keys %{$json->{signal}}) {
+    $sql .= "values ('$json->{$frequency}->{time}','$json->{tuner_key}',";
+    my $fcckeysql = <<"FCCSQL";
+(select fcc_key from fm_fcc where pi_code = $json->{signal}{$frequency}{pi_code} and frequency = $frequency
+  order by (
+    st_distance_sphere(
+      latlon,
+      (select latlon from fm_tuner where tuner_key = $json->{tuner_key})
+    )
+  ) asc limit 1
+)),
+FCCSQL
+
+  $sql .= $fcckeysql;
+  } 
+
+  chop $sql;  # remove , from last row
+  $sql .= 'on duplicate key update rx_date=values(first_rx_date), tuner_key=values(tuner_key), fcc_key=values(fcc_key);';
+
+  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+
+}
 
 =head2 delete
 

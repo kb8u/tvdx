@@ -38,12 +38,6 @@ __PACKAGE__->table("fm_signal_report");
 
 =head1 ACCESSORS
 
-=head2 signal_key
-
-  data_type: 'integer'
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 rx_date
 
   data_type: 'datetime'
@@ -56,11 +50,6 @@ __PACKAGE__->table("fm_signal_report");
   datetime_undef_if_invalid: 1
   is_nullable: 0
 
-=head2 frequency
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 tuner_key
 
   data_type: 'integer'
@@ -71,7 +60,7 @@ __PACKAGE__->table("fm_signal_report");
 
   data_type: 'integer'
   is_foreign_key: 1
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 strength
 
@@ -82,8 +71,6 @@ __PACKAGE__->table("fm_signal_report");
 =cut
 
 __PACKAGE__->add_columns(
-  "signal_key",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "rx_date",
   {
     data_type => "datetime",
@@ -96,12 +83,10 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
-  "frequency",
-  { data_type => "integer", is_nullable => 0 },
   "tuner_key",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "fcc_key",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "strength",
   { data_type => "decimal", is_nullable => 1, size => [5, 2] },
 );
@@ -110,13 +95,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</signal_key>
+=item * L</tuner_key>
+
+=item * L</fcc_key>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("signal_key");
+__PACKAGE__->set_primary_key("tuner_key", "fcc_key");
 
 =head1 RELATIONS
 
@@ -132,12 +119,7 @@ __PACKAGE__->belongs_to(
   "fcc_key",
   "tvdx::Schema::Result::FmFcc",
   { fcc_key => "fcc_key" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "RESTRICT",
-    on_update     => "RESTRICT",
-  },
+  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
 );
 
 =head2 tuner_key
@@ -156,8 +138,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-11 20:09:01
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:88oGch4ZjYRe+DUF6uyr+w
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2025-12-15 17:25:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:8MkrFxFf4bYd4OHj9yaxmA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

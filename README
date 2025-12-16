@@ -167,14 +167,18 @@ create table fm_fcc (
   last_fcc_lookup DATETIME NOT NULL
 );
 
-create TABLE fm_signal_report (
-  signal_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  rx_date DATETIME NOT NULL,
-  first_rx_date DATETIME NOT NULL,
-  frequency INTEGER NOT NULL,
-  tuner_key INTEGER NOT NULL,
-  fcc_key INTEGER,
-  strength DECIMAL(5,2),
-  foreign key (tuner_key) references fm_tuner(tuner_key),
-  foreign key (fcc_key) references fm_fcc(fcc_key)
-);
+CREATE TABLE `fm_signal_report` (
+  `rx_date` datetime NOT NULL,
+  `first_rx_date` datetime NOT NULL,
+  `tuner_key` int NOT NULL,
+  `fcc_key` int NOT NULL,
+  `strength` decimal(5,2) DEFAULT NULL,
+  PRIMARY KEY (`tuner_key`,`fcc_key`),
+  KEY `tuner_key` (`tuner_key`),
+  KEY `fcc_key` (`fcc_key`),
+  KEY `frequency` (`tuner_key`,`fcc_key`),
+  KEY `idx_rx_date_fcc` (`rx_date`,`fcc_key`),
+  KEY `idx_tuner_rx_date` (`tuner_key`,`rx_date`),
+  CONSTRAINT `fm_signal_report_ibfk_1` FOREIGN KEY (`tuner_key`) REFERENCES `fm_tuner` (`tuner_key`),
+  CONSTRAINT `fm_signal_report_ibfk_2` FOREIGN KEY (`fcc_key`) REFERENCES `fm_fcc` (`fcc_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;

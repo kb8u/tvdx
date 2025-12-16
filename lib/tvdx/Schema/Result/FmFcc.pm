@@ -285,6 +285,16 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07052 @ 2025-12-10 20:11:57
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:y7EN+dX2CW/htOM8eoxO4g
 
+__PACKAGE__->load_components("InflateColumn");
+__PACKAGE__->inflate_column('latlon', {
+    inflate => sub { 'not implemented' },
+    deflate => sub {
+  my ($point_data) = @_;
+  my $pf = "POINT($point_data->{longitude},$point_data->{latitude})";
+  return \$pf;
+  }
+});
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
