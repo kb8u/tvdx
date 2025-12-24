@@ -61,6 +61,7 @@ sub fm_spot_POST :Global {
   my $json = ($c->req->headers->content_type eq 'application/octet-stream')
            ? decode_json(memBunzip($c->req->body_data))
            : $c->req->data;
+
   my $tuner_key = $json->{'tuner_key'};
 
   my $tuner = $self->_get_tuner($c,$tuner_key);
@@ -87,7 +88,7 @@ sub fm_spot_POST :Global {
   }
 
   foreach my $frequency (keys %{$json->{signal}}) {
-    if ($frequency !~ /^\d{8,9}/ || $frequency % 200000) {
+    if ($frequency !~ /^\d{8,9}/ || ($frequency-100000) % 200000) {
       delete $json->{signal}{$frequency};
       next;
     }
@@ -135,7 +136,7 @@ sub fm_spot_POST :Global {
     $json->{signal}{$frequency}{time} = $time;
   }
 
-  _upsert_all($self,$c,$json);
+  _upsert_all($self,$c,$json) if scalar %{$json->{signal}} > 0;
 
   $c->response->body('OK');
   $c->response->status(202);
@@ -147,10 +148,10 @@ sub _upsert_all {
 
   my $storage = $c->model('DB')->storage();
 
-  my $sql = 'insert into fm_signal_report (first_rx_date,tuner_key,fcc_key) values'; 
+  my $sql = 'insert into fm_signal_report (rx_date,first_rx_date,tuner_key,fcc_key) values '; 
   # loop over json and append to $sql
   foreach my $frequency (keys %{$json->{signal}}) {
-    $sql .= "values ('$json->{$frequency}->{time}','$json->{tuner_key}',";
+    $sql .= "('$json->{signal}{$frequency}{time}','$json->{signal}{$frequency}{time}','$json->{tuner_key}',";
     my $fcckeysql = <<"FCCSQL";
 (select fcc_key from fm_fcc where pi_code = $json->{signal}{$frequency}{pi_code} and frequency = $frequency
   order by (
@@ -165,8 +166,15 @@ FCCSQL
   $sql .= $fcckeysql;
   } 
 
+  chop $sql;
   chop $sql;  # remove , from last row
-  $sql .= 'on duplicate key update rx_date=values(first_rx_date), tuner_key=values(tuner_key), fcc_key=values(fcc_key);';
+  $sql .= <<'ODK';
+ on duplicate key update
+   rx_date = values(first_rx_date),
+   first_rx_date = first_rx_date,
+   tuner_key = values(tuner_key),
+   fcc_key = values(fcc_key);
+ODK
 
   $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
 
