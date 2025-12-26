@@ -374,7 +374,7 @@ sub fm_all_tuner_data :Global {
     my $callsign_latitude = 0+$signal->fcc_key->latitude;
     my $tuner_longitude = 0+$signal->tuner_key->longitude;
     my $tuner_latitude = 0+$signal->tuner_key->latitude;
-    my $frequency = $signal->frequency;
+    my $frequency = $signal->fcc_key->frequency;
     my $tuner_key = $signal->tuner_key->tuner_key;
     my $user_key = $signal->tuner_key->user_key;
     my $city_state = $signal->fcc_key->city_state;
