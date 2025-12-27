@@ -148,7 +148,7 @@ sub _upsert_all {
 
   my $storage = $c->model('DB')->storage();
 
-  my $sql = 'insert into fm_signal_report (rx_date,first_rx_date,tuner_key,fcc_key) values '; 
+  my $sql = 'insert ignore into fm_signal_report (rx_date,first_rx_date,tuner_key,fcc_key) values '; 
   # loop over json and append to $sql
   foreach my $frequency (keys %{$json->{signal}}) {
     $sql .= "('$json->{signal}{$frequency}{time}','$json->{signal}{$frequency}{time}','$json->{tuner_key}',";
