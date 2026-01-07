@@ -194,7 +194,7 @@ sub delete :Global {
   my $tuner = $self->_get_tuner($c,$tuner_key);
   my $rs = $c->model('DB::FmSignalReport')->search(
              {'tuner_key' => $tuner_key,
-              'me.frequency' => $frequency,
+              'fcc_key.frequency' => $frequency,
               'fcc_key.callsign' => $callsign},
              {join => 'fcc_key'});
   if ($rs->count == 0) {
