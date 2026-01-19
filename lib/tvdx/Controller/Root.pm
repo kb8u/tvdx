@@ -409,7 +409,7 @@ sub tuner_map_data :Global {
   my @markers;
 
   while(my $signal = $rs->next) {
-    next unless defined $signal->callsign;
+    next if (!defined $signal->callsign || $signal->callsign->callsign eq 'none');
     my %station;
     my $gc_tuner = Geo::Calc->new( lat => $tuner->latitude,
                                    lon => $tuner->longitude,
@@ -507,6 +507,7 @@ sub all_tuner_data :Global {
   # get a ResultSet of signals
   $rs = $c->model('DB::SignalReport')->all_last_24();
   while(my $signal = $rs->next) {
+    next if (!defined $signal->callsign || $signal->callsign->callsign eq 'none');
     my $callsign = $signal->callsign->callsign;
     # 0+ to force to a number.  Don't know why accessor returns a string.
     my $callsign_longitude = 0+$signal->callsign->longitude;
