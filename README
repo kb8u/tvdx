@@ -72,21 +72,24 @@ CREATE TABLE rabbitears_call (
 --
 -- Most recent Reports from tuners
 --
-CREATE TABLE signal_report (
-  signal_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  rx_date DATETIME NOT NULL,
-  first_rx_date DATETIME NOT NULL,
-  rf_channel INTEGER NOT NULL,
-  modulation VARCHAR(255) NOT NULL,
-  strength FLOAT(11,8) NOT NULL,
-  sig_noise FLOAT(11,8) NOT NULL,
-  tuner_id VARCHAR(255) NOT NULL,
-  tuner_number VARCHAR(255) NOT NULL,
-  callsign VARCHAR(255),
-  virtual_channel FLOAT(11,8),
-  FOREIGN KEY(tuner_id) REFERENCES tuner(tuner_id),
-  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
-);
+CREATE TABLE `signal_report` (
+  `rx_date` datetime NOT NULL,
+  `first_rx_date` datetime NOT NULL,
+  `rf_channel` int NOT NULL,
+  `modulation` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `strength` float(11,8) NOT NULL,
+  `sig_noise` float(11,8) NOT NULL,
+  `tuner_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `tuner_number` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `virtual_channel` float(11,8) DEFAULT NULL,
+  PRIMARY KEY (`tuner_id`,`callsign`,`modulation`,`tuner_number`,`rf_channel`),
+  KEY `tuner_id` (`tuner_id`),
+  KEY `callsign` (`callsign`),
+  KEY `idx_rx_date_callsign` (`rx_date`,`callsign`),
+  CONSTRAINT `signal_report_ibfk_1` FOREIGN KEY (`tuner_id`) REFERENCES `tuner` (`tuner_id`),
+  CONSTRAINT `signal_report_ibfk_2` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
 --
 -- TSID received from a station
 --

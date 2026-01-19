@@ -64,37 +64,39 @@ sub _decode_json {
     return _error($self,$c,'missing user_id') unless exists $json->{'user_id'};
   }
   return _error($self,$c,'malformed user_id') if $json->{'user_id'} !~ /^TunerID_[1GH]{1}[0-9A-F]{7}_tuner\d$/;
-  unless (exists $json->{'rf_channel'}) {
+  unless (exists $json->{rf_channel}) {
      return _error($self,$c,"$json->{user_id} missing rf_channel key in json");
   }
 
-  JCHANNEL: foreach my $channel (keys %{$json->{'rf_channel'}}) {
+  JCHANNEL: foreach my $channel (keys %{$json->{rf_channel}}) {
     unless (looks_like_number($channel) && int $channel == $channel && $channel >= 2 && $channel <= 69) {
       $c->log->debug("$json->{user_id} has invalid channel $channel");
-      delete $json->{'rf_channel'}->{$channel};
+      delete $json->{rf_channel}{$channel};
       next JCHANNEL;
     }
+    $json->{rf_channel}{$channel}{modulation} = (! defined $json->{rf_channel}{$channel}{modulation})
+       ? 'none' : $json->{rf_channel}{$channel}{modulation};
     foreach my $key ('strength','sig_noise','symbol_err') {
-      unless (exists $json->{'rf_channel'}->{$channel}->{$key}) {
+      unless (exists $json->{rf_channel}{$channel}{$key}) {
         $c->log->debug("$json->{user_id} channel $channel missing $key attribute");
       }
-      unless (looks_like_number $json->{'rf_channel'}->{$channel}->{$key}) {
-        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}->{$channel}->{$key}");
-        $json->{'rf_channel'}->{$channel}->{$key} = 0;
+      unless (looks_like_number $json->{rf_channel}{$channel}{$key}) {
+        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}{$channel}{$key}");
+        $json->{rf_channel}{$channel}{$key} = 0;
       }
-      if (   $json->{'rf_channel'}->{$channel}->{$key} < 0
-          || $json->{'rf_channel'}->{$channel}->{$key} > 100) {
-        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}->{$channel}->{$key}");
-        $json->{'rf_channel'}->{$channel}->{$key} = 0;
+      if (   $json->{rf_channel}{$channel}{$key} < 0
+          || $json->{rf_channel}{$channel}{$key} > 100) {
+        $c->log->debug("$json->{user_id} channel $channel has invalid value for $key: $json->{rf_channel}{$channel}{$key}");
+        $json->{rf_channel}{$channel}{$key} = 0;
       }
     }
-    unless (looks_like_number $json->{'rf_channel'}->{$channel}->{'tsid'}) {
-      $json->{'rf_channel'}->{$channel}->{'tsid'} = 0;
+    unless (looks_like_number $json->{rf_channel}{$channel}{tsid}) {
+      $json->{rf_channel}{$channel}{tsid} = 0;
     }
-    if (   $json->{'rf_channel'}->{$channel}->{'tsid'} < 0
-        || ($json->{'rf_channel'}->{$channel}->{'tsid'} > 65535) ) {
-      $c->log->debug("$json->{user_id} channel $channel has invalid TSID $json->{rf_channel}->{$channel}->{tsid}");
-      $json->{'rf_channel'}->{$channel}->{'tsid'} = 0;
+    if (   $json->{rf_channel}{$channel}{tsid} < 0
+        || ($json->{rf_channel}{$channel}{tsid} > 65535) ) {
+      $c->log->debug("$json->{user_id} channel $channel has invalid TSID $json->{rf_channel}{$channel}{tsid}");
+      $json->{rf_channel}{$channel}{tsid} = 0;
     }
   }
 
@@ -131,48 +133,46 @@ sub raw_spot_POST :Global {
     }
   }
 
-  RAWSPOT: for my $channel (keys %{$json->{'rf_channel'}}) {
-    my $channel_details = $json->{'rf_channel'}->{$channel};
+  my $args;
+  RAWSPOT: for my $channel (keys %{$json->{rf_channel}}) {
+    my $channel_details = $json->{rf_channel}{$channel};
     # Bad TSID maps to Washington, DC for local station in CO
-    next if ($tuner_id eq '10152083' && $channel == 14);
+    if ($tuner_id eq '10152083' && $channel == 14) {
+      delete $json->{rf_channel}{$channel};
+      next;
+    }
 
-    # need at least a strength to log
-    next RAWSPOT unless $channel_details->{strength};
 
     # arguments to subroutines
-    my $args = { 'c' => $c,
-                 'json' => $json,
-                 'tuner_id' => $tuner_id,
-                 'tuner_number' => $tuner_number,
-                 'channel' => $channel,
-                 'channel_details' => $channel_details,
-                 'now_epoch' => $now_epoch,
-                 'mysql_now' => $mysql_now,
-                 'yesterday' => $yesterday };
+    $args = { 'c' => $c,
+              'json' => $json,
+              'tuner_id' => $tuner_id,
+              'tuner_number' => $tuner_number,
+              'channel' => $channel,
+              'now_epoch' => $now_epoch,
+              'mysql_now' => $mysql_now,
+              'yesterday' => $yesterday };
 
     # return callsign or undef if it can't be determined and a virtual
     # channel for legacy column in fcc table
-    ($args->{callsign},$args->{fcc_virtual}) = $self->_find_call($args);
+    ($channel_details->{found_call},$channel_details->{found_virtual}) = $self->_find_call($args);
 
     # record signal strength and sig_noise in rrds
     $self->_rrd_update($args);
-
-    # update SignalReport table
-    unless ($self->_signalreport_update($args)) {
-      $c->response->body('FAIL');
-      $c->response->status(400);
-      return;
-    }
-
-    # nothing further to log if no decode
-    next RAWSPOT unless defined $args->{callsign};
-
-    # add or update virtual channel table
-    $self->_virtual_current($args);
-
-    # add or update tsid table if needed
-    $self->_tsid_current($args);
   }
+
+  # update SignalReport table
+  unless ($self->_signalreport_update($args)) {
+    $c->response->body('FAIL');
+    $c->response->status(400);
+    return;
+  }
+
+  # add or update virtual channel table
+  $self->_virtual_current($args);
+
+  # add or update tsid table if needed
+  $self->_tsid_current($args);
 
   $c->response->body('OK');
   $c->response->status(202);
@@ -233,7 +233,7 @@ sub _rrd_not_pending {
 sub _find_call {
   my ($self,$args) = @_;
 
-  my $ch = $args->{channel_details};
+  my $ch = $args->{json}{rf_channel}{$args->{channel}};
 
   # nothing to look up if there's no modulation
   return (undef,undef) if $ch->{modulation} eq 'none';
@@ -454,10 +454,11 @@ sub _find_call {
 sub _rrd_update {
   my ($self,$args) = @_;
 
-  my $ch = $args->{channel_details};
+  my $ch = $args->{json}{rf_channel}{$args->{channel}};
 
-  my $strength = $args->{json}{rf_channel}{$args->{channel}}{strength};
+  my $strength =  $args->{json}{rf_channel}{$args->{channel}}{strength};
   my $sig_noise = $args->{json}{rf_channel}{$args->{channel}}{sig_noise};
+  my $callsign =  $args->{json}{rf_channel}{$args->{channel}}{found_call};
 
   # RF channel rrd
   my $rrd_file = join '_', ($args->{tuner_id},
@@ -477,12 +478,10 @@ sub _rrd_update {
                 '--template', 'strength:sig_noise',
                 "N:$strength:$sig_noise");
 
-  return 1 unless $args->{callsign};
+  return 1 unless $callsign;
 
   # tuner and callsign rrd
-  $rrd_file = join '_', ($args->{tuner_id},
-                            $args->{tuner_number},
-                            $args->{callsign});
+  $rrd_file = join '_', ($args->{tuner_id}, $args->{tuner_number}, $callsign);
   $rrd_file = $args->{c}->config->{rrd_dir} . "/$rrd_file.rrd";
 
   if ( _rrd_not_pending($rrd_file) && ! -r $rrd_file) {
@@ -520,44 +519,32 @@ sub _rrd_update {
 sub _signalreport_update {
   my ($self,$args) = @_;
 
-  my $ch = $args->{channel_details};
-  my $callsign = $args->{callsign} ? $args->{callsign} : undef;
-  my $virtual_channel = $args->{fcc_virtual} ? $args->{fcc_virtual} : undef;
-  # use NULL in database for no modulation ("none" from tuners)
-  my $modulation = $ch->{'modulation'} eq 'none' ? undef : $ch->{'modulation'};
+  my $storage = $args->{c}->model('DB')->storage();
 
-  # update SignalReport with or without callsign
-  # Create new callsign (or station moving to new channel or modulation)?
-  my $entry = $args->{c}->model('DB::SignalReport')
-                        ->search({'tuner_id' => $args->{tuner_id},
-                                  'tuner_number' => $args->{tuner_number},
-                                  'rf_channel' => $args->{channel},
-                                  'modulation' => $modulation,
-                                  'callsign' => $callsign,})->first;
-  # test $entry as scalar (ResultSet boolean is always true)
-  if ((!defined $entry) || $entry == 0) {
-    my $spot = {
-      'rx_date'         => $args->{mysql_now},
-      'first_rx_date'   => $args->{mysql_now},
-      'rf_channel'      => $args->{channel},
-      'modulation'      => $modulation,
-      'strength'        => $ch->{'strength'},
-      'sig_noise'       => $ch->{'sig_noise'},
-      'tuner_id'        => $args->{tuner_id},
-      'tuner_number'    => $args->{tuner_number},
-      'callsign'        => $callsign,
-      'virtual_channel' => $virtual_channel, };
-    $entry = $args->{c}->model('DB::SignalReport')->create($spot);
-    if (! $entry) {
-      return 0
-    }
+  my $sql = <<'ISQL';
+insert into signal_report (rx_date,first_rx_date,rf_channel,modulation,strength,sig_noise,
+                                  tuner_id,tuner_number,callsign,virtual_channel) values 
+ISQL
+
+  # loop over json and append to $sql
+  for my $channel (keys %{$args->{json}{rf_channel}}) {
+    my $ch = $args->{json}{rf_channel}{$channel};
+    $sql .= "('$args->{mysql_now}',";
+    $sql .= "'$args->{mysql_now}',";
+    $sql .= "$channel,";
+    $sql .= "'$ch->{modulation}',",
+    $sql .= "$ch->{strength},";
+    $sql .= "$ch->{sig_noise},";
+    $sql .= "'$args->{tuner_id}',";
+    $sql .= "'$args->{tuner_number}',";
+    $sql .= (defined $ch->{found_call}) ? "'$ch->{found_call}'," : "'none',";
+    $sql .= defined $ch->{found_virtual} ? "$ch->{found_virtual})," : "NULL),";
   }
-  $entry->update({'rx_date'         => $args->{mysql_now},
-                  'rf_channel'      => $args->{channel},
-                  'virtual_channel' => $virtual_channel,
-                  'modulation'      => $modulation,
-                  'strength'        => $ch->{strength},
-                  'sig_noise'       => $ch->{sig_noise}});
+  chop $sql;  # remove , from last row
+  $sql .= " on duplicate key update rx_date='$args->{mysql_now}',strength=values(strength),sig_noise=values(sig_noise),virtual_channel=values(virtual_channel);";
+
+  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+
   return 1;
 }
 
@@ -566,47 +553,40 @@ sub _signalreport_update {
 sub _virtual_current {
   my ($self,$args) = @_;
 
-  my $ch = $args->{channel_details};
+  my $sql = 'insert into psip_virtual (rx_date,program,name,channel,callsign) values ';
 
-  # process each virtual channel
-  for my $program (keys %{$ch->{virtual}}) {
-    next if $program eq "";
-    # skip if missing name or channel
-    next unless $ch->{virtual}{$program}{name};
-    next unless $ch->{virtual}{$program}{channel};
+  for my $channel (keys %{$args->{json}{rf_channel}}) {
+    my $ch = $args->{json}{rf_channel}{$channel};
+    next unless $args->{json}{rf_channel}{$channel}{found_call};
+    # process each virtual channel
+    for my $program (keys %{$ch->{virtual}}) {
+      next if $program eq "";
+      # skip if missing name or channel
+      next unless $ch->{virtual}{$program}{name};
+      next unless $ch->{virtual}{$program}{channel};
 
-    # sometimes the name or channel has bit errors
-    next if $ch->{virtual}{$program}{name} =~ /[^[:ascii:]]/;
-    next if $ch->{virtual}{$program}{channel} =~ /[^[:ascii:]]/;
+      # sometimes the name or channel has bit errors
+      next if $ch->{virtual}{$program}{name} =~ /[^[:ascii:]]/;
+      next if $ch->{virtual}{$program}{channel} =~ /[^[:ascii:]]/;
 
-    # sometimes trailing whitespace is added
-    $ch->{virtual}{$program}{name} =~ s/\s+$//;
-    $ch->{virtual}{$program}{channel} =~ s/\s+$//;
+      # sometimes trailing whitespace is added
+      $ch->{virtual}{$program}{name} =~ s/\s+$//;
+      $ch->{virtual}{$program}{channel} =~ s/\s+$//;
 
-    my $v_row =
-      $args->{c}->model('DB::PsipVirtual')->search(
-        {'callsign' => $args->{callsign},
-         'program'  => $program+0,
-         'name'     => $ch->{virtual}{$program}{name},
-         'channel'  => $ch->{virtual}{$program}{channel}});
-
-    # all new entry? Test $v_row as scalar (ResultSet boolean is always true)
-    if ((!defined $v_row) || $v_row == 0) {
-      $args->{c}->model('DB::PsipVirtual')->create({
-        'rx_date'  => $args->{mysql_now},
-        'program'  => $program+0,
-        'name'     => $ch->{virtual}{$program}{name},
-        'channel'  => $ch->{virtual}{$program}{channel},
-        'callsign' => $args->{callsign}});
-      next;
-    }
-    # else update existing row
-    else {
-      while (my $psip = $v_row->next) {
-        $psip->update({'rx_date'  => $args->{mysql_now}});
-      }
+      $sql .= "('$args->{mysql_now}',";
+      $sql .= $program+0;
+      $sql .= ",'$ch->{virtual}{$program}{name}',";
+      $sql .= "$ch->{virtual}{$program}{channel},";
+      $sql .= "'$args->{json}{rf_channel}{$channel}{found_call}'),";
     }
   }
+  chop $sql;  # remove , from last row
+
+  $sql .= " on duplicate key update rx_date='$args->{mysql_now}',program=values(program);";
+
+  $args->{c}->model('DB')->storage->dbh_do(
+    sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+  );
 }
 
   
@@ -614,25 +594,22 @@ sub _virtual_current {
 sub _tsid_current {
   my ($self,$args) = @_;
 
-  my $ch = $args->{channel_details};
+  return unless scalar keys %{$args->{json}{rf_channel}};
 
-  # nothing to do if tsid is missing or invalid
-  unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536) { return }
+  my $sql = 'insert into tsid (rx_date,tsid,callsign) values ';
 
-  my ($tsid_row) = $args->{c}->model('DB::Tsid')->search(
-        {'callsign' => $args->{callsign},
-         'tsid'     => $ch->{tsid}})->first;
-  # all new entry? Test $tsid_row as scalar (ResultSet boolean is always true)
-  if ((!defined $tsid_row) || $tsid_row == 0) {
-    $args->{c}->model('DB::Tsid')->create({
-      'rx_date'  => $args->{mysql_now},
-      'tsid'     => $ch->{tsid},
-      'callsign' => $args->{callsign}});
+  for my $channel (keys %{$args->{json}{rf_channel}}) {
+    my $ch = $args->{json}{rf_channel}{$channel};
+    next unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536);
+    $sql .= "('$args->{mysql_now}',$ch->{tsid},'$ch->{found_call}'),";
   }
-  # else update existing row
-  else {
-    $tsid_row->update({'rx_date'  => $args->{mysql_now}});
-  }
+  chop $sql;  # remove , from last row
+
+  $sql .= " on duplicate key update rx_date='$args->{mysql_now}';";
+
+  $args->{c}->model('DB')->storage->dbh_do(
+    sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+  );
 }
 
 

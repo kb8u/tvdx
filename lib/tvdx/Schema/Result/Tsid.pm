@@ -38,12 +38,6 @@ __PACKAGE__->table("tsid");
 
 =head1 ACCESSORS
 
-=head2 tsid_key
-
-  data_type: 'integer'
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 rx_date
 
   data_type: 'datetime'
@@ -65,8 +59,6 @@ __PACKAGE__->table("tsid");
 =cut
 
 __PACKAGE__->add_columns(
-  "tsid_key",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "rx_date",
   {
     data_type => "datetime",
@@ -83,13 +75,15 @@ __PACKAGE__->add_columns(
 
 =over 4
 
-=item * L</tsid_key>
+=item * L</callsign>
+
+=item * L</tsid>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("tsid_key");
+__PACKAGE__->set_primary_key("callsign", "tsid");
 
 =head1 RELATIONS
 
@@ -109,8 +103,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07045 @ 2018-07-12 12:40:52
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rKW/K/Fv/rTZlIlUK1l52w
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-18 20:30:09
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dvM0i6LKuvReWHmMhpaHFw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

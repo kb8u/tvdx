@@ -38,12 +38,6 @@ __PACKAGE__->table("psip_virtual");
 
 =head1 ACCESSORS
 
-=head2 virtual_key
-
-  data_type: 'integer'
-  is_auto_increment: 1
-  is_nullable: 0
-
 =head2 rx_date
 
   data_type: 'datetime'
@@ -54,11 +48,6 @@ __PACKAGE__->table("psip_virtual");
 
   data_type: 'integer'
   is_nullable: 1
-
-=head2 name
-
-  data_type: 'tinyblob'
-  is_nullable: 0
 
 =head2 channel
 
@@ -73,11 +62,15 @@ __PACKAGE__->table("psip_virtual");
   is_nullable: 0
   size: 255
 
+=head2 name
+
+  data_type: 'varchar'
+  is_nullable: 0
+  size: 255
+
 =cut
 
 __PACKAGE__->add_columns(
-  "virtual_key",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
   "rx_date",
   {
     data_type => "datetime",
@@ -86,25 +79,29 @@ __PACKAGE__->add_columns(
   },
   "program",
   { data_type => "integer", is_nullable => 1 },
-  "name",
-  { data_type => "tinyblob", is_nullable => 0 },
   "channel",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "callsign",
   { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
+  "name",
+  { data_type => "varchar", is_nullable => 0, size => 255 },
 );
 
 =head1 PRIMARY KEY
 
 =over 4
 
-=item * L</virtual_key>
+=item * L</name>
+
+=item * L</channel>
+
+=item * L</callsign>
 
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("virtual_key");
+__PACKAGE__->set_primary_key("name", "channel", "callsign");
 
 =head1 RELATIONS
 
@@ -124,8 +121,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2023-12-10 16:58:37
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:puPT5wqmCK7teTLH9YCMVg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-18 20:30:09
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Zyblkl19W83Fd0M/8ikxFA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

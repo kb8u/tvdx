@@ -152,7 +152,7 @@ sub _upsert_all {
   # loop over json and append to $sql
   foreach my $frequency (keys %{$json->{signal}}) {
     $sql .= "('$json->{signal}{$frequency}{time}','$json->{signal}{$frequency}{time}','$json->{tuner_key}',";
-    my $fcckeysql = <<"FCCSQL";
+    $sql .= <<"FCCSQL";
 (select fcc_key from fm_fcc where pi_code = $json->{signal}{$frequency}{pi_code} and frequency = $frequency
   order by (
     st_distance_sphere(
@@ -163,7 +163,6 @@ sub _upsert_all {
 )),
 FCCSQL
 
-  $sql .= $fcckeysql;
   } 
 
   chop $sql;
@@ -177,6 +176,7 @@ FCCSQL
 ODK
 
   $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+$c->log->error($storage->errstr);
 
 }
 
