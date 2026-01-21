@@ -176,7 +176,6 @@ FCCSQL
 ODK
 
   $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
-$c->log->error($storage->errstr);
 
 }
 

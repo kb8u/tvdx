@@ -572,6 +572,8 @@ sub _virtual_current {
       # sometimes trailing whitespace is added
       $ch->{virtual}{$program}{name} =~ s/\s+$//;
       $ch->{virtual}{$program}{channel} =~ s/\s+$//;
+      # escape quote in sql
+      $ch->{virtual}{$program}{name} =~ s/\'/\'\'/g;
 
       $sql .= "('$args->{mysql_now}',";
       $sql .= $program+0;
@@ -580,13 +582,18 @@ sub _virtual_current {
       $sql .= "'$args->{json}{rf_channel}{$channel}{found_call}'),";
     }
   }
+  return if length($sql) < 74;
   chop $sql;  # remove , from last row
 
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}',program=values(program);";
 
-  $args->{c}->model('DB')->storage->dbh_do(
-    sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
-  );
+  try {
+    $args->{c}->model('DB')->storage->dbh_do(
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+    );
+  } catch {
+    $args->{c}->log->error("exception on: $sql");
+  };
 }
 
   
@@ -601,15 +608,22 @@ sub _tsid_current {
   for my $channel (keys %{$args->{json}{rf_channel}}) {
     my $ch = $args->{json}{rf_channel}{$channel};
     next unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536);
+    next unless defined $ch->{tsid} && defined $ch->{found_call};
     $sql .= "('$args->{mysql_now}',$ch->{tsid},'$ch->{found_call}'),";
   }
+  return if length($sql) < 49;
   chop $sql;  # remove , from last row
 
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}';";
 
-  $args->{c}->model('DB')->storage->dbh_do(
-    sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
-  );
+  try {
+    $args->{c}->model('DB')->storage->dbh_do(
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+    );
+  } catch {
+    $args->{c}->log->error("exception on: $sql");
+  };
+
 }
 
 
