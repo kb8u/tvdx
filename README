@@ -54,12 +54,15 @@ CREATE TABLE fcc (
 --
 -- Copy of TSID query from rabbitears.info.  Avoids hammering the server
 --
-CREATE TABLE rabbitears_tsid (
-  re_tsid_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  tsid INTEGER NOT NULL,
-  re_rval VARCHAR(10000),
-  last_re_lookup DATETIME NOT NULL
-);
+CREATE TABLE `tsid` (
+  `rx_date` datetime NOT NULL,
+  `tsid` int NOT NULL,
+  `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  PRIMARY KEY (`callsign`,`tsid`),
+  KEY `callsign` (`callsign`),
+  KEY `tsid` (`tsid`),
+  CONSTRAINT `tsid_ibfk_1` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
 --
 -- Copy of CALL query from rabbitears.info.  Avoids hammering the server
 --
@@ -90,28 +93,20 @@ CREATE TABLE `signal_report` (
   CONSTRAINT `signal_report_ibfk_1` FOREIGN KEY (`tuner_id`) REFERENCES `tuner` (`tuner_id`),
   CONSTRAINT `signal_report_ibfk_2` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
---
--- TSID received from a station
---
-CREATE TABLE tsid (
-  tsid_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  rx_date DATETIME NOT NULL,
-  tsid INTEGER NOT NULL,
-  callsign VARCHAR(255) NOT NULL,
-  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
 );
 --
 -- Virtual channels received in PSIP
 --
-CREATE TABLE psip_virtual (
-  virtual_key INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  rx_date DATETIME NOT NULL,
-  program INTEGER,
-  name TINYBLOB NOT NULL,
-  channel VARCHAR(255) NOT NULL,
-  callsign VARCHAR(255) NOT NULL,
-  FOREIGN KEY(callsign) REFERENCES fcc(callsign)
-);
+CREATE TABLE `psip_virtual` (
+  `rx_date` datetime NOT NULL,
+  `program` int DEFAULT NULL,
+  `channel` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `name` varchar(255) COLLATE utf8mb3_bin NOT NULL,
+  PRIMARY KEY (`name`,`channel`,`callsign`),
+  KEY `callsign` (`callsign`),
+  CONSTRAINT `psip_virtual_ibfk_1` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
 --
 -- Log these tuners to catalyst $c->log->info
 --
