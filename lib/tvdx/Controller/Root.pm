@@ -393,7 +393,7 @@ sub tuner_map_data :Global {
   if (defined $period && $period eq 'ever') {
     $rs = $c->model('DB::SignalReport')->search({'tuner_id' => $tuner_id,
                                            'tuner_number' => $tuner_number,
-                                           'callsign' => { '!=', undef}});
+                                           'callsign' => {'-and' => [{'!=' => undef},{'!=' => 'none'}]}});
   }
   else {
     my $now = DateTime->now;
