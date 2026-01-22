@@ -525,25 +525,21 @@ sub _signalreport_update {
 insert into signal_report (rx_date,first_rx_date,rf_channel,modulation,strength,sig_noise,
                                   tuner_id,tuner_number,callsign,virtual_channel) values 
 ISQL
+  my @vals;
 
   # loop over json and append to $sql
   for my $channel (keys %{$args->{json}{rf_channel}}) {
     my $ch = $args->{json}{rf_channel}{$channel};
-    $sql .= "('$args->{mysql_now}',";
-    $sql .= "'$args->{mysql_now}',";
-    $sql .= "$channel,";
-    $sql .= "'$ch->{modulation}',",
-    $sql .= "$ch->{strength},";
-    $sql .= "$ch->{sig_noise},";
-    $sql .= "'$args->{tuner_id}',";
-    $sql .= "'$args->{tuner_number}',";
-    $sql .= (defined $ch->{found_call}) ? "'$ch->{found_call}'," : "'none',";
-    $sql .= defined $ch->{found_virtual} ? "$ch->{found_virtual})," : "NULL),";
+    $sql .= '(?,?,?,?,?,?,?,?,?,?),';
+    push @vals,($args->{mysql_now},$args->{mysql_now},$channel,$ch->{modulation},$ch->{strength});
+    push @vals,($ch->{sig_noise},$args->{tuner_id},$args->{tuner_number});
+    push @vals, (defined $ch->{found_call} ? $ch->{found_call} : 'none');
+    push @vals, (defined $ch->{found_virtual} ? $ch->{found_virtual} : undef);
   }
   chop $sql;  # remove , from last row
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}',strength=values(strength),sig_noise=values(sig_noise),virtual_channel=values(virtual_channel);";
 
-  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)});
 
   return 1;
 }
@@ -554,6 +550,7 @@ sub _virtual_current {
   my ($self,$args) = @_;
 
   my $sql = 'insert into psip_virtual (rx_date,program,name,channel,callsign) values ';
+  my @vals;
 
   for my $channel (keys %{$args->{json}{rf_channel}}) {
     my $ch = $args->{json}{rf_channel}{$channel};
@@ -575,11 +572,9 @@ sub _virtual_current {
       # escape quote in sql
       $ch->{virtual}{$program}{name} =~ s/\'/\'\'/g;
 
-      $sql .= "('$args->{mysql_now}',";
-      $sql .= $program+0;
-      $sql .= ",'$ch->{virtual}{$program}{name}',";
-      $sql .= "$ch->{virtual}{$program}{channel},";
-      $sql .= "'$args->{json}{rf_channel}{$channel}{found_call}'),";
+      $sql .= '(?,?,?,?,?),';
+      push @vals,($args->{mysql_now},$program+0,$ch->{virtual}{$program}{name});
+      push @vals,($ch->{virtual}{$program}{channel},$args->{json}{rf_channel}{$channel}{found_call});
     }
   }
   return if length($sql) < 74;
@@ -589,7 +584,7 @@ sub _virtual_current {
 
   try {
     $args->{c}->model('DB')->storage->dbh_do(
-      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
     );
   } catch {
     $args->{c}->log->error("exception on: $sql");
@@ -604,12 +599,14 @@ sub _tsid_current {
   return unless scalar keys %{$args->{json}{rf_channel}};
 
   my $sql = 'insert into tsid (rx_date,tsid,callsign) values ';
+  my @vals;
 
   for my $channel (keys %{$args->{json}{rf_channel}}) {
     my $ch = $args->{json}{rf_channel}{$channel};
     next unless ($ch->{tsid} && $ch->{tsid} > 1 && $ch->{tsid} < 65536);
     next unless defined $ch->{tsid} && defined $ch->{found_call};
-    $sql .= "('$args->{mysql_now}',$ch->{tsid},'$ch->{found_call}'),";
+    $sql .= '(?,?,?),';
+    push @vals, ($args->{mysql_now},$ch->{tsid},$ch->{found_call});
   }
   return if length($sql) < 49;
   chop $sql;  # remove , from last row
@@ -618,7 +615,7 @@ sub _tsid_current {
 
   try {
     $args->{c}->model('DB')->storage->dbh_do(
-      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute()}
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
     );
   } catch {
     $args->{c}->log->error("exception on: $sql");
