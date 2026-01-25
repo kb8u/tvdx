@@ -557,8 +557,8 @@ sub _virtual_current {
     next unless $args->{json}{rf_channel}{$channel}{found_call};
     # process each virtual channel
     for my $program (keys %{$ch->{virtual}}) {
-      next if $program eq "";
-      # skip if missing name or channel
+      # skip if missing name or channel, or invalid program
+      next if ((defined $program && $program ne "")&& $program !~ /^\d+$/);
       next unless $ch->{virtual}{$program}{name};
       next unless $ch->{virtual}{$program}{channel};
 
@@ -573,7 +573,8 @@ sub _virtual_current {
       $ch->{virtual}{$program}{name} =~ s/\'/\'\'/g;
 
       $sql .= '(?,?,?,?,?),';
-      push @vals,($args->{mysql_now},$program+0,$ch->{virtual}{$program}{name});
+      my $sql_program = (!defined $program || $program eq "") ? -1 : $program+0;
+      push @vals,($args->{mysql_now},$sql_program,$ch->{virtual}{$program}{name});
       push @vals,($ch->{virtual}{$program}{channel},$args->{json}{rf_channel}{$channel}{found_call});
     }
   }

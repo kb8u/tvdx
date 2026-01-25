@@ -99,12 +99,14 @@ CREATE TABLE `signal_report` (
 --
 CREATE TABLE `psip_virtual` (
   `rx_date` datetime NOT NULL,
-  `program` int DEFAULT NULL,
+  `program` int NOT NULL,
   `channel` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `name` varchar(255) COLLATE utf8mb3_bin NOT NULL,
-  PRIMARY KEY (`name`,`channel`,`callsign`),
+  `name` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `first_rx_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`name`,`channel`,`callsign`,`program`),
   KEY `callsign` (`callsign`),
+  KEY `name` (`name`),
   CONSTRAINT `psip_virtual_ibfk_1` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
 --

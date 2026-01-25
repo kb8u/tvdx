@@ -47,7 +47,7 @@ __PACKAGE__->table("psip_virtual");
 =head2 program
 
   data_type: 'integer'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 channel
 
@@ -68,6 +68,13 @@ __PACKAGE__->table("psip_virtual");
   is_nullable: 0
   size: 255
 
+=head2 first_rx_date
+
+  data_type: 'datetime'
+  datetime_undef_if_invalid: 1
+  default_value: 'CURRENT_TIMESTAMP'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -78,13 +85,20 @@ __PACKAGE__->add_columns(
     is_nullable => 0,
   },
   "program",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "integer", is_nullable => 0 },
   "channel",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "callsign",
   { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
   "name",
   { data_type => "varchar", is_nullable => 0, size => 255 },
+  "first_rx_date",
+  {
+    data_type => "datetime",
+    datetime_undef_if_invalid => 1,
+    default_value => "CURRENT_TIMESTAMP",
+    is_nullable => 0,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -97,11 +111,13 @@ __PACKAGE__->add_columns(
 
 =item * L</callsign>
 
+=item * L</program>
+
 =back
 
 =cut
 
-__PACKAGE__->set_primary_key("name", "channel", "callsign");
+__PACKAGE__->set_primary_key("name", "channel", "callsign", "program");
 
 =head1 RELATIONS
 
@@ -121,8 +137,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-18 20:30:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Zyblkl19W83Fd0M/8ikxFA
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-25 10:01:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:I5dRLRWVJEIbhsssis2RpA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
