@@ -1,0 +1,23 @@
+---
+name: tvdx
+# URL to root of static content
+static_url: https://example.com/static 
+# URL to root of application
+root_url: http://example.com/tvdx
+# directory where images are stored
+image_dir: /var/www/html/images
+# directory where .rrd files are stored
+rrd_dir: /var/rrd
+# Google maps API key
+gmap_key: getakeyfromgoogle
+# rrdcached socket
+socket: /var/run/rrdcached.sock
+# fm admin password (for creating new accounts)
+fm_admin_pw: worth fine parks departure
+# mysql database, user, password. Turn off ONLY_FULL_GROUP_BY for SignalReport sub most_recent
+Model::DB:
+   connect_info:
+      dsn: dbi:mysql:database=tvdx
+      user: tvdxuser
+      password: tvdxpassword
+      mysql_init_command: SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''));

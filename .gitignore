@@ -4,8 +4,7 @@
 *.png
 *.exe
 *.gz
-tvdx.conf
-lib/tvdx/Model/DB.pm
+tvdx.yaml
 client/win32/bzip2/scan_tuner.exe
 root/static/nrsc_errors.html
 root/static/wtfda_errors.html

@@ -5,14 +5,6 @@ use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
     schema_class => 'tvdx::Schema',
-    
-    connect_info => {
-        dsn => 'dbi:mysql:database=tvdx',
-        user => 'theUserHere',
-        password => 'thePasswordHere',
-        # shut off ONLY_FULL_GROUP_BY so SignalReport sub most_recent will work
-        mysql_init_command => q/SET sql_mode=(SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''));/,
-    }
 );
 
 =head1 NAME
