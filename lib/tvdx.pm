@@ -47,8 +47,7 @@ __PACKAGE__->config(
       expose_stash => [ qw(tuner_id tuner_number tuner_latitude tuner_longitude
                            reception_locations markers json tuner_key) ] },
     'Plugin::Authentication' => {
-      default_realm => 'mysql',
-      mysql => {
+      default => {
         credential => {
           class => 'Password',
           password_field => 'password',

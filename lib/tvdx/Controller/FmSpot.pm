@@ -444,7 +444,7 @@ sub fm_all_tuner_data :Global {
         }
   }
   $c->stash('json' => \%json);
-  $c->res->header('Access-Control-Allow-Origin'=>'https://rabbitears.info',
+  $c->res->header('Access-Control-Allow-Origin'=>'https://www.rabbitears.info',
                   'Access-Control-Allow-Methods'=>'GET');
   $c->detach( $c->view('JSON') );
 }
