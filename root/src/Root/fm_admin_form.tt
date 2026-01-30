@@ -7,6 +7,7 @@
   <body>
     <form method="post" action="[% c.uri_for('fm_admin_form_do') %]">
       <table>
+         <tr><td>Tuner ID (search only):</td><td><input type="text" name="tuner_key"></td></tr>
          <tr><td>Email:</td><td><input type="text" name="email"></td></tr>
          <tr><td>User:</td><td><input type="text" name="user"></td></tr>
          <tr><td>Password:</td><td><input type="text" name="password"></td></tr>
@@ -16,7 +17,9 @@
          <tr><td>Tuner Description:</td><td><input type="text" name="tuner_description"></td></tr>
          <tr><td>Admin Password:</td><td><input type="text" name="fm_admin_pw"></td></tr>
       </table>
-      <input type="submit" name="Submit" value="Submit">
+      <input type="submit" name="submit" value="New">
+      <input type="submit" name="submit" value="Search">
+      <input type="submit" name="submit" value="Update">
     </form>
   </body>
 </html>

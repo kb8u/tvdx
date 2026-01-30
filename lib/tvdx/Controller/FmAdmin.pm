@@ -37,8 +37,6 @@ sub fm_admin_form :Global {
   my ($self, $c) = @_;
 
   $c->stash(static_url => $c->config->{static_url});
-  $c->stash(next_user_key =>
-    $c->model('DB::FmTuner')->get_column('tuner_key')->max() + 1);
   $c->stash(template => 'Root/fm_admin_form.tt');
   $c->stash(current_view => 'HTML');
 }
@@ -61,46 +59,53 @@ sub fm_admin_form_do :Global {
   my $longitude = $c->request->params->{'longitude'};
   my $tuner_description = $c->request->params->{'tuner_description'};
   my $fm_admin_pw = $c->request->params->{'fm_admin_pw'};
-
-  # check for valid data.  If invalid, show error page
-  my @fail_reason;
-  push @fail_reason, 'email' if ($email !~ /^$Email::Address::addr_spec$/);
-  push @fail_reason, 'user name' if ($user !~ /^[a-zA-Z0-9]{1,255}$/);
-  push @fail_reason, 'password' if ($password !~ /^.{1,8}$/);
-  push @fail_reason, 'user description' if ($user_description !~ /^.{1,255}$/);
-  push @fail_reason, 'latitude (need decimal degrees)' if ($latitude !~ /^$RE{num}{real}$/);
-  push @fail_reason, 'latitude too large' if ($latitude && $latitude > 72);
-  push @fail_reason, 'latitude too small' if ($latitude && $latitude < 16);
-  push @fail_reason, 'longitude (need decimal degrees)' if ($longitude !~ /^$RE{num}{real}$/);
-  push @fail_reason, 'longitude too large (missing - sign?)' if ($longitude && $longitude > -52);
-  push @fail_reason, 'longitude too small' if ($longitude && $longitude < -167);
-  push @fail_reason, 'tuner description' if ($tuner_description !~ /^.{1,255}$/);
-  push @fail_reason, 'bad admin password' if ($fm_admin_pw ne $c->config->{fm_admin_pw});
-  if (@fail_reason) {
-    # Couldn't use tt here, always got a 415 error. Catalyst::Controller
-    # apparently won't let you use tt with POST. Can't figure out work-around
-    my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
-    $c->response->body($text);
+  my $action = $c->request->params->{'submit'};
+  
+  if ($fm_admin_pw ne $c->config->{fm_admin_pw}) {
+    $c->response->body("Wrong admin password.  Navigate back and try again");
     $c->response->status(400);
     $c->detach;
   }
 
-  # insert and display email text with new user_key and details
-  my $user_db = $c->model('DB::FmUser')->create( { user => $user,
-password => $password, email => $email, description => $user_description });
+  if ($action eq 'New') {
+    # check for valid data.  If invalid, show error page
+    my @fail_reason;
+    push @fail_reason, 'email invalid' if ($email !~ /^$Email::Address::addr_spec$/);
+    push @fail_reason, 'user name has invalid character or is too long' if ($user !~ /^[a-zA-Z0-9]{1,255}$/);
+    push @fail_reason, 'password too long' if ($password !~ /^.{1,8}$/);
+    push @fail_reason, 'user description too long' if ($user_description !~ /^.{1,255}$/);
+    push @fail_reason, 'latitude (need decimal degrees)' if ($latitude !~ /^$RE{num}{real}$/);
+    push @fail_reason, 'latitude too large' if ($latitude && $latitude > 72);
+    push @fail_reason, 'latitude too small' if ($latitude && $latitude < 16);
+    push @fail_reason, 'longitude (need decimal degrees)' if ($longitude !~ /^$RE{num}{real}$/);
+    push @fail_reason, 'longitude too large (missing - sign?)' if ($longitude && $longitude > -52);
+    push @fail_reason, 'longitude too small' if ($longitude && $longitude < -167);
+    push @fail_reason, 'tuner description too long' if ($tuner_description !~ /^.{1,255}$/);
+    if (@fail_reason) {
+      # Couldn't use tt here, always got a 415 error. Catalyst::Controller
+      # apparently won't let you use tt with POST. Can't figure out work-around
+      my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
+      $c->response->body($text);
+      $c->response->status(400);
+      return;
+    }
 
-  my $tuner_db = $c->model('DB::FmTuner')->create(
-   { description => $tuner_description,
-     user_key => $user_db->user_key,
-     start_date => DateTime::Format::MySQL->format_datetime(DateTime->now),
-     latitude => $latitude,
-     longitude => $longitude,
-     latlon => {latitude => $latitude, longitude => $longitude} });
+    # insert and display email text with new user_key and details
+    my $user_db = $c->model('DB::FmUser')->create( { user => $user,
+  password => $password, email => $email, description => $user_description });
 
-  my $new_user_key = $tuner_db->tuner_key;
-  my $new_user_url = $c->config->{root_url} . "/fm_one_tuner_map/$new_user_key";
-  my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
-  my $text = <<"EOTEXT";
+    my $tuner_db = $c->model('DB::FmTuner')->create(
+     { description => $tuner_description,
+       user_key => $user_db->user_key,
+       start_date => DateTime::Format::MySQL->format_datetime(DateTime->now),
+       latitude => $latitude,
+       longitude => $longitude,
+       latlon => {latitude => $latitude, longitude => $longitude} });
+
+    my $new_user_key = $tuner_db->tuner_key;
+    my $new_user_url = $c->config->{root_url} . "/fm_one_tuner_map/$new_user_key";
+    my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
+    my $text = <<"EOTEXT";
 New user ID $new_user_key, password $password created.
 
 The windows installer is at <a href=\"$installer_url\">$installer_url</a>.  You
@@ -109,7 +114,19 @@ will need to enter the user ID number $new_user_key when you install the program
 Once installed, FM stations detected by the tuner will be shown at
 <a href=\"$new_user_url\">$new_user_url</a> 
 EOTEXT
-  $c->response->body($text);
+    $c->response->body($text);
+    $c->response->status(200);
+    return;
+  }
+  if ($action eq 'Search') {
+    # search and render results into same form
+    return;
+  }
+  if ($action eq 'Update') }{
+    # update
+    return;
+  }
+  $c->response->body('Invalid form action');
   $c->response->status(200);
 }
 
