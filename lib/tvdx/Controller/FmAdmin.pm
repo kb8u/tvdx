@@ -55,7 +55,6 @@ sub fm_admin_form_do :Global :ActionClass('REST') {}
 
 sub fm_admin_form_do_POST :Global {
   my ($self, $c) = @_;
-$c->log->debug("content-type: ".$c->request->header('Content-Type'));
   my $tuner_key = $c->request->params->{'tuner_key'};
   my $email = $c->request->params->{'email'};
   my $user = $c->request->params->{'user'};
@@ -128,7 +127,13 @@ EOTEXT
     my $trs = 0;
     my @found;
     if ($tuner_key) {
-      $trs = $c->model('DB::FmTuner')->find($tuner_key);
+      my $row = $c->model('DB::FmTuner')->find($tuner_key);
+      if ($row) {
+        push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
+                      password=>$row->user_key->password, user_description=>$row->user_key->description,
+                      latitude=>$row->latitude, longitude=>$row->longitude,
+                      tuner_description => $row->description});
+      }
     } elsif ($tuner_description) {
       $trs = $c->model('DB::FmTuner')->search({description => $tuner_description});
     } else {
@@ -139,11 +144,18 @@ EOTEXT
         $trs = $c->model('DB::FmTuner')->search(\%fields, { join => 'user_key', prefetch => 'user_key' });
       }
     }
-    while (my $row = $trs->next()) {
-      push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
-                    password=>$row->user_key->password, user_description=>$row->user_key->description,
-                    latitude=>$row->latitude, longitude=>$row->longitude,
-                    tuner_description => $row->description});
+    if ($trs) {
+      while (my $row = $trs->next()) {
+        push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
+                      password=>$row->user_key->password, user_description=>$row->user_key->description,
+                      latitude=>$row->latitude, longitude=>$row->longitude,
+                      tuner_description => $row->description});
+      }
+    }
+    unless (scalar @found) {
+      $c->response->body("Nothing found.  Navigate back and try again");
+      $c->response->status(200);
+      $c->detach;
     }
     $c->stash(accounts_found => \@found);
     $c->stash(template => 'Root/fm_admin_form.tt');
