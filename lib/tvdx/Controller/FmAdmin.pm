@@ -6,7 +6,7 @@ use DateTime;
 use DateTime::Format::MySQL;
 use Data::Dumper;
 
-BEGIN { extends 'Catalyst::Controller' }
+BEGIN { extends 'Catalyst::Controller::REST' }
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -33,12 +33,15 @@ Display form to create or update user account for FM tuners
 
 =cut
 
+
 sub fm_admin_form :Global {
   my ($self, $c) = @_;
 
-  $c->stash(static_url => $c->config->{static_url});
-  $c->stash(template => 'Root/fm_admin_form.tt');
-  $c->stash(current_view => 'HTML');
+  unless ($c->stash->{accounts_found}) {
+    $c->stash(accounts_found => [{tuner_id=>'', email=>'', user=>'', password=>'', user_description=>'',
+                   latitude=>'', longitude=>'', tuner_description => ''}]);
+  }
+  $c->stash({static_url=>$c->config->{static_url}, template=>'Root/fm_admin_form.tt', current_view=>'HTML'});
 }
 
 
@@ -48,9 +51,12 @@ Process fm_admin_form data
 
 =cut
 
-sub fm_admin_form_do :Global {
-  my ($self, $c) = @_;
+sub fm_admin_form_do :Global :ActionClass('REST') {}
 
+sub fm_admin_form_do_POST :Global {
+  my ($self, $c) = @_;
+$c->log->debug("content-type: ".$c->request->header('Content-Type'));
+  my $tuner_key = $c->request->params->{'tuner_key'};
   my $email = $c->request->params->{'email'};
   my $user = $c->request->params->{'user'};
   my $password = $c->request->params->{'password'};
@@ -82,8 +88,7 @@ sub fm_admin_form_do :Global {
     push @fail_reason, 'longitude too small' if ($longitude && $longitude < -167);
     push @fail_reason, 'tuner description too long' if ($tuner_description !~ /^.{1,255}$/);
     if (@fail_reason) {
-      # Couldn't use tt here, always got a 415 error. Catalyst::Controller
-      # apparently won't let you use tt with POST. Can't figure out work-around
+      # to use tt here, see error about 415 below
       my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
       $c->response->body($text);
       $c->response->status(400);
@@ -92,7 +97,7 @@ sub fm_admin_form_do :Global {
 
     # insert and display email text with new user_key and details
     my $user_db = $c->model('DB::FmUser')->create( { user => $user,
-  password => $password, email => $email, description => $user_description });
+       password => $password, email => $email, description => $user_description });
 
     my $tuner_db = $c->model('DB::FmTuner')->create(
      { description => $tuner_description,
@@ -120,9 +125,34 @@ EOTEXT
   }
   if ($action eq 'Search') {
     # search and render results into same form
+    my $trs = 0;
+    my @found;
+    if ($tuner_key) {
+      $trs = $c->model('DB::FmTuner')->find($tuner_key);
+    } elsif ($tuner_description) {
+      $trs = $c->model('DB::FmTuner')->search({description => $tuner_description});
+    } else {
+      my %fields;
+      $fields{'user_key.email'} = $email if $email;
+      $fields{'user_key.description'} = $user_description if $user_description;
+      if (scalar %fields) {
+        $trs = $c->model('DB::FmTuner')->search(\%fields, { join => 'user_key', prefetch => 'user_key' });
+      }
+    }
+    while (my $row = $trs->next()) {
+      push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
+                    password=>$row->user_key->password, user_description=>$row->user_key->description,
+                    latitude=>$row->latitude, longitude=>$row->longitude,
+                    tuner_description => $row->description});
+    }
+    $c->stash(accounts_found => \@found);
+    $c->stash(template => 'Root/fm_admin_form.tt');
+    # have to manually forward with content-type also set or catalyst returns 415 error
+    $c->response->content_type('text/html');
+    $c->forward('tvdx::View::HTML');
     return;
   }
-  if ($action eq 'Update') }{
+  if ($action eq 'Update') {
     # update
     return;
   }
@@ -137,7 +167,11 @@ Attempt to render a view, if needed.
 
 =cut
 
-#sub end : ActionClass('RenderView') {}
+#sub end :ActionClass('RenderView') {}
+sub end : Private {
+    my ( $self, $c ) = @_;
+    $c->forward('tvdx::View::HTML') unless $c->response->output;
+}
 
 
 =head1 AUTHOR
