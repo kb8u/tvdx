@@ -13,15 +13,19 @@
          <tr><td>User:</td><td><input type="text" name="user" value="[% user.user %]"></td></tr>
          <tr><td>Password:</td><td><input type="text" name="password" value="[% user.password %]"></td></tr>
          <tr><td>User location:</td><td><input type="text" name="user_description" value="[% user.user_description %]"></td></tr>
-         <tr><td>Latitude:</td><td><input type="text" name="latitude" value="[% user.latitude %]"></td></tr>
-         <tr><td>Longitude:</td><td><input type="text" name="longitude" value="[% user.longitude %]"></td></tr>
+         <tr><td>Latitude (can't search):</td><td><input type="text" name="latitude" value="[% user.latitude %]"></td></tr>
+         <tr><td>Longitude (can't search):</td><td><input type="text" name="longitude" value="[% user.longitude %]"></td></tr>
          <tr><td>Tuner Description:</td><td><input type="text" name="tuner_description" value="[% user.tuner_description %]"></td></tr>
-         <tr><td>Admin Password:</td><td><input type="text" name="fm_admin_pw"></td></tr>
+         <tr><td>Admin Password:</td><td><input type="text" name="fm_admin_pw" value="[% fm_admin_pw %]"></td></tr>
       </table>
+  [% IF fm_admin_pw %]
+      <input type="submit" name="submit" value="Update">
+  [% ELSE %]
       <input type="submit" name="submit" value="New">
       <input type="submit" name="submit" value="Search">
-      <input type="submit" name="submit" value="Update">
+  [% END %]
     </form>
+    <hr>
 [% END %]
   </body>
 </html>

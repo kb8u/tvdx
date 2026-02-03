@@ -38,8 +38,8 @@ sub fm_admin_form :Global {
   my ($self, $c) = @_;
 
   unless ($c->stash->{accounts_found}) {
-    $c->stash(accounts_found => [{tuner_id=>'', email=>'', user=>'', password=>'', user_description=>'',
-                   latitude=>'', longitude=>'', tuner_description => ''}]);
+    $c->stash(accounts_found => [{tuner_key=>'', email=>'', user=>'', password=>'',
+                user_description=>'', latitude=>'', longitude=>'', tuner_description => ''}]);
   }
   $c->stash({static_url=>$c->config->{static_url}, template=>'Root/fm_admin_form.tt', current_view=>'HTML'});
 }
@@ -87,7 +87,7 @@ sub fm_admin_form_do_POST :Global {
     push @fail_reason, 'longitude too small' if ($longitude && $longitude < -167);
     push @fail_reason, 'tuner description too long' if ($tuner_description !~ /^.{1,255}$/);
     if (@fail_reason) {
-      # to use tt here, see error about 415 below
+      # to use tt here, see comment about error 415 below
       my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
       $c->response->body($text);
       $c->response->status(400);
@@ -129,7 +129,7 @@ EOTEXT
     if ($tuner_key) {
       my $row = $c->model('DB::FmTuner')->find($tuner_key);
       if ($row) {
-        push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
+        push (@found,{tuner_key=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
                       password=>$row->user_key->password, user_description=>$row->user_key->description,
                       latitude=>$row->latitude, longitude=>$row->longitude,
                       tuner_description => $row->description});
@@ -139,6 +139,8 @@ EOTEXT
     } else {
       my %fields;
       $fields{'user_key.email'} = $email if $email;
+      $fields{'user_key.user'} = $user if $user;
+      $fields{'user_key.password'} = $password if $password;
       $fields{'user_key.description'} = $user_description if $user_description;
       if (scalar %fields) {
         $trs = $c->model('DB::FmTuner')->search(\%fields, { join => 'user_key', prefetch => 'user_key' });
@@ -146,7 +148,7 @@ EOTEXT
     }
     if ($trs) {
       while (my $row = $trs->next()) {
-        push (@found,{tuner_id=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
+        push (@found,{tuner_key=>$row->tuner_key, email=>$row->user_key->email, user=>$row->user_key->user,
                       password=>$row->user_key->password, user_description=>$row->user_key->description,
                       latitude=>$row->latitude, longitude=>$row->longitude,
                       tuner_description => $row->description});
@@ -157,8 +159,7 @@ EOTEXT
       $c->response->status(200);
       $c->detach;
     }
-    $c->stash(accounts_found => \@found);
-    $c->stash(template => 'Root/fm_admin_form.tt');
+    $c->stash({accounts_found => \@found, fm_admin_pw => $fm_admin_pw, template => 'Root/fm_admin_form.tt'});
     # have to manually forward with content-type also set or catalyst returns 415 error
     $c->response->content_type('text/html');
     $c->forward('tvdx::View::HTML');
