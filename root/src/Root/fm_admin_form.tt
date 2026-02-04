@@ -4,17 +4,22 @@
     <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
     <title>Create or update an FM scan user</title>
   </head>
+  [% message %]
+  <hr>
   <body>
 [% FOREACH user IN accounts_found %]
     <form method="POST" enctype="text/html" action="[% c.uri_for('fm_admin_form_do') %]">
       <table>
-         <tr><td>Tuner ID (search only):</td><td><input type="text" name="tuner_key" value="[% user.tuner_key %]"></td></tr>
+         <tr><td>Tuner ID (search only):</td><td><input type="text" name="tuner_key" value="[% user.tuner_key %]"
+  [% IF user.tuner_key %] readonly [% END %]></td></tr>
          <tr><td>Email:</td><td><input type="text" name="email" value="[% user.email %]"></td></tr>
          <tr><td>User:</td><td><input type="text" name="user" value="[% user.user %]"></td></tr>
          <tr><td>Password:</td><td><input type="text" name="password" value="[% user.password %]"></td></tr>
          <tr><td>User location:</td><td><input type="text" name="user_description" value="[% user.user_description %]"></td></tr>
-         <tr><td>Latitude (can't search):</td><td><input type="text" name="latitude" value="[% user.latitude %]"></td></tr>
-         <tr><td>Longitude (can't search):</td><td><input type="text" name="longitude" value="[% user.longitude %]"></td></tr>
+         <tr><td>Latitude (new only):</td><td><input type="text" name="latitude" value="[% user.latitude %]"
+  [% IF user.tuner_key %] readonly [% END %]></td></tr>
+         <tr><td>Longitude (new only):</td><td><input type="text" name="longitude" value="[% user.longitude %]"
+  [% IF user.tuner_key %] readonly [% END %]></td></tr>
          <tr><td>Tuner Description:</td><td><input type="text" name="tuner_description" value="[% user.tuner_description %]"></td></tr>
          <tr><td>Admin Password:</td><td><input type="text" name="fm_admin_pw" value="[% fm_admin_pw %]"></td></tr>
       </table>

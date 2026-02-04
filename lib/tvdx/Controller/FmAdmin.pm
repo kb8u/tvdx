@@ -39,7 +39,8 @@ sub fm_admin_form :Global {
 
   unless ($c->stash->{accounts_found}) {
     $c->stash(accounts_found => [{tuner_key=>'', email=>'', user=>'', password=>'',
-                user_description=>'', latitude=>'', longitude=>'', tuner_description => ''}]);
+                user_description=>'', latitude=>'', longitude=>'', tuner_description => ''}],
+              message => 'Fill in all fields except Tuner ID when creating new accounts (a new ID will be created).  Search on any field(s) except latitude and longitude to find existing accounts to edit.');
   }
   $c->stash({static_url=>$c->config->{static_url}, template=>'Root/fm_admin_form.tt', current_view=>'HTML'});
 }
@@ -73,26 +74,7 @@ sub fm_admin_form_do_POST :Global {
   }
 
   if ($action eq 'New') {
-    # check for valid data.  If invalid, show error page
-    my @fail_reason;
-    push @fail_reason, 'email invalid' if ($email !~ /^$Email::Address::addr_spec$/);
-    push @fail_reason, 'user name has invalid character or is too long' if ($user !~ /^[a-zA-Z0-9]{1,255}$/);
-    push @fail_reason, 'password too long' if ($password !~ /^.{1,8}$/);
-    push @fail_reason, 'user description too long' if ($user_description !~ /^.{1,255}$/);
-    push @fail_reason, 'latitude (need decimal degrees)' if ($latitude !~ /^$RE{num}{real}$/);
-    push @fail_reason, 'latitude too large' if ($latitude && $latitude > 72);
-    push @fail_reason, 'latitude too small' if ($latitude && $latitude < 16);
-    push @fail_reason, 'longitude (need decimal degrees)' if ($longitude !~ /^$RE{num}{real}$/);
-    push @fail_reason, 'longitude too large (missing - sign?)' if ($longitude && $longitude > -52);
-    push @fail_reason, 'longitude too small' if ($longitude && $longitude < -167);
-    push @fail_reason, 'tuner description too long' if ($tuner_description !~ /^.{1,255}$/);
-    if (@fail_reason) {
-      # to use tt here, see comment about error 415 below
-      my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
-      $c->response->body($text);
-      $c->response->status(400);
-      return;
-    }
+    _check_form_data($self,$c);
 
     # insert and display email text with new user_key and details
     my $user_db = $c->model('DB::FmUser')->create( { user => $user,
@@ -111,11 +93,7 @@ sub fm_admin_form_do_POST :Global {
     my $installer_url = $c->config->{static_url} . '/fmdx_install.exe';
     my $text = <<"EOTEXT";
 New user ID $new_user_key, password $password created.
-
-The windows installer is at <a href=\"$installer_url\">$installer_url</a>.  You
-will need to enter the user ID number $new_user_key when you install the program.
-
-Once installed, FM stations detected by the tuner will be shown at
+FM stations detected by the tuner will be shown at
 <a href=\"$new_user_url\">$new_user_url</a> 
 EOTEXT
     $c->response->body($text);
@@ -123,7 +101,6 @@ EOTEXT
     return;
   }
   if ($action eq 'Search') {
-    # search and render results into same form
     my $trs = 0;
     my @found;
     if ($tuner_key) {
@@ -159,18 +136,58 @@ EOTEXT
       $c->response->status(200);
       $c->detach;
     }
-    $c->stash({accounts_found => \@found, fm_admin_pw => $fm_admin_pw, template => 'Root/fm_admin_form.tt'});
+    $c->stash({accounts_found => \@found, fm_admin_pw => $fm_admin_pw, template => 'Root/fm_admin_form.tt',
+               message => 'You can not change User ID, latitude or longitude'});
     # have to manually forward with content-type also set or catalyst returns 415 error
     $c->response->content_type('text/html');
     $c->forward('tvdx::View::HTML');
     return;
   }
   if ($action eq 'Update') {
-    # update
-    return;
+    _check_form_data($self,$c);
+
+    my $trow = $c->model('DB::FmTuner')->find($tuner_key);
+    unless ($trow) {
+      $c->response->body('Invalid tuner ID');
+      $c->response->status(400);
+      $c->detach;
+    }
+    $trow->update({description=>$tuner_description});
+    my $urow = $trow->user_key;
+    $urow->update({email=>$email, user=>$user, password=>$password, description=>$user_description});
+    $c->response->body("Tuner updated");
+    $c->response->status(200);
+    $c->detach;
   }
   $c->response->body('Invalid form action');
   $c->response->status(200);
+  $c->detach;
+}
+
+
+# check for valid data.  If invalid, show error page
+sub _check_form_data {
+  my ($self,$c) = @_;
+
+  my @fail_reason;
+  my $p = $c->request->params;
+  push @fail_reason, 'email invalid' if ($p->{email} !~ /^$Email::Address::addr_spec$/);
+  push @fail_reason, 'user name has invalid character or is too long' if ($p->{user} !~ /^[a-zA-Z0-9]{1,255}$/);
+  push @fail_reason, 'password too long' if ($p->{password} !~ /^.{1,8}$/);
+  push @fail_reason, 'location too long' if ($p->{user_description} !~ /^.{1,255}$/);
+  push @fail_reason, 'latitude (need decimal degrees)' if ($p->{latitude} !~ /^$RE{num}{real}$/);
+  push @fail_reason, 'latitude too large' if ($p->{latitude} && $p->{latitude} > 72);
+  push @fail_reason, 'latitude too small' if ($p->{latitude} && $p->{latitude} < 16);
+  push @fail_reason, 'longitude (need decimal degrees)' if ($p->{longitude} !~ /^$RE{num}{real}$/);
+  push @fail_reason, 'longitude too large (missing - sign?)' if ($p->{longitude} && $p->{longitude} > -52);
+  push @fail_reason, 'longitude too small' if ($p->{longitude} && $p->{longitude} < -167);
+  push @fail_reason, 'tuner description too long' if ($p->{tuner_description} !~ /^.{1,255}$/);
+  if (@fail_reason) {
+    my $text = "Error in field(s): " . (join ', ', @fail_reason) .  '.  Navigate back, fix the problems and then resubmit';
+    $c->response->body($text);
+    $c->response->status(400);
+    $c->detach;
+  }
 }
 
 
