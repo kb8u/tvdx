@@ -94,7 +94,7 @@ sub fm_admin_form_do_POST :Global {
     my $text = <<"EOTEXT";
 New user ID $new_user_key, password $password created.
 FM stations detected by the tuner will be shown at
-<a href=\"$new_user_url\">$new_user_url</a> 
+$new_user_url 
 EOTEXT
     $c->response->body($text);
     $c->response->status(200);
