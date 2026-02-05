@@ -155,7 +155,7 @@ EOTEXT
     $trow->update({description=>$tuner_description});
     my $urow = $trow->user_key;
     $urow->update({email=>$email, user=>$user, password=>$password, description=>$user_description});
-    $c->response->body("Tuner updated");
+    $c->response->body("Account settings have been changed");
     $c->response->status(200);
     $c->detach;
   }
