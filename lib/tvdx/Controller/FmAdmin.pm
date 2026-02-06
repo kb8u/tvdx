@@ -137,7 +137,7 @@ EOTEXT
       $c->detach;
     }
     $c->stash({accounts_found => \@found, fm_admin_pw => $fm_admin_pw, template => 'Root/fm_admin_form.tt',
-               message => 'You can not change User ID, latitude or longitude'});
+               current_view=>'HTML', message => 'You can not change Tuner ID'});
     # have to manually forward with content-type also set or catalyst returns 415 error
     $c->response->content_type('text/html');
     $c->forward('tvdx::View::HTML');

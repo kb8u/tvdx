@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="shortcut icon" href="[% static_url %]/favicon.ico">
+    <title>Create or update an TV live band scan user</title>
+  </head>
+  [% message %]
+  <hr>
+  <body>
+[% FOREACH tuner IN tuners %]
+    <form method="POST" enctype="text/html" action="[% c.uri_for('tv_admin_form_do') %]">
+      <table>
+         <tr><td>Tuner ID:</td><td><input type="text" name="tuner_id" value="[% tuner.tuner_id %]"></td></tr>
+         <tr><td>Tuner Number:</td><td><input type="text" name="tuner_number" value="[% tuner.tuner_number %]"></td></tr>
+         <tr><td>User location:</td><td><input type="text" name="owner_id" value="[% tuner.owner_id %]"></td></tr>
+         <tr><td>Latitude:</td><td><input type="text" name="latitude" value="[% tuner.latitude %]"></td></tr>
+         <tr><td>Longitude:</td><td><input type="text" name="longitude" value="[% tuner.longitude %]"></td></tr>
+         <tr><td>Tuner Description:</td><td><input type="text" name="tuner_description" value="[% tuner.tuner_description %]"></td></tr>
+         <tr><td>Admin Password:</td><td><input type="text" name="tv_admin_pw" value="[% tv_admin_pw %]"></td></tr>
+      </table>
+  [% IF tv_admin_pw %]
+      <input type="hidden" name="tuner_number_key" value="[% tuner.tuner_number_key %]">
+      <input type="submit" name="submit" value="Update">
+  [% ELSE %]
+      <input type="submit" name="submit" value="New">
+      <input type="submit" name="submit" value="Search">
+  [% END %]
+      <input type="reset" value="Reset Form">
+    </form>
+    <hr>
+[% END %]
+  </body>
+</html>
+
