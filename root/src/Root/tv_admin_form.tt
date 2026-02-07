@@ -11,7 +11,8 @@
     <form method="POST" enctype="text/html" action="[% c.uri_for('tv_admin_form_do') %]">
       <table>
          <tr><td>Tuner ID:</td><td><input type="text" name="tuner_id" value="[% tuner.tuner_id %]"></td></tr>
-         <tr><td>Tuner Number:</td><td><input type="text" name="tuner_number" value="[% tuner.tuner_number %]"></td></tr>
+         <tr><td>Tuner Number:</td><td><input type="text" name="tuner_number" value="[% tuner.tuner_number %]"
+           [% IF tuner.tuner_number %] readonly [% END %]></td></tr>
          <tr><td>User location:</td><td><input type="text" name="owner_id" value="[% tuner.owner_id %]"></td></tr>
          <tr><td>Latitude:</td><td><input type="text" name="latitude" value="[% tuner.latitude %]"></td></tr>
          <tr><td>Longitude:</td><td><input type="text" name="longitude" value="[% tuner.longitude %]"></td></tr>

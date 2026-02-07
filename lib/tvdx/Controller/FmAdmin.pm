@@ -67,7 +67,7 @@ sub fm_admin_form_do_POST :Global {
   my $fm_admin_pw = $c->request->params->{'fm_admin_pw'};
   my $action = $c->request->params->{'submit'};
   
-  if ($fm_admin_pw ne $c->config->{fm_admin_pw}) {
+  unless (defined $fm_admin_pw && $fm_admin_pw eq $c->config->{fm_admin_pw}) {
     $c->response->body("Wrong admin password.  Navigate back and try again");
     $c->response->status(400);
     $c->detach;
