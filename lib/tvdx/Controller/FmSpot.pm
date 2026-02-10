@@ -175,7 +175,13 @@ FCCSQL
    fcc_key = values(fcc_key);
 ODK
 
-  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+  try {
+    $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+  } catch {
+    $c->log->warn("Retrying after DB error: $_");
+    sleep 1;
+    $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+  };
 
 }
 
