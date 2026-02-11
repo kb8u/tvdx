@@ -178,9 +178,11 @@ ODK
   try {
     $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
   } catch {
-    $c->log->warn("Retrying after DB error: $_");
-    sleep 1;
-    $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+    $c->log->warn("DB error: $_");
+    if (index($_,"Deadlock found") > -1) {
+      sleep(int(rand(3)) + 1);
+      $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+    }
   };
 
 }
