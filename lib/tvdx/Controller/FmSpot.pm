@@ -178,10 +178,12 @@ ODK
   try {
     $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
   } catch {
-    $c->log->warn("DB error: $_");
     if (index($_,"Deadlock found") > -1) {
+      $c->log->warn("DB deadlock detected for FM reception report, retrying.");
       sleep(int(rand(3)) + 1);
       $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
+    } else {
+      $c->log->warn($_);
     }
   };
 
