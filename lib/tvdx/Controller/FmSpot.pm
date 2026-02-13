@@ -182,7 +182,6 @@ FCCSQL
    fcc_key = values(fcc_key);
 ODK
 
-$c->log->debug($sql);
   try {
     $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
   } catch {
