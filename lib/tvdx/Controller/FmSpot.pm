@@ -153,7 +153,14 @@ sub _upsert_all {
   foreach my $frequency (keys %{$json->{signal}}) {
     $sql .= "('$json->{signal}{$frequency}{time}','$json->{signal}{$frequency}{time}','$json->{tuner_key}',";
     $sql .= <<"FCCSQL";
-(select fcc_key from fm_fcc where pi_code = $json->{signal}{$frequency}{pi_code} and frequency = $frequency
+(select fcc_key from fm_fcc
+  where pi_code = $json->{signal}{$frequency}{pi_code}
+  and frequency = $frequency
+  and st_distance_sphere(latlon, (SELECT latlon FROM fm_tuner WHERE tuner_key = '$json->{tuner_key}')) <=
+     CASE
+       WHEN MONTH(NOW()) IN (9, 10, 11, 12, 1, 2, 3) THEN 2414000
+       ELSE 999999999
+     END
   order by (
     st_distance_sphere(
       latlon,
@@ -175,6 +182,7 @@ FCCSQL
    fcc_key = values(fcc_key);
 ODK
 
+$c->log->debug($sql);
   try {
     $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute()});
   } catch {
