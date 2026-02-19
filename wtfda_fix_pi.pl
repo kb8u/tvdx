@@ -11,7 +11,10 @@ use List::Util 'all';
 
 use FindBin;
 use lib "$FindBin::Bin/lib";
+use tvdx;
 use tvdx::Model::DB;
+
+tvdx::Model::DB->config->{connect_info} = tvdx->config->{'Model::DB'}->{connect_info};
 
 
 # debug and help options
