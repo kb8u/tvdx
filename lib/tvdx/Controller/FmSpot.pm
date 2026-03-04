@@ -156,6 +156,7 @@ sub _upsert_all {
 (select fcc_key from fm_fcc
   where pi_code = $json->{signal}{$frequency}{pi_code}
   and frequency = $frequency
+  and end_date is NULL
   and st_distance_sphere(latlon, (SELECT latlon FROM fm_tuner WHERE tuner_key = '$json->{tuner_key}')) <=
      CASE
        WHEN MONTH(NOW()) IN (9, 10, 11, 12, 1, 2, 3) THEN 2414000
