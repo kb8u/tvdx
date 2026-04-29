@@ -101,12 +101,14 @@ sub automated_spot :Global {
     my $spot = {
       'rx_date'         => $mysql_now,
       'rf_channel'      => $channel,
-      'strength'        => $tv_signal->{'strength'},
-      'sig_noise'       => $tv_signal->{'sig_noise'},
+      'strength'        => $tv_signal->{strength},
+      'sig_noise'       => $tv_signal->{sig_noise},
       'tuner_id'        => $tuner_id,
       'tuner_number'    => $tuner_number,
       'callsign'        => $callsign,
       'virtual_channel' => $virtual_channel, };
+    $spot->{l1detail} = $tv_signal->{l1detail} if (exists $tv_signal->{l1detail});
+    $spot->{plp_info} = $tv_signal->{plp_info} if (exists $tv_signal->{plp_info});
 
     next TVSPOT if ( ! _spot_data_ok($spot) );
 
@@ -195,6 +197,15 @@ sub _spot_data_ok {
   }
 
   return 0 if $spot->{'virtual_channel'} !~ /^\d+\.{0,1}\d*$/;
+
+  return 0 if exists $spot->{l1detail} && length $spot->{l1detail} < 10;
+
+  if (exists $spot->{plp_info}) {
+    foreach my $plp_id (keys %{$spot->{plp_info}}) {
+      return 0 if $plp_id - int $plp_id > 0;
+      return 0 if $plp_id =~ /\D/;
+    }
+  }
 
   return 1;
 }
