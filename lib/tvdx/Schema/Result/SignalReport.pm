@@ -175,6 +175,27 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
 );
 
+=head2 plp_infos
+
+Type: has_many
+
+Related object: L<tvdx::Schema::Result::PlpInfo>
+
+=cut
+
+__PACKAGE__->has_many(
+  "plp_infos",
+  "tvdx::Schema::Result::PlpInfo",
+  {
+    "foreign.callsign"     => "self.callsign",
+    "foreign.modulation"   => "self.modulation",
+    "foreign.rf_channel"   => "self.rf_channel",
+    "foreign.tuner_id"     => "self.tuner_id",
+    "foreign.tuner_number" => "self.tuner_number",
+  },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 tuner
 
 Type: belongs_to
@@ -191,8 +212,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-18 20:30:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pHwvRk/o0ivAg2RPx5IumQ
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-04-29 19:08:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:baZeWR3WawO60uKft0LqLg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

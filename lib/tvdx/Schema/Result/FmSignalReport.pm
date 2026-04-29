@@ -38,6 +38,11 @@ __PACKAGE__->table("fm_signal_report");
 
 =head1 ACCESSORS
 
+=head2 signal_key
+
+  data_type: 'integer'
+  is_nullable: 0
+
 =head2 rx_date
 
   data_type: 'datetime'
@@ -48,6 +53,11 @@ __PACKAGE__->table("fm_signal_report");
 
   data_type: 'datetime'
   datetime_undef_if_invalid: 1
+  is_nullable: 0
+
+=head2 frequency
+
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 tuner_key
@@ -71,6 +81,8 @@ __PACKAGE__->table("fm_signal_report");
 =cut
 
 __PACKAGE__->add_columns(
+  "signal_key",
+  { data_type => "integer", is_nullable => 0 },
   "rx_date",
   {
     data_type => "datetime",
@@ -83,6 +95,8 @@ __PACKAGE__->add_columns(
     datetime_undef_if_invalid => 1,
     is_nullable => 0,
   },
+  "frequency",
+  { data_type => "integer", is_nullable => 0 },
   "tuner_key",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "fcc_key",
@@ -138,8 +152,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-01-18 20:30:09
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k4/qGhuczatb3O6+/xXwcQ
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-04-29 19:08:55
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:14PeT7YioxUkdoyUoUrpKg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
