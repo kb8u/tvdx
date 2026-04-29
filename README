@@ -86,6 +86,7 @@ CREATE TABLE `signal_report` (
   `tuner_number` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `virtual_channel` float(11,8) DEFAULT NULL,
+  `l1detail` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin DEFAULT NULL,
   PRIMARY KEY (`tuner_id`,`callsign`,`modulation`,`tuner_number`,`rf_channel`),
   KEY `tuner_id` (`tuner_id`),
   KEY `callsign` (`callsign`),
@@ -93,6 +94,22 @@ CREATE TABLE `signal_report` (
   CONSTRAINT `signal_report_ibfk_1` FOREIGN KEY (`tuner_id`) REFERENCES `tuner` (`tuner_id`),
   CONSTRAINT `signal_report_ibfk_2` FOREIGN KEY (`callsign`) REFERENCES `fcc` (`callsign`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin
+);
+CREATE TABLE `plp_info` (
+  `tuner_id` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `callsign` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `modulation` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `tuner_number` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `rf_channel` int NOT NULL,
+  `plp_id` int NOT NULL,
+  `ti` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `sfi` int,
+  `layer` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
+  `lls` int,
+  `cod` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin,
+  `lock` int NOT NULL,
+  `mod` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin
+  CONSTRAINT `signal_report_fk` FOREIGN KEY (`tuner_id`,`callsign`,`modulation`,`tuner_number`,`rf_channel`) REFERENCES signal_report(`tuner_id`,`callsign`,`modulation`,`tuner_number`,`rf_channel`)
 );
 --
 -- Virtual channels received in PSIP
