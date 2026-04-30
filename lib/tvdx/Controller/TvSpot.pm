@@ -1,4 +1,4 @@
-package tvdx::Controller::RawSpot;
+package tvdx::Controller::TvSpot;
 use Moose;
 use namespace::autoclean;
 use DateTime;
@@ -20,11 +20,11 @@ BEGIN { extends 'Catalyst::Controller::REST' }
 
 =head1 NAME
 
-tvdx::Controller::RawSpot - Catalyst Controller
+tvdx::Controller::TvSpot - Catalyst Controller
 
 =head1 DESCRIPTION
 
-Process Raw spots from clients.  These are spots that contain all the data
+Process spots from clients.  These are spots that contain all the data
 the tuner generates, not just stations that are coming in and one virtual
 channel.
 
