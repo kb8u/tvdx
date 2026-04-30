@@ -98,6 +98,21 @@ sub _decode_json {
       $c->log->debug("$json->{user_id} channel $channel has invalid TSID $json->{rf_channel}{$channel}{tsid}");
       $json->{rf_channel}{$channel}{tsid} = 0;
     }
+    if (exists $json->{rf_channel}{$channel}{l1detail}) {
+      if (   length $json->{rf_channel}{$channel}{l1detail} < 20
+          || length $json->{rf_channel}{$channel}{l1detail} > 255) {
+        $c->log->debug("$json->{user_id} channel $channel has invalid value for l1detail");
+        return _error($self,$c,"channel $channel has invalid value for l1detail");
+      }
+    }
+    if (exists $json->{rf_channel}{$channel}{plp_info}) {
+      foreach my $plp (keys %{$json->{rf_channel}{$channel}{plp_info}}) {
+        unless (looks_like_number($plp) && int $plp == $plp && $plp>= 0 && $plp <=63) {
+          $c->log->debug("$json->{user_id} channel $channel has invalid number of plp_info members");
+          return _error($self,$c,"channel $channel has invalid number of plp_info members");
+        }
+      }
+    }
   }
 
   return $json;
