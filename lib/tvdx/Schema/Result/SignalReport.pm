@@ -99,6 +99,12 @@ __PACKAGE__->table("signal_report");
   is_nullable: 1
   size: [11,8]
 
+=head2 l1detail
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 255
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -130,6 +136,8 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 255 },
   "virtual_channel",
   { data_type => "float", is_nullable => 1, size => [11, 8] },
+  "l1detail",
+  { data_type => "varchar", is_nullable => 1, size => 255 },
 );
 
 =head1 PRIMARY KEY
@@ -212,8 +220,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-04-29 19:08:55
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:baZeWR3WawO60uKft0LqLg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-05-05 12:13:06
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yBiAc4RjuhIDuXaV71loGg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
