@@ -538,7 +538,7 @@ sub _signalreport_update {
 
   my $sql = <<'ISQL';
 insert into signal_report (rx_date,first_rx_date,rf_channel,modulation,strength,sig_noise,
-                                  tuner_id,tuner_number,callsign,virtual_channel) values 
+                                  tuner_id,tuner_number,callsign,virtual_channel,l1detail) values 
 ISQL
   my @vals;
 
@@ -550,6 +550,7 @@ ISQL
     push @vals,($ch->{sig_noise},$args->{tuner_id},$args->{tuner_number});
     push @vals, (defined $ch->{found_call} ? $ch->{found_call} : 'none');
     push @vals, (defined $ch->{found_virtual} ? $ch->{found_virtual} : undef);
+    push @vals, (defined $ch->{l1detail} ? $ch->{l1detail} : undef);
   }
   chop $sql;  # remove , from last row
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}',strength=values(strength),sig_noise=values(sig_noise),virtual_channel=values(virtual_channel);";
