@@ -106,10 +106,28 @@ sub _decode_json {
       }
     }
     if (exists $json->{rf_channel}{$channel}{plp_info}) {
-      foreach my $plp (keys %{$json->{rf_channel}{$channel}{plp_info}}) {
-        unless (looks_like_number($plp) && int $plp == $plp && $plp>= 0 && $plp <=63) {
-          $c->log->debug("$json->{user_id} channel $channel has invalid number of plp_info members");
-          return _error($self,$c,"channel $channel has invalid number of plp_info members");
+      foreach my $plp_id (keys %{$json->{rf_channel}{$channel}{plp_info}}) {
+        unless (looks_like_number($plp_id) && int $plp_id == $plp_id && $plp_id>= 0 && $plp_id <=63) {
+          $c->log->debug("$json->{user_id} channel $channel has invalid id for plp_info member: $plp_id");
+          return _error($self,$c,"channel $channel has invalid id for plp_info member: $plp_id");
+        }
+        my $id = $json->{rf_channel}{$channel}{plp_info}{$plp_id};
+        foreach my $key ('sfi','lls','lock') {
+          if (exists $id->{$key}) {
+            unless (looks_like_number($id->{$key}) && int $id->{$key} == $id->{$key}) {
+              $c->log->debug("$json->{user_id} channel $channel has invalid $key: $id->{$key}");
+              return _error($self,$c,"$json->{user_id} channel $channel has invalid sfi: $id->{sfi}");
+            }
+          }
+        }
+        # mod and lock are keywords in mysql so rename them plp_mod and plp_lock
+        if (exists $id->{lock}) {
+          $id->{plp_lock} = $id->{lock};
+          delete $id->{lock};
+        }
+        if (exists $id->{mod}) {
+          $id->{plp_mod} = $id->{mod};
+          delete $id->{mod};
         }
       }
     }
@@ -534,6 +552,7 @@ sub _rrd_update {
 sub _signalreport_update {
   my ($self,$args) = @_;
 
+  my $saw_plp = 0;
   my $storage = $args->{c}->model('DB')->storage();
 
   my $sql = <<'ISQL';
@@ -545,6 +564,7 @@ ISQL
   # loop over json and append to $sql
   for my $channel (keys %{$args->{json}{rf_channel}}) {
     my $ch = $args->{json}{rf_channel}{$channel};
+    $saw_plp = 1 if exists $ch->{plp_info};
     $sql .= '(?,?,?,?,?,?,?,?,?,?,?),';
     push @vals,($args->{mysql_now},$args->{mysql_now},$channel,$ch->{modulation},$ch->{strength});
     push @vals,($ch->{sig_noise},$args->{tuner_id},$args->{tuner_number});
@@ -554,6 +574,39 @@ ISQL
   }
   chop $sql;  # remove , from last row
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}',strength=values(strength),sig_noise=values(sig_noise),virtual_channel=values(virtual_channel),l1detail=values(l1detail);";
+
+  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)});
+
+  _plp_update($self,$args) if $saw_plp;
+  return 1;
+}
+
+
+sub _plp_update {
+  my ($self,$args) = @_;
+
+  my $storage = $args->{c}->model('DB')->storage();
+
+  my $sql = <<'ISQL';
+insert into plp_info (tuner_id,callsign,modulation,tuner_number,rf_channel,
+                      plp_id,ti,sfi,layer,lls,cod,plp_lock,plp_mod) values
+ISQL
+  my @vals;
+
+  # loop over json and append to $sql
+  for my $channel (keys %{$args->{json}{rf_channel}}) {
+    my $ch = $args->{json}{rf_channel}{$channel};
+    foreach my $plp_id (keys %{$ch->{plp_info}}) {
+      my $p = $ch->{plp_info}{$plp_id};
+      $sql .= '(?,?,?,?,?,?,?,?,?,?,?,?,?),';
+      push @vals,($args->{tuner_id});
+      push @vals,(defined $ch->{found_call} ? $ch->{found_call} : 'none');
+      push @vals,($ch->{modulation},$args->{tuner_number},$channel);
+      push @vals,($plp_id,$p->{ti},$p->{sfi},$p->{layer},$p->{lls},$p->{cod},$p->{plp_lock},$p->{plp_mod});
+    }
+  }
+  chop $sql;  # remove , from last row
+  $sql .= " on duplicate key update ti=values(ti),sfi=values(sfi),layer=values(layer),lls=values(lls),cod=values(cod),plp_lock=values(plp_lock),plp_mod=values(plp_mod);";
 
   $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)});
 

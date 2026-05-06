@@ -80,7 +80,7 @@ __PACKAGE__->table("plp_info");
 =head2 ti
 
   data_type: 'varchar'
-  is_nullable: 0
+  is_nullable: 1
   size: 255
 
 =head2 sfi
@@ -105,12 +105,12 @@ __PACKAGE__->table("plp_info");
   is_nullable: 1
   size: 255
 
-=head2 lock
+=head2 plp_lock
 
   data_type: 'integer'
-  is_nullable: 0
+  is_nullable: 1
 
-=head2 mod
+=head2 plp_mod
 
   data_type: 'varchar'
   is_nullable: 1
@@ -132,7 +132,7 @@ __PACKAGE__->add_columns(
   "plp_id",
   { data_type => "integer", is_nullable => 0 },
   "ti",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_nullable => 1, size => 255 },
   "sfi",
   { data_type => "integer", is_nullable => 1 },
   "layer",
@@ -141,10 +141,39 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 1 },
   "cod",
   { data_type => "varchar", is_nullable => 1, size => 255 },
-  "lock",
-  { data_type => "integer", is_nullable => 0 },
-  "mod",
+  "plp_lock",
+  { data_type => "integer", is_nullable => 1 },
+  "plp_mod",
   { data_type => "varchar", is_nullable => 1, size => 255 },
+);
+
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</tuner_id>
+
+=item * L</callsign>
+
+=item * L</modulation>
+
+=item * L</tuner_number>
+
+=item * L</rf_channel>
+
+=item * L</plp_id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key(
+  "tuner_id",
+  "callsign",
+  "modulation",
+  "tuner_number",
+  "rf_channel",
+  "plp_id",
 );
 
 =head1 RELATIONS
@@ -171,8 +200,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-04-29 19:08:55
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BV8d10nANmP78sP3HNy6tg
+# Created by DBIx::Class::Schema::Loader v0.07052 @ 2026-05-06 10:42:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:AYy25/bVinjKOm1f7VQ3pQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
