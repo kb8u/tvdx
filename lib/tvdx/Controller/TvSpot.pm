@@ -575,7 +575,15 @@ ISQL
   chop $sql;  # remove , from last row
   $sql .= " on duplicate key update rx_date='$args->{mysql_now}',strength=values(strength),sig_noise=values(sig_noise),virtual_channel=values(virtual_channel),l1detail=values(l1detail);";
 
-  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)});
+  try {
+    $args->{c}->model('DB')->storage->dbh_do(
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
+    );
+  } catch {
+    if (index($_,"Deadlock found") == -1) {
+      $args->{c}->log->error("$args->{tuner_id} $args->{tuner_number}: $_");
+    }
+  };
 
   _plp_update($self,$args) if $saw_plp;
   return 1;
@@ -608,7 +616,15 @@ ISQL
   chop $sql;  # remove , from last row
   $sql .= " on duplicate key update ti=values(ti),sfi=values(sfi),layer=values(layer),lls=values(lls),cod=values(cod),plp_lock=values(plp_lock),plp_mod=values(plp_mod);";
 
-  $storage->dbh_do(sub {my ($s,$dbh,@args) =@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)});
+  try {
+    $args->{c}->model('DB')->storage->dbh_do(
+      sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
+    );
+  } catch {
+    if (index($_,"Deadlock found") == -1) {
+      $args->{c}->log->error("$args->{tuner_id} $args->{tuner_number}: $_");
+    }
+  };
 
   return 1;
 }
@@ -657,7 +673,9 @@ sub _virtual_current {
       sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
     );
   } catch {
-    $args->{c}->log->error("exception on: $sql");
+    if (index($_,"Deadlock found") == -1) {
+      $args->{c}->log->error("$args->{tuner_id} $args->{tuner_number}: $_");
+    }
   };
 }
 
