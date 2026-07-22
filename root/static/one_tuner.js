@@ -344,13 +344,7 @@ function update_sidebar(markers) {
       }
 
       t = new Date(val.last_in);
-      if ($('#time-frame .active').attr('value') === 'ever') {
-        time = t.getMonth() + 1 + '/' + t.getDate() + '/' + t.getFullYear();
-      }
-      else {
-        time = t.getMonth() + 1 + '/' + t.getDate();
-      }
-      time = time + ' ' + t.toLocaleTimeString();
+      time = t.getMonth() + 1 + '/' + t.getDate() + '/' + t.getFullYear() + ' ' + t.toLocaleTimeString();
       sort_summary = get_sort_summary(field,val,dx,time);
       sidebar[field].push(
          '<li class="sr-list">'

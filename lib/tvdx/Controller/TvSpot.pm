@@ -170,7 +170,7 @@ sub raw_spot_POST :Global {
   RAWSPOT: for my $channel (keys %{$json->{rf_channel}}) {
     my $channel_details = $json->{rf_channel}{$channel};
     # Bad TSID maps to Washington, DC for local station in CO
-    if ($tuner_id eq '10152083' && $channel == 14) {
+    if ($tuner_id eq '10152083' && $channel == 14 || $tuner_id eq '10A546B4' && $channel == 35) {
       delete $json->{rf_channel}{$channel};
       next;
     }
@@ -282,6 +282,7 @@ sub _find_call {
     my ($lowest_pn) = sort {$a <=> $b} grep /^\d+$/, keys %{$ch->{virtual}};
     ($fcc_virt) = split /\./,$ch->{virtual}{$lowest_pn}{channel};
   }
+
 
   # transmitter power, location, etc.  Order is from rabbitears.info lookup
   # fcc_virt key, value is also in %transmitter
@@ -706,7 +707,9 @@ sub _tsid_current {
       sub {my ($s,$dbh,@args)=@_; my $sth = $dbh->prepare($sql); $sth->execute(@vals)}
     );
   } catch {
-    $args->{c}->log->error("exception on: $sql");
+    if (index($_,"Deadlock found") == -1) {
+      $args->{c}->log->error("$args->{tuner_id} $args->{tuner_number}: $_");
+    }
   };
 
 }
